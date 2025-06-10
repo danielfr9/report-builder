@@ -1,7 +1,11 @@
 "use server";
 
+import { renderToStaticMarkup } from "react-dom/server";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
+import { ReportPreview } from "../report-preview";
+import React from "react";
+import { parse } from "date-fns";
 
 interface Task {
   id: string;
@@ -339,8 +343,17 @@ export async function generatePDF(reportData: ReportData): Promise<Buffer> {
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 800 });
 
-    const html = generateReportHTML(reportData);
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    const componentHTML = renderToStaticMarkup(
+      React.createElement(ReportPreview, {
+        data: {
+          ...reportData,
+          date: parse(reportData.date, "dd/MM/yyyy", new Date()),
+        },
+      })
+    );
+
+    // const html = generateReportHTML(reportData);
+    await page.setContent(componentHTML, { waitUntil: "networkidle0" });
 
     const pdf = await page.pdf({
       format: "A4",
