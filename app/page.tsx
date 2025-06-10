@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,8 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, Download, Eye } from "lucide-react";
+import {
+  PlusIcon,
+  Trash2Icon,
+  EyeIcon,
+  Loader2Icon,
+  DownloadIcon,
+} from "lucide-react";
 import { ReportPreview } from "./report-preview";
+import { toast } from "sonner";
 
 interface Task {
   id: string;
@@ -66,6 +73,8 @@ export default function ReportBuilder() {
   });
 
   const [activeTab, setActiveTab] = useState("builder");
+
+  const [isGenerating, startGenerating] = useTransition();
 
   const addCompletedTask = () => {
     const newTask: Task = {
@@ -175,34 +184,48 @@ export default function ReportBuilder() {
   };
 
   const generatePDF = async () => {
-    try {
-      // Generate PDF using server action
-      // const pdfBuffer = await generatePDFAction(reportData);
+    const pdfPromise = async () => {
+      try {
+        // Generate PDF using server action
+        // const pdfBuffer = await generatePDFAction(reportData);
 
-      // // Create blob and download
-      // const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+        // // Create blob and download
+        // const blob = new Blob([pdfBuffer], { type: "application/pdf" });
 
-      const res = await fetch("/api/generate-pdf", {
-        method: "POST",
-        body: JSON.stringify(reportData),
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) {
-        throw new Error("Failed to generate PDF");
+        const res = await fetch("/api/generate-pdf", {
+          method: "POST",
+          body: JSON.stringify(reportData),
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) {
+          throw new Error("Failed to generate PDF");
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `reporte-diario-${reportData.date.replace(
+          /\//g,
+          "-"
+        )}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        toast.error("Error al generar el PDF", {
+          description: "Por favor, inténtalo de nuevo.",
+        });
       }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `reporte-diario-${reportData.date.replace(/\//g, "-")}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Error al generar el PDF. Por favor, inténtalo de nuevo.");
-    }
+    };
+    toast.promise(pdfPromise, {
+      loading: "Generando PDF...",
+      success: "PDF generado correctamente",
+      error: "Error al generar el PDF",
+    });
+
+    startGenerating(pdfPromise);
   };
 
   const totalCompletedPoints = reportData.completedTasks
@@ -228,11 +251,11 @@ export default function ReportBuilder() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="builder" className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
+              <PlusIcon className="w-4 h-4" />
               Constructor
             </TabsTrigger>
             <TabsTrigger value="preview" className="flex items-center gap-2">
-              <Eye className="w-4 h-4" />
+              <EyeIcon className="w-4 h-4" />
               Vista Previa
             </TabsTrigger>
           </TabsList>
@@ -315,7 +338,7 @@ export default function ReportBuilder() {
                     </CardDescription>
                   </div>
                   <Button onClick={addCompletedTask} size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
+                    <PlusIcon className="w-4 h-4 mr-2" />
                     Agregar Tarea
                   </Button>
                 </div>
@@ -389,7 +412,7 @@ export default function ReportBuilder() {
                         onClick={() => removeCompletedTask(task.id)}
                         className="ml-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2Icon className="w-4 h-4" />
                       </Button>
                     </div>
                     <div>
@@ -428,7 +451,7 @@ export default function ReportBuilder() {
                     </CardDescription>
                   </div>
                   <Button onClick={addPendingTask} size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
+                    <PlusIcon className="w-4 h-4 mr-2" />
                     Agregar Pendiente
                   </Button>
                 </div>
@@ -474,7 +497,7 @@ export default function ReportBuilder() {
                         onClick={() => removePendingTask(task.id)}
                         className="ml-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2Icon className="w-4 h-4" />
                       </Button>
                     </div>
                     <div>
@@ -514,7 +537,7 @@ export default function ReportBuilder() {
                   <div className="flex justify-between items-center mb-2">
                     <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
                     <Button onClick={addBlock} size="sm" variant="outline">
-                      <Plus className="w-4 h-4 mr-2" />
+                      <PlusIcon className="w-4 h-4 mr-2" />
                       Agregar Bloqueo
                     </Button>
                   </div>
@@ -535,7 +558,7 @@ export default function ReportBuilder() {
                         onClick={() => removeBlock(index)}
                         className="ml-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2Icon className="w-4 h-4" />
                       </Button>
                     </div>
                   ))}
@@ -550,7 +573,7 @@ export default function ReportBuilder() {
                       size="sm"
                       variant="outline"
                     >
-                      <Plus className="w-4 h-4 mr-2" />
+                      <PlusIcon className="w-4 h-4 mr-2" />
                       Agregar Observación
                     </Button>
                   </div>
@@ -573,7 +596,7 @@ export default function ReportBuilder() {
                         onClick={() => removeObservation(index)}
                         className="ml-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2Icon className="w-4 h-4" />
                       </Button>
                     </div>
                   ))}
@@ -652,10 +675,17 @@ export default function ReportBuilder() {
               <div className="flex justify-end">
                 <Button
                   onClick={generatePDF}
+                  disabled={isGenerating}
                   className="flex items-center gap-2"
                 >
-                  <Download className="w-4 h-4" />
-                  Descargar PDF
+                  <>
+                    {isGenerating ? (
+                      <Loader2Icon className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <DownloadIcon className="w-4 h-4" />
+                    )}
+                    Descargar PDF
+                  </>
                 </Button>
               </div>
               <ReportPreview data={reportData} />
