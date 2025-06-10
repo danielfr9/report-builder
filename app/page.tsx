@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2, Download, Eye } from "lucide-react";
 import { ReportPreview } from "./report-preview";
-import { generatePDF as generatePDFAction } from "./actions/generate-pdf";
 
 interface Task {
   id: string;
@@ -178,10 +177,20 @@ export default function ReportBuilder() {
   const generatePDF = async () => {
     try {
       // Generate PDF using server action
-      const pdfBuffer = await generatePDFAction(reportData);
+      // const pdfBuffer = await generatePDFAction(reportData);
 
-      // Create blob and download
-      const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+      // // Create blob and download
+      // const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+
+      const res = await fetch("/api/generate-pdf", {
+        method: "POST",
+        body: JSON.stringify(reportData),
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        throw new Error("Failed to generate PDF");
+      }
+      const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

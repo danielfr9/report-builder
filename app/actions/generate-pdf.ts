@@ -1,6 +1,6 @@
 "use server";
 
-import chromium from "chrome-aws-lambda";
+import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 
 interface Task {
@@ -321,17 +321,17 @@ export async function generatePDF(reportData: ReportData): Promise<Buffer> {
   const browser = await puppeteer.launch({
     args: [
       ...chromium.args,
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--no-first-run",
-      "--no-zygote",
+      // "--no-sandbox",
+      // "--disable-setuid-sandbox",
+      // "--disable-dev-shm-usage",
+      // "--disable-accelerated-2d-canvas",
+      // "--no-first-run",
+      // "--no-zygote",
       // "--single-process",
-      "--disable-gpu",
+      // "--disable-gpu",
     ],
     defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath,
+    executablePath: await chromium.executablePath(),
     headless: chromium.headless,
   });
 
