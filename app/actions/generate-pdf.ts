@@ -1,6 +1,7 @@
 "use server";
 
-import puppeteer from "puppeteer";
+import chromium from "chrome-aws-lambda";
+import puppeteer from "puppeteer-core";
 
 interface Task {
   id: string;
@@ -318,8 +319,8 @@ function generateReportHTML(data: ReportData): string {
 
 export async function generatePDF(reportData: ReportData): Promise<Buffer> {
   const browser = await puppeteer.launch({
-    headless: true,
     args: [
+      ...chromium.args,
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
@@ -329,6 +330,9 @@ export async function generatePDF(reportData: ReportData): Promise<Buffer> {
       // "--single-process",
       "--disable-gpu",
     ],
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath,
+    headless: chromium.headless,
   });
 
   try {
