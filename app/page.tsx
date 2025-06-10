@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { es } from "date-fns/locale";
 import { format, parse } from "date-fns";
+import { generatePDFAction } from "./actions/generate-pdf";
 
 interface Task {
   id: string;
@@ -276,22 +277,27 @@ export default function ReportBuilder() {
             year: "numeric",
           });
 
-          const res = await fetch("/api/generate-pdf", {
-            method: "POST",
-            body: JSON.stringify({
-              ...reportData,
-              date: reportData.date
-                ? format(reportData.date, "dd/MM/yyyy")
-                : null,
-            }),
-            headers: { "Content-Type": "application/json" },
+          // const res = await fetch("/api/generate-pdf", {
+          //   method: "POST",
+          //   body: JSON.stringify({
+          //     ...reportData,
+          //     date: reportData.date
+          //       ? format(reportData.date, "dd/MM/yyyy")
+          //       : null,
+          //   }),
+          //   headers: { "Content-Type": "application/json" },
+          // });
+
+          // if (!res.ok) {
+          //   throw new Error("Failed to generate PDF");
+          // }
+
+          const res = await generatePDFAction({
+            ...reportData,
+            date: reportData.date,
           });
 
-          if (!res.ok) {
-            throw new Error("Failed to generate PDF");
-          }
-
-          const blob = await res.blob();
+          const blob = new Blob([res], { type: "application/pdf" });
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;

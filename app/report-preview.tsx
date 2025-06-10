@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Task {
   id: string;
@@ -34,9 +35,10 @@ interface ReportData {
 
 interface ReportPreviewProps {
   data: ReportData;
+  isGenerated?: boolean;
 }
 
-export function ReportPreview({ data }: ReportPreviewProps) {
+export function ReportPreview({ data, isGenerated }: ReportPreviewProps) {
   const totalCompletedPoints = data.completedTasks
     .filter((task) => task.status === "Completado")
     .reduce((sum, task) => sum + task.storyPoints, 0);
@@ -73,7 +75,12 @@ export function ReportPreview({ data }: ReportPreviewProps) {
   };
 
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card
+      className={cn(
+        "max-w-4xl mx-auto",
+        isGenerated && "border-none shadow-none"
+      )}
+    >
       <CardContent className="p-8" id="report-preview">
         <div className="space-y-6">
           {/* Header */}
