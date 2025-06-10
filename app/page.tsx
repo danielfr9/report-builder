@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { ReportPreview } from "./report-preview";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface Task {
   id: string;
@@ -183,49 +184,51 @@ export default function ReportBuilder() {
     }));
   };
 
-  const generatePDF = async () => {
-    const pdfPromise = async () => {
-      try {
-        // Generate PDF using server action
-        // const pdfBuffer = await generatePDFAction(reportData);
+  const generatePDF = () => {
+    startGenerating(async () => {
+      const pdfPromise = async () => {
+        try {
+          const currentDate = new Date();
+          const formattedDate = currentDate.toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          });
 
-        // // Create blob and download
-        // const blob = new Blob([pdfBuffer], { type: "application/pdf" });
+          const res = await fetch("/api/generate-pdf", {
+            method: "POST",
+            body: JSON.stringify(reportData),
+            headers: { "Content-Type": "application/json" },
+          });
 
-        const res = await fetch("/api/generate-pdf", {
-          method: "POST",
-          body: JSON.stringify(reportData),
-          headers: { "Content-Type": "application/json" },
-        });
-        if (!res.ok) {
-          throw new Error("Failed to generate PDF");
+          if (!res.ok) {
+            throw new Error("Failed to generate PDF");
+          }
+
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `reporte-diario-${formattedDate}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          toast.error("Error al generar el PDF", {
+            description: "Por favor, inténtalo de nuevo.",
+          });
         }
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `reporte-diario-${reportData.date.replace(
-          /\//g,
-          "-"
-        )}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } catch (error) {
-        console.error("Error generating PDF:", error);
-        toast.error("Error al generar el PDF", {
-          description: "Por favor, inténtalo de nuevo.",
-        });
-      }
-    };
-    toast.promise(pdfPromise, {
-      loading: "Generando PDF...",
-      success: "PDF generado correctamente",
-      error: "Error al generar el PDF",
-    });
+      };
 
-    startGenerating(pdfPromise);
+      const re = toast.promise(pdfPromise, {
+        loading: "Generando PDF...",
+        success: "PDF generado correctamente",
+        error: "Error al generar el PDF",
+      });
+
+      await re.unwrap();
+    });
   };
 
   const totalCompletedPoints = reportData.completedTasks
@@ -237,13 +240,16 @@ export default function ReportBuilder() {
     .reduce((sum, task) => sum + task.storyPoints, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <div className="text-center mb-8 relative">
+          <div className="absolute top-0 right-0">
+            <ThemeToggle />
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             Generador de Reportes Diarios
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Crea reportes profesionales de programación con Story Points
           </p>
         </div>
@@ -314,7 +320,7 @@ export default function ReportBuilder() {
                   <Label htmlFor="sprint">Sprint</Label>
                   <Input
                     id="sprint"
-                    placeholder="Ej: 09 Junio – 13 Junio"
+                    placeholder="Ej: 09 Junio - 13 Junio"
                     value={reportData.sprint}
                     onChange={(e) =>
                       setReportData((prev) => ({
