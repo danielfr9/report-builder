@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -61,7 +61,7 @@ interface ReportData {
 
 export default function ReportBuilder() {
   const [reportData, setReportData] = useState<ReportData>({
-    date: new Date().toLocaleDateString("es-ES"),
+    date: "",
     name: "",
     project: "",
     sprint: "",
@@ -76,6 +76,72 @@ export default function ReportBuilder() {
   const [activeTab, setActiveTab] = useState("builder");
 
   const [isGenerating, startGenerating] = useTransition();
+
+  // Keys for localStorage
+  const STORAGE_KEY = "report-builder-general-info";
+
+  // Save general information to localStorage
+  const saveGeneralInfo = (data: ReportData) => {
+    const generalInfo = {
+      date: data.date,
+      name: data.name,
+      project: data.project,
+      sprint: data.sprint,
+    };
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(generalInfo));
+    } catch (error) {
+      console.error("Error saving to localStorage:", error);
+    }
+  };
+
+  // Load general information from localStorage
+  const loadGeneralInfo = () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const generalInfo = JSON.parse(saved);
+        setReportData((prev) => ({
+          ...prev,
+          date: generalInfo.date || new Date().toISOString().split("T")[0],
+          name: generalInfo.name || "",
+          project: generalInfo.project || "",
+          sprint: generalInfo.sprint || "",
+        }));
+      }
+    } catch (error) {
+      console.error("Error loading from localStorage:", error);
+    }
+  };
+
+  // Load data when component mounts
+  useEffect(() => {
+    loadGeneralInfo();
+  }, []);
+
+  // Save general info whenever it changes
+  useEffect(() => {
+    saveGeneralInfo(reportData);
+  }, [reportData.date, reportData.name, reportData.project, reportData.sprint]);
+
+  // Clear saved general information
+  const clearSavedInfo = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      setReportData((prev) => ({
+        ...prev,
+        date: new Date().toISOString().split("T")[0],
+        name: "",
+        project: "",
+        sprint: "",
+      }));
+      toast.success("Información general borrada");
+    } catch (error) {
+      console.error("Error clearing localStorage:", error);
+      toast.error("Error al borrar la información");
+    }
+  };
 
   const addCompletedTask = () => {
     const newTask: Task = {
@@ -209,7 +275,10 @@ export default function ReportBuilder() {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `reporte-diario-${formattedDate}.pdf`;
+          a.download = `reporte-diario-${formattedDate.replace(
+            /\//g,
+            "-"
+          )}.pdf`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -270,8 +339,20 @@ export default function ReportBuilder() {
             {/* Header Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Información General</CardTitle>
-                <CardDescription>Datos básicos del reporte</CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Información General</CardTitle>
+                    <CardDescription>Datos básicos del reporte</CardDescription>
+                  </div>
+                  <Button
+                    onClick={clearSavedInfo}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    Limpiar
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
