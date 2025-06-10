@@ -84,7 +84,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
               <div>
                 <span className="font-semibold">Fecha:</span>{" "}
-                {data.date ? format(data.date, "dd MMMM yyyy") : "No hay fecha"}
+                {data.date ? format(data.date, "dd/MM/yyyy") : "No hay fecha"}
               </div>
               <div>
                 <span className="font-semibold">👨‍💻 Nombre:</span> {data.name}

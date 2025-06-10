@@ -77,8 +77,8 @@ export default function ReportBuilder() {
     sprint: "",
     completedTasks: [],
     pendingTasks: [],
-    blocks: ["Ninguno"],
-    observations: ["Ninguno"],
+    blocks: [],
+    observations: [],
     hoursWorked: 8,
     additionalNotes: "",
   });
@@ -93,7 +93,7 @@ export default function ReportBuilder() {
   // Save general information to localStorage
   const saveGeneralInfo = (data: ReportData) => {
     const generalInfo = {
-      date: data.date,
+      date: data.date ? format(data.date, "dd/MM/yyyy") : null,
       name: data.name,
       project: data.project,
       sprint: data.sprint,
@@ -113,10 +113,13 @@ export default function ReportBuilder() {
       if (saved) {
         const generalInfo = JSON.parse(saved);
 
-        const formattedDate = parse(generalInfo.date, "yyyy-MM-dd", new Date());
+        const parsedDate = generalInfo.date
+          ? parse(generalInfo.date, "dd/MM/yyyy", new Date())
+          : null;
+
         setReportData((prev) => ({
           ...prev,
-          date: formattedDate || null,
+          date: parsedDate,
           name: generalInfo.name || "",
           project: generalInfo.project || "",
           sprint: generalInfo.sprint || "",
@@ -278,7 +281,7 @@ export default function ReportBuilder() {
             body: JSON.stringify({
               ...reportData,
               date: reportData.date
-                ? format(reportData.date, "yyyy-MM-dd")
+                ? format(reportData.date, "dd/MM/yyyy")
                 : null,
             }),
             headers: { "Content-Type": "application/json" },
@@ -386,7 +389,7 @@ export default function ReportBuilder() {
                       >
                         <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
                         {reportData.date
-                          ? format(reportData.date, "dd MMMM yyyy")
+                          ? format(reportData.date, "dd/MM/yyyy")
                           : "Selecciona una fecha"}
                       </Button>
                     </PopoverTrigger>
@@ -750,6 +753,7 @@ export default function ReportBuilder() {
                   <Input
                     id="hours"
                     type="number"
+                    className="max-w-32"
                     min="1"
                     max="24"
                     value={reportData.hoursWorked}
