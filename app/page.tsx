@@ -26,10 +26,20 @@ import {
   EyeIcon,
   Loader2Icon,
   DownloadIcon,
+  CalendarIcon,
 } from "lucide-react";
 import { ReportPreview } from "./report-preview";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import { es } from "date-fns/locale";
+import { format, parse } from "date-fns";
 
 interface Task {
   id: string;
@@ -47,7 +57,7 @@ interface PendingTask {
 }
 
 interface ReportData {
-  date: string;
+  date: Date | null;
   name: string;
   project: string;
   sprint: string;
@@ -61,7 +71,7 @@ interface ReportData {
 
 export default function ReportBuilder() {
   const [reportData, setReportData] = useState<ReportData>({
-    date: "",
+    date: null,
     name: "",
     project: "",
     sprint: "",
@@ -102,9 +112,11 @@ export default function ReportBuilder() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const generalInfo = JSON.parse(saved);
+
+        const formattedDate = parse(generalInfo.date, "yyyy-MM-dd", new Date());
         setReportData((prev) => ({
           ...prev,
-          date: generalInfo.date || new Date().toISOString().split("T")[0],
+          date: formattedDate || null,
           name: generalInfo.name || "",
           project: generalInfo.project || "",
           sprint: generalInfo.sprint || "",
@@ -131,7 +143,7 @@ export default function ReportBuilder() {
       localStorage.removeItem(STORAGE_KEY);
       setReportData((prev) => ({
         ...prev,
-        date: new Date().toISOString().split("T")[0],
+        date: null,
         name: "",
         project: "",
         sprint: "",
@@ -263,7 +275,12 @@ export default function ReportBuilder() {
 
           const res = await fetch("/api/generate-pdf", {
             method: "POST",
-            body: JSON.stringify(reportData),
+            body: JSON.stringify({
+              ...reportData,
+              date: reportData.date
+                ? format(reportData.date, "yyyy-MM-dd")
+                : null,
+            }),
             headers: { "Content-Type": "application/json" },
           });
 
@@ -357,7 +374,47 @@ export default function ReportBuilder() {
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="date">Fecha</Label>
-                  <Input
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "h-10 w-full justify-start pr-10 text-left font-normal",
+                          !reportData.date && "text-muted-foreground"
+                        )}
+                        id="calendar-input"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                        {reportData.date
+                          ? format(reportData.date, "dd MMMM yyyy")
+                          : "Selecciona una fecha"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[--radix-popover-trigger-width] p-0"
+                      align="start"
+                    >
+                      <Calendar
+                        className="!w-[var(--radix-popover-trigger-width)]"
+                        mode="single"
+                        selected={
+                          reportData.date
+                            ? new Date(reportData.date)
+                            : undefined
+                        }
+                        locale={es}
+                        onSelect={(date) => {
+                          if (date) {
+                            setReportData((prev) => ({
+                              ...prev,
+                              date: date,
+                            }));
+                          }
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {/* <Input
                     id="date"
                     type="date"
                     value={reportData.date}
@@ -367,7 +424,7 @@ export default function ReportBuilder() {
                         date: e.target.value,
                       }))
                     }
-                  />
+                  /> */}
                 </div>
                 <div>
                   <Label htmlFor="name">Nombre</Label>

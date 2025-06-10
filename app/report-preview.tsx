@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { format } from "date-fns";
 
 interface Task {
   id: string;
@@ -19,7 +20,7 @@ interface PendingTask {
 
 // Update the ReportData interface
 interface ReportData {
-  date: string;
+  date: Date | null;
   name: string;
   project: string;
   sprint: string;
@@ -82,7 +83,8 @@ export function ReportPreview({ data }: ReportPreviewProps) {
             </h1>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
               <div>
-                <span className="font-semibold">Fecha:</span> {data.date}
+                <span className="font-semibold">Fecha:</span>{" "}
+                {data.date ? format(data.date, "dd MMMM yyyy") : "No hay fecha"}
               </div>
               <div>
                 <span className="font-semibold">👨‍💻 Nombre:</span> {data.name}
