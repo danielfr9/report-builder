@@ -237,8 +237,8 @@ export function ReportPreview({ data }: ReportPreviewProps) {
             <h2 className="text-lg print:text-base font-semibold mb-2">
               5. Horas trabajadas
             </h2>
-            <p className="text-gray-700 dark:text-gray-300 text-xs">
-              • {data.hoursWorked} horas
+            <p className="text-gray-700 dark:text-gray-300 text-sm">
+              {data.hoursWorked} horas
             </p>
           </div>
 
