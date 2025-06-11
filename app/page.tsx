@@ -335,6 +335,7 @@ export default function ReportBuilder() {
     .reduce((sum, task) => sum + task.storyPoints, 0);
 
   return (
+    // <ReportPreview data={reportData} />
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 relative">

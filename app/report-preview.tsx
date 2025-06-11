@@ -35,10 +35,9 @@ interface ReportData {
 
 interface ReportPreviewProps {
   data: ReportData;
-  isGenerated?: boolean;
 }
 
-export function ReportPreview({ data, isGenerated }: ReportPreviewProps) {
+export function ReportPreview({ data }: ReportPreviewProps) {
   const totalCompletedPoints = data.completedTasks
     .filter((task) => task.status === "Completado")
     .reduce((sum, task) => sum + task.storyPoints, 0);
@@ -75,39 +74,45 @@ export function ReportPreview({ data, isGenerated }: ReportPreviewProps) {
   };
 
   return (
-    <Card
-      className={cn(
-        "max-w-4xl mx-auto",
-        isGenerated && "border-none shadow-none"
-      )}
-    >
-      <CardContent className="p-8" id="report-preview">
+    <Card className="max-w-4xl w-full mx-auto print:max-w-full print:border-none print:shadow-none">
+      <CardContent className="p-8 print:p-0" id="report-preview">
         <div className="space-y-6">
           {/* Header */}
-          <div className="text-center border-b border-gray-200 dark:border-gray-700 pb-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+            <h1 className="text-center text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Reporte Diario de Programador con Story Points ☕
             </h1>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
-              <div>
-                <span className="font-semibold">Fecha:</span>{" "}
-                {data.date ? format(data.date, "dd/MM/yyyy") : "No hay fecha"}
+              <div className="flex flex-col gap-1">
+                <span className="font-semibold">👨‍💻 Nombre:</span>{" "}
+                <span className="text-gray-700 dark:text-gray-300">
+                  {data.name}
+                </span>
               </div>
-              <div>
-                <span className="font-semibold">👨‍💻 Nombre:</span> {data.name}
+              <div className="flex flex-col gap-1">
+                <span className="font-semibold">📅 Fecha:</span>{" "}
+                <span className="text-gray-700 dark:text-gray-300">
+                  {data.date ? format(data.date, "dd/MM/yyyy") : "No hay fecha"}
+                </span>
               </div>
-              <div>
-                <span className="font-semibold">Proyecto:</span> {data.project}
+              <div className="flex flex-col gap-1">
+                <span className="font-semibold">🏢 Proyecto:</span>{" "}
+                <span className="text-gray-700 dark:text-gray-300">
+                  {data.project}
+                </span>
               </div>
-              <div>
-                <span className="font-semibold">Sprint:</span> {data.sprint}
+              <div className="flex flex-col gap-1">
+                <span className="font-semibold">🏃‍♂️ Sprint:</span>{" "}
+                <span className="text-gray-700 dark:text-gray-300">
+                  {data.sprint}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Completed Activities */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <h2 className="text-lg print:text-base font-semibold mb-4 flex items-center gap-2">
               1. Actividades realizadas (Hoy) ✅
             </h2>
             {data.completedTasks.length > 0 ? (
@@ -161,7 +166,7 @@ export function ReportPreview({ data, isGenerated }: ReportPreviewProps) {
 
           {/* Pending Tasks */}
           <div>
-            <h2 className="text-lg font-semibold mb-4">
+            <h2 className="text-lg print:text-base font-semibold mb-4">
               2. Pendientes por continuar
             </h2>
             {data.pendingTasks.length > 0 ? (
@@ -206,7 +211,7 @@ export function ReportPreview({ data, isGenerated }: ReportPreviewProps) {
 
           {/* Blocks */}
           <div>
-            <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+            <h2 className="text-lg print:text-base font-semibold mb-2 flex items-center gap-2">
               3. Bloqueos / Dificultades ⚠️
             </h2>
             {data.blocks.length > 0 ? (
@@ -229,7 +234,7 @@ export function ReportPreview({ data, isGenerated }: ReportPreviewProps) {
 
           {/* Observations */}
           <div>
-            <h2 className="text-lg font-semibold mb-2">
+            <h2 className="text-lg print:text-base font-semibold mb-2">
               4. Observaciones / Sugerencias
             </h2>
             {data.observations.length > 0 ? (
@@ -252,7 +257,9 @@ export function ReportPreview({ data, isGenerated }: ReportPreviewProps) {
 
           {/* Hours Worked */}
           <div>
-            <h2 className="text-lg font-semibold mb-2">5. Horas trabajadas</h2>
+            <h2 className="text-lg print:text-base font-semibold mb-2">
+              5. Horas trabajadas
+            </h2>
             <p className="text-gray-700 dark:text-gray-300">
               • {data.hoursWorked} horas
             </p>
@@ -260,7 +267,7 @@ export function ReportPreview({ data, isGenerated }: ReportPreviewProps) {
 
           {/* Story Points Summary */}
           <div>
-            <h2 className="text-lg font-semibold mb-2">
+            <h2 className="text-lg print:text-base font-semibold mb-2">
               6. Total Story Points del día
             </h2>
             <div className="space-y-1">
@@ -278,7 +285,7 @@ export function ReportPreview({ data, isGenerated }: ReportPreviewProps) {
           {/* Additional Notes */}
           {data.additionalNotes && (
             <div>
-              <h2 className="text-lg font-semibold mb-2">
+              <h2 className="text-lg print:text-base font-semibold mb-2">
                 Notas adicionales (opcional)
               </h2>
               <div className="border-t border-gray-300 dark:border-gray-600 pt-2">
