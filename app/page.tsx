@@ -269,16 +269,26 @@ export default function ReportBuilder() {
     }));
   };
 
+  const toSentenceCase = (str: string) => {
+    // daniel alejandro fernandez ramos => Daniel Alejandro Fernández Ramos
+    return str
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
   const generatePDF = () => {
     startGenerating(async () => {
       const toastId = toast.loading("Generando PDF...");
       try {
         const currentDate = new Date();
-        const formattedDate = currentDate.toLocaleDateString("es-ES", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        });
+        const name =
+          reportData.name !== ""
+            ? toSentenceCase(reportData.name.trim())
+            : // .replace(/\s+/g, "-")
+              "reporte-diario";
+
+        const formattedDate = format(currentDate, "yyyy-MM-dd");
 
         const res = await generatePDFAction({
           ...reportData,
@@ -289,7 +299,7 @@ export default function ReportBuilder() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `reporte-diario-${formattedDate.replace(/\//g, "-")}.pdf`;
+        a.download = `${name} ${formattedDate.replace(/\//g, "-")}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
