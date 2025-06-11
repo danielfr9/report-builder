@@ -5,35 +5,7 @@ import puppeteer from "puppeteer";
 import chromium from "@sparticuz/chromium";
 import { ReportPreview } from "../report-preview";
 import React from "react";
-
-interface Task {
-  id: string;
-  name: string;
-  storyPoints: number;
-  status: "Completado" | "En Proceso" | "Pendiente";
-  comments: string;
-}
-
-interface PendingTask {
-  id: string;
-  name: string;
-  storyPoints: number;
-  actionPlan: string;
-}
-
-interface ReportData {
-  // date: string;
-  date: Date | null;
-  name: string;
-  project: string;
-  sprint: string;
-  completedTasks: Task[];
-  pendingTasks: PendingTask[];
-  blocks: string[];
-  observations: string[];
-  hoursWorked: number;
-  additionalNotes: string;
-}
+import { ReportData } from "@/lib/interfaces/report-data.interface";
 
 async function getBrowser() {
   if (process.env.VERCEL_ENV === "production") {
@@ -55,6 +27,15 @@ export async function generatePDFAction(
   reportData: ReportData
 ): Promise<Buffer> {
   const { renderToString } = await import("react-dom/server");
+
+  // const cssDir = path.resolve(process.cwd(), ".next/static/css/");
+  // const cssFiles = fs
+  //   .readdirSync(cssDir)
+  //   .filter((file) => file.endsWith(".css"));
+  // let css = "";
+  // for (const file of cssFiles) {
+  //   css += fs.readFileSync(path.join(cssDir, file), "utf8") + "\n";
+  // }
 
   const browser = await getBrowser();
 

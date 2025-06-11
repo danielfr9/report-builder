@@ -2,36 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-
-interface Task {
-  id: string;
-  name: string;
-  storyPoints: number;
-  status: "Completado" | "En Proceso" | "Pendiente";
-  comments: string;
-}
-
-interface PendingTask {
-  id: string;
-  name: string;
-  storyPoints: number;
-  actionPlan: string;
-}
-
-// Update the ReportData interface
-interface ReportData {
-  date: Date | null;
-  name: string;
-  project: string;
-  sprint: string;
-  completedTasks: Task[];
-  pendingTasks: PendingTask[];
-  blocks: string[]; // Changed from string to string[]
-  observations: string[]; // Changed from string to string[]
-  hoursWorked: number;
-  additionalNotes: string;
-}
+import { ReportData } from "@/lib/interfaces/report-data.interface";
 
 interface ReportPreviewProps {
   data: ReportData;
@@ -82,7 +53,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
             <h1 className="text-center text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Reporte Diario de Programador con Story Points ☕
             </h1>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm print:text-xs print:grid-cols-4">
               <div className="flex flex-col gap-1">
                 <span className="font-semibold">👨‍💻 Nombre:</span>{" "}
                 <span className="text-gray-700 dark:text-gray-300">
@@ -104,7 +75,13 @@ export function ReportPreview({ data }: ReportPreviewProps) {
               <div className="flex flex-col gap-1">
                 <span className="font-semibold">🏃‍♂️ Sprint:</span>{" "}
                 <span className="text-gray-700 dark:text-gray-300">
-                  {data.sprint}
+                  {data.sprint.from
+                    ? format(data.sprint.from, "dd/MM/yyyy")
+                    : "No hay fecha"}
+                  -{" "}
+                  {data.sprint.to
+                    ? format(data.sprint.to, "dd/MM/yyyy")
+                    : "No hay fecha"}
                 </span>
               </div>
             </div>
@@ -116,7 +93,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
               1. Actividades realizadas (Hoy) ✅
             </h2>
             {data.completedTasks.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto text-xs">
                 <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-800">
@@ -158,7 +135,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
                 </table>
               </div>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 italic">
+              <p className="text-gray-500 dark:text-gray-400 italic text-sm">
                 No hay actividades registradas.
               </p>
             )}
@@ -170,7 +147,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
               2. Pendientes por continuar
             </h2>
             {data.pendingTasks.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto text-xs">
                 <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-800">
@@ -203,7 +180,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
                 </table>
               </div>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 italic">
+              <p className="text-gray-500 dark:text-gray-400 italic text-sm">
                 No hay tareas pendientes.
               </p>
             )}
@@ -215,7 +192,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
               3. Bloqueos / Dificultades ⚠️
             </h2>
             {data.blocks.length > 0 ? (
-              <ul className="list-disc pl-5 space-y-1">
+              <ul className="list-disc pl-5 space-y-1 text-xs">
                 {data.blocks.map((block, index) => (
                   <li
                     key={`block-${index}`}
@@ -226,7 +203,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 italic">
+              <p className="text-gray-500 dark:text-gray-400 italic text-sm">
                 No hay bloqueos registrados.
               </p>
             )}
@@ -238,7 +215,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
               4. Observaciones / Sugerencias
             </h2>
             {data.observations.length > 0 ? (
-              <ul className="list-disc pl-5 space-y-1">
+              <ul className="list-disc pl-5 space-y-1 text-xs">
                 {data.observations.map((observation, index) => (
                   <li
                     key={`observation-${index}`}
@@ -249,7 +226,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 italic">
+              <p className="text-gray-500 dark:text-gray-400 italic text-sm">
                 No hay observaciones registradas.
               </p>
             )}
@@ -260,7 +237,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
             <h2 className="text-lg print:text-base font-semibold mb-2">
               5. Horas trabajadas
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <p className="text-gray-700 dark:text-gray-300 text-xs">
               • {data.hoursWorked} horas
             </p>
           </div>
@@ -271,11 +248,11 @@ export function ReportPreview({ data }: ReportPreviewProps) {
               6. Total Story Points del día
             </h2>
             <div className="space-y-1">
-              <p className="text-gray-700 dark:text-gray-300">
+              <p className="text-gray-700 dark:text-gray-300 text-xs">
                 • ✅ Completados: {totalCompletedPoints} pts
               </p>
               {totalInProgressPoints > 0 && (
-                <p className="text-gray-700 dark:text-gray-300">
+                <p className="text-gray-700 dark:text-gray-300 text-xs">
                   • 🔄 En progreso: {totalInProgressPoints} pts
                 </p>
               )}
@@ -289,7 +266,7 @@ export function ReportPreview({ data }: ReportPreviewProps) {
                 Notas adicionales (opcional)
               </h2>
               <div className="border-t border-gray-300 dark:border-gray-600 pt-2">
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-xs">
                   {data.additionalNotes}
                 </p>
               </div>

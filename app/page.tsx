@@ -41,41 +41,31 @@ import { Calendar } from "@/components/ui/calendar";
 import { es } from "date-fns/locale";
 import { format, parse } from "date-fns";
 import { generatePDFAction } from "./actions/generate-pdf";
+import { DateRange } from "react-day-picker";
+import {
+  PendingTask,
+  ReportData,
+  Task,
+} from "@/lib/interfaces/report-data.interface";
 
-interface Task {
-  id: string;
-  name: string;
-  storyPoints: number;
-  status: "Completado" | "En Proceso" | "Pendiente";
-  comments: string;
+interface LocalStorageData {
+  date?: string | null;
+  name?: string;
+  project?: string;
+  sprint?: {
+    from?: string | null;
+    to?: string | null;
+  };
 }
-
-interface PendingTask {
-  id: string;
-  name: string;
-  storyPoints: number;
-  actionPlan: string;
-}
-
-interface ReportData {
-  date: Date | null;
-  name: string;
-  project: string;
-  sprint: string;
-  completedTasks: Task[];
-  pendingTasks: PendingTask[];
-  blocks: string[];
-  observations: string[];
-  hoursWorked: number;
-  additionalNotes: string;
-}
-
 export default function ReportBuilder() {
   const [reportData, setReportData] = useState<ReportData>({
     date: null,
     name: "",
     project: "",
-    sprint: "",
+    sprint: {
+      from: null,
+      to: null,
+    },
     completedTasks: [],
     pendingTasks: [],
     blocks: [],
@@ -93,11 +83,14 @@ export default function ReportBuilder() {
 
   // Save general information to localStorage
   const saveGeneralInfo = (data: ReportData) => {
-    const generalInfo = {
+    const generalInfo: LocalStorageData = {
       date: data.date ? format(data.date, "dd/MM/yyyy") : null,
       name: data.name,
       project: data.project,
-      sprint: data.sprint,
+      sprint: {
+        from: data.sprint.from ? format(data.sprint.from, "dd/MM/yyyy") : null,
+        to: data.sprint.to ? format(data.sprint.to, "dd/MM/yyyy") : null,
+      },
     };
 
     try {
@@ -112,7 +105,7 @@ export default function ReportBuilder() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        const generalInfo = JSON.parse(saved);
+        const generalInfo: LocalStorageData = JSON.parse(saved);
 
         const parsedDate = generalInfo.date
           ? parse(generalInfo.date, "dd/MM/yyyy", new Date())
@@ -123,7 +116,14 @@ export default function ReportBuilder() {
           date: parsedDate,
           name: generalInfo.name || "",
           project: generalInfo.project || "",
-          sprint: generalInfo.sprint || "",
+          sprint: {
+            from: generalInfo.sprint?.from
+              ? parse(generalInfo.sprint?.from, "dd/MM/yyyy", new Date())
+              : null,
+            to: generalInfo.sprint?.to
+              ? parse(generalInfo.sprint?.to, "dd/MM/yyyy", new Date())
+              : null,
+          },
         }));
       }
     } catch (error) {
@@ -150,7 +150,10 @@ export default function ReportBuilder() {
         date: null,
         name: "",
         project: "",
-        sprint: "",
+        sprint: {
+          from: null,
+          to: null,
+        },
       }));
       toast.success("Información general borrada");
     } catch (error) {
@@ -466,7 +469,53 @@ export default function ReportBuilder() {
                 </div>
                 <div>
                   <Label htmlFor="sprint">Sprint</Label>
-                  <Input
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="sprint-input"
+                        variant="outline"
+                        className={cn(
+                          "h-10 w-full justify-start pr-10 text-left font-normal",
+                          !reportData.sprint && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                        {reportData.sprint.from ? (
+                          reportData.sprint.to ? (
+                            <>
+                              {format(reportData.sprint.from, "LLL dd, y")} -{" "}
+                              {format(reportData.sprint.to, "LLL dd, y")}
+                            </>
+                          ) : (
+                            format(reportData.sprint.from, "LLL dd, y")
+                          )
+                        ) : (
+                          <span>Selecciona un rango de fechas</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        autoFocus
+                        mode="range"
+                        defaultMonth={reportData.sprint.from || undefined}
+                        selected={reportData.sprint as DateRange}
+                        onSelect={(date: DateRange | undefined) => {
+                          if (date) {
+                            setReportData((prev) => ({
+                              ...prev,
+                              sprint: {
+                                from: date.from || null,
+                                to: date.to || null,
+                              },
+                            }));
+                          }
+                        }}
+                        numberOfMonths={2}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {/* <Input
                     id="sprint"
                     placeholder="Ej: 09 Junio - 13 Junio"
                     value={reportData.sprint}
@@ -476,8 +525,12 @@ export default function ReportBuilder() {
                         sprint: e.target.value,
                       }))
                     }
-                  />
+                  /> */}
                 </div>
+                <small className="col-span-2 text-xs text-gray-500 inline-block ml-auto">
+                  *Esta información se guardará localmente para que no tengas
+                  que volver a ingresarla cada vez que abras la página.
+                </small>
               </CardContent>
             </Card>
 
