@@ -271,61 +271,39 @@ export default function ReportBuilder() {
 
   const generatePDF = () => {
     startGenerating(async () => {
-      const pdfPromise = async () => {
-        try {
-          const currentDate = new Date();
-          const formattedDate = currentDate.toLocaleDateString("es-ES", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          });
+      const toastId = toast.loading("Generando PDF...");
+      try {
+        const currentDate = new Date();
+        const formattedDate = currentDate.toLocaleDateString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
 
-          // const res = await fetch("/api/generate-pdf", {
-          //   method: "POST",
-          //   body: JSON.stringify({
-          //     ...reportData,
-          //     date: reportData.date
-          //       ? format(reportData.date, "dd/MM/yyyy")
-          //       : null,
-          //   }),
-          //   headers: { "Content-Type": "application/json" },
-          // });
+        const res = await generatePDFAction({
+          ...reportData,
+          date: reportData.date,
+        });
 
-          // if (!res.ok) {
-          //   throw new Error("Failed to generate PDF");
-          // }
-
-          const res = await generatePDFAction({
-            ...reportData,
-            date: reportData.date,
-          });
-
-          const blob = new Blob([res], { type: "application/pdf" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `reporte-diario-${formattedDate.replace(
-            /\//g,
-            "-"
-          )}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        } catch (error) {
-          toast.error("Error al generar el PDF", {
-            description: "Por favor, inténtalo de nuevo.",
-          });
-        }
-      };
-
-      const re = toast.promise(pdfPromise, {
-        loading: "Generando PDF...",
-        success: "PDF generado correctamente",
-        error: "Error al generar el PDF",
-      });
-
-      await re.unwrap();
+        const blob = new Blob([res], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `reporte-diario-${formattedDate.replace(/\//g, "-")}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.dismiss(toastId);
+        toast.success("PDF generado correctamente", {
+          duration: 2000,
+        });
+      } catch (error) {
+        toast.dismiss(toastId);
+        toast.error("Error al generar el PDF", {
+          description: "Por favor, inténtalo de nuevo.",
+        });
+      }
     });
   };
 
@@ -884,7 +862,7 @@ export default function ReportBuilder() {
                 <Button
                   onClick={generatePDF}
                   disabled={isGenerating}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 fixed bottom-4 right-4"
                 >
                   <>
                     {isGenerating ? (
