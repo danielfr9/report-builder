@@ -47,6 +47,24 @@ import {
   ReportData,
   Task,
 } from "@/lib/interfaces/report-data.interface";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVerticalIcon } from "lucide-react";
 
 interface LocalStorageData {
   date?: string | null;
@@ -57,6 +75,343 @@ interface LocalStorageData {
     to?: string | null;
   };
 }
+
+// Sortable Task Item Component (moved outside main component)
+interface SortableTaskItemProps {
+  task: Task;
+  updateTask: (id: string, field: keyof Task, value: any) => void;
+  removeTask: (id: string) => void;
+}
+
+const SortableTaskItem = ({
+  task,
+  updateTask,
+  removeTask,
+}: SortableTaskItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border rounded-lg p-4 space-y-3 bg-background ${
+        isDragging ? "z-50 shadow-lg" : ""
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="cursor-grab active:cursor-grabbing touch-none h-8 w-8 p-0"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVerticalIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="flex-1 space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <Label>Tarea</Label>
+              <Input
+                placeholder="Descripción de la tarea"
+                value={task.name}
+                onChange={(e) => updateTask(task.id, "name", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Story Points</Label>
+              <Input
+                type="number"
+                min="1"
+                max="13"
+                value={task.storyPoints}
+                onChange={(e) =>
+                  updateTask(
+                    task.id,
+                    "storyPoints",
+                    Number.parseInt(e.target.value) || 1
+                  )
+                }
+              />
+            </div>
+            <div>
+              <Label>Estado</Label>
+              <Select
+                value={task.status}
+                onValueChange={(value) => updateTask(task.id, "status", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Completado">Completado</SelectItem>
+                  <SelectItem value="En Proceso">En Proceso</SelectItem>
+                  <SelectItem value="Pendiente">Pendiente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>Comentarios / PR</Label>
+            <Textarea
+              placeholder="Comentarios adicionales o enlaces a PR"
+              value={task.comments}
+              onChange={(e) => updateTask(task.id, "comments", e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="flex items-center">
+          <Button variant="ghost" size="sm" onClick={() => removeTask(task.id)}>
+            <Trash2Icon className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Sortable Pending Task Item Component (moved outside main component)
+interface SortablePendingTaskItemProps {
+  task: PendingTask;
+  updateTask: (id: string, field: keyof PendingTask, value: any) => void;
+  removeTask: (id: string) => void;
+}
+
+const SortablePendingTaskItem = ({
+  task,
+  updateTask,
+  removeTask,
+}: SortablePendingTaskItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border rounded-lg p-4 space-y-3 bg-background ${
+        isDragging ? "z-50 shadow-lg" : ""
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="cursor-grab active:cursor-grabbing touch-none h-8 w-8 p-0"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVerticalIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="flex-1 space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <Label>Tarea</Label>
+              <Input
+                placeholder="Descripción de la tarea pendiente"
+                value={task.name}
+                onChange={(e) => updateTask(task.id, "name", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Story Points</Label>
+              <Input
+                type="number"
+                min="1"
+                max="13"
+                value={task.storyPoints}
+                onChange={(e) =>
+                  updateTask(
+                    task.id,
+                    "storyPoints",
+                    Number.parseInt(e.target.value) || 1
+                  )
+                }
+              />
+            </div>
+          </div>
+          <div>
+            <Label>Plan de Acción</Label>
+            <Textarea
+              placeholder="¿Qué harás para completar esta tarea?"
+              value={task.actionPlan}
+              onChange={(e) =>
+                updateTask(task.id, "actionPlan", e.target.value)
+              }
+            />
+          </div>
+        </div>
+        <div className="flex items-center">
+          <Button variant="ghost" size="sm" onClick={() => removeTask(task.id)}>
+            <Trash2Icon className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Sortable Block Item Component
+interface SortableBlockItemProps {
+  block: string;
+  index: number;
+  updateBlock: (index: number, value: string) => void;
+  removeBlock: (index: number) => void;
+}
+
+const SortableBlockItem = ({
+  block,
+  index,
+  updateBlock,
+  removeBlock,
+}: SortableBlockItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `block-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-start bg-background border rounded-lg p-3 ${
+        isDragging ? "z-50 shadow-lg" : ""
+      }`}
+    >
+      <div className="flex items-center gap-2 mr-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="cursor-grab active:cursor-grabbing touch-none h-8 w-8 p-0"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVerticalIcon className="w-4 h-4" />
+        </Button>
+      </div>
+      <Textarea
+        placeholder="Describe un bloqueo o dificultad encontrada"
+        value={block}
+        onChange={(e) => updateBlock(index, e.target.value)}
+        className="flex-1"
+      />
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => removeBlock(index)}
+        className="ml-2"
+      >
+        <Trash2Icon className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+};
+
+// Sortable Observation Item Component
+interface SortableObservationItemProps {
+  observation: string;
+  index: number;
+  updateObservation: (index: number, value: string) => void;
+  removeObservation: (index: number) => void;
+}
+
+const SortableObservationItem = ({
+  observation,
+  index,
+  updateObservation,
+  removeObservation,
+}: SortableObservationItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `observation-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-start bg-background border rounded-lg p-3 ${
+        isDragging ? "z-50 shadow-lg" : ""
+      }`}
+    >
+      <div className="flex items-center gap-2 mr-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="cursor-grab active:cursor-grabbing touch-none h-8 w-8 p-0"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVerticalIcon className="w-4 h-4" />
+        </Button>
+      </div>
+      <Textarea
+        placeholder="Observación o sugerencia adicional"
+        value={observation}
+        onChange={(e) => updateObservation(index, e.target.value)}
+        className="flex-1"
+      />
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => removeObservation(index)}
+        className="ml-2"
+      >
+        <Trash2Icon className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+};
+
 export default function ReportBuilder() {
   const [reportData, setReportData] = useState<ReportData>({
     date: null,
@@ -80,6 +435,98 @@ export default function ReportBuilder() {
 
   // Keys for localStorage
   const STORAGE_KEY = "report-builder-general-info";
+
+  // DnD Kit sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end for completed tasks
+  const handleCompletedTasksDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setReportData((prev) => {
+        const oldIndex = prev.completedTasks.findIndex(
+          (task) => task.id === active.id
+        );
+        const newIndex = prev.completedTasks.findIndex(
+          (task) => task.id === over?.id
+        );
+
+        return {
+          ...prev,
+          completedTasks: arrayMove(prev.completedTasks, oldIndex, newIndex),
+        };
+      });
+    }
+  };
+
+  // Handle drag end for pending tasks
+  const handlePendingTasksDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setReportData((prev) => {
+        const oldIndex = prev.pendingTasks.findIndex(
+          (task) => task.id === active.id
+        );
+        const newIndex = prev.pendingTasks.findIndex(
+          (task) => task.id === over?.id
+        );
+
+        return {
+          ...prev,
+          pendingTasks: arrayMove(prev.pendingTasks, oldIndex, newIndex),
+        };
+      });
+    }
+  };
+
+  // Handle drag end for blocks
+  const handleBlocksDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setReportData((prev) => {
+        const activeIndex = parseInt(
+          active.id.toString().replace("block-", "")
+        );
+        const overIndex = parseInt(
+          over?.id.toString().replace("block-", "") || "0"
+        );
+
+        return {
+          ...prev,
+          blocks: arrayMove(prev.blocks, activeIndex, overIndex),
+        };
+      });
+    }
+  };
+
+  // Handle drag end for observations
+  const handleObservationsDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setReportData((prev) => {
+        const activeIndex = parseInt(
+          active.id.toString().replace("observation-", "")
+        );
+        const overIndex = parseInt(
+          over?.id.toString().replace("observation-", "") || "0"
+        );
+
+        return {
+          ...prev,
+          observations: arrayMove(prev.observations, activeIndex, overIndex),
+        };
+      });
+    }
+  };
 
   // Save general information to localStorage
   const saveGeneralInfo = (data: ReportData) => {
@@ -529,7 +976,7 @@ export default function ReportBuilder() {
                   <div>
                     <CardTitle>Actividades Realizadas (Hoy)</CardTitle>
                     <CardDescription>
-                      Tareas completadas y en progreso
+                      Tareas completadas y en progreso • Arrastra para reordenar
                     </CardDescription>
                   </div>
                   <Button onClick={addCompletedTask} size="sm">
@@ -539,93 +986,25 @@ export default function ReportBuilder() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {reportData.completedTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="border rounded-lg p-4 space-y-3"
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleCompletedTasksDragEnd}
+                >
+                  <SortableContext
+                    items={reportData.completedTasks.map((task) => task.id)}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <div className="flex justify-between items-start">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 flex-1">
-                        <div>
-                          <Label>Tarea</Label>
-                          <Input
-                            placeholder="Descripción de la tarea"
-                            value={task.name}
-                            onChange={(e) =>
-                              updateCompletedTask(
-                                task.id,
-                                "name",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label>Story Points</Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            max="13"
-                            value={task.storyPoints}
-                            onChange={(e) =>
-                              updateCompletedTask(
-                                task.id,
-                                "storyPoints",
-                                Number.parseInt(e.target.value) || 1
-                              )
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label>Estado</Label>
-                          <Select
-                            value={task.status}
-                            onValueChange={(value) =>
-                              updateCompletedTask(task.id, "status", value)
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Completado">
-                                Completado
-                              </SelectItem>
-                              <SelectItem value="En Proceso">
-                                En Proceso
-                              </SelectItem>
-                              <SelectItem value="Pendiente">
-                                Pendiente
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeCompletedTask(task.id)}
-                        className="ml-2"
-                      >
-                        <Trash2Icon className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div>
-                      <Label>Comentarios / PR</Label>
-                      <Textarea
-                        placeholder="Comentarios adicionales o enlaces a PR"
-                        value={task.comments}
-                        onChange={(e) =>
-                          updateCompletedTask(
-                            task.id,
-                            "comments",
-                            e.target.value
-                          )
-                        }
+                    {reportData.completedTasks.map((task) => (
+                      <SortableTaskItem
+                        key={task.id}
+                        task={task}
+                        updateTask={updateCompletedTask}
+                        removeTask={removeCompletedTask}
                       />
-                    </div>
-                  </div>
-                ))}
+                    ))}
+                  </SortableContext>
+                </DndContext>
                 {reportData.completedTasks.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
                     No hay tareas agregadas. Haz clic en "Agregar Tarea" para
@@ -642,7 +1021,7 @@ export default function ReportBuilder() {
                   <div>
                     <CardTitle>Pendientes por Continuar</CardTitle>
                     <CardDescription>
-                      Tareas que continuarás mañana
+                      Tareas que continuarás mañana • Arrastra para reordenar
                     </CardDescription>
                   </div>
                   <Button onClick={addPendingTask} size="sm">
@@ -652,65 +1031,25 @@ export default function ReportBuilder() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {reportData.pendingTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="border rounded-lg p-4 space-y-3"
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handlePendingTasksDragEnd}
+                >
+                  <SortableContext
+                    items={reportData.pendingTasks.map((task) => task.id)}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <div className="flex justify-between items-start">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
-                        <div>
-                          <Label>Tarea</Label>
-                          <Input
-                            placeholder="Descripción de la tarea pendiente"
-                            value={task.name}
-                            onChange={(e) =>
-                              updatePendingTask(task.id, "name", e.target.value)
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label>Story Points</Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            max="13"
-                            value={task.storyPoints}
-                            onChange={(e) =>
-                              updatePendingTask(
-                                task.id,
-                                "storyPoints",
-                                Number.parseInt(e.target.value) || 1
-                              )
-                            }
-                          />
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removePendingTask(task.id)}
-                        className="ml-2"
-                      >
-                        <Trash2Icon className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div>
-                      <Label>Plan de Acción</Label>
-                      <Textarea
-                        placeholder="¿Qué harás para completar esta tarea?"
-                        value={task.actionPlan}
-                        onChange={(e) =>
-                          updatePendingTask(
-                            task.id,
-                            "actionPlan",
-                            e.target.value
-                          )
-                        }
+                    {reportData.pendingTasks.map((task) => (
+                      <SortablePendingTaskItem
+                        key={task.id}
+                        task={task}
+                        updateTask={updatePendingTask}
+                        removeTask={removePendingTask}
                       />
-                    </div>
-                  </div>
-                ))}
+                    ))}
+                  </SortableContext>
+                </DndContext>
                 {reportData.pendingTasks.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
                     No hay tareas pendientes agregadas.
@@ -730,38 +1069,43 @@ export default function ReportBuilder() {
               <CardContent className="space-y-4">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                    <Label htmlFor="blocks">
+                      Bloqueos / Dificultades • Arrastra para reordenar
+                    </Label>
                     <Button onClick={addBlock} size="sm" variant="outline">
                       <PlusIcon className="w-4 h-4 mr-2" />
                       Agregar Bloqueo
                     </Button>
                   </div>
-                  {reportData.blocks.map((block, index) => (
-                    <div
-                      key={`block-${index}`}
-                      className="flex items-start mb-2"
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleBlocksDragEnd}
+                  >
+                    <SortableContext
+                      items={reportData.blocks.map(
+                        (_, index) => `block-${index}`
+                      )}
+                      strategy={verticalListSortingStrategy}
                     >
-                      <Textarea
-                        placeholder="Describe un bloqueo o dificultad encontrada"
-                        value={block}
-                        onChange={(e) => updateBlock(index, e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeBlock(index)}
-                        className="ml-2"
-                      >
-                        <Trash2Icon className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                      <div className="space-y-2">
+                        {reportData.blocks.map((block, index) => (
+                          <SortableBlockItem
+                            key={`block-${index}`}
+                            block={block}
+                            index={index}
+                            updateBlock={updateBlock}
+                            removeBlock={removeBlock}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <Label htmlFor="observations">
-                      Observaciones / Sugerencias
+                      Observaciones / Sugerencias • Arrastra para reordenar
                     </Label>
                     <Button
                       onClick={addObservation}
@@ -772,29 +1116,30 @@ export default function ReportBuilder() {
                       Agregar Observación
                     </Button>
                   </div>
-                  {reportData.observations.map((observation, index) => (
-                    <div
-                      key={`observation-${index}`}
-                      className="flex items-start mb-2"
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleObservationsDragEnd}
+                  >
+                    <SortableContext
+                      items={reportData.observations.map(
+                        (_, index) => `observation-${index}`
+                      )}
+                      strategy={verticalListSortingStrategy}
                     >
-                      <Textarea
-                        placeholder="Observación o sugerencia adicional"
-                        value={observation}
-                        onChange={(e) =>
-                          updateObservation(index, e.target.value)
-                        }
-                        className="flex-1"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeObservation(index)}
-                        className="ml-2"
-                      >
-                        <Trash2Icon className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                      <div className="space-y-2">
+                        {reportData.observations.map((observation, index) => (
+                          <SortableObservationItem
+                            key={`observation-${index}`}
+                            observation={observation}
+                            index={index}
+                            updateObservation={updateObservation}
+                            removeObservation={removeObservation}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
                 </div>
                 <div>
                   <Label htmlFor="hours">Horas Trabajadas</Label>
