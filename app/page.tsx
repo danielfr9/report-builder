@@ -14,7 +14,7 @@ export default function ReportBuilder() {
       {reportType === "daily" ? <DailyReportScreen /> : <WeeklyReportScreen />}
 
       {/* Pill-like menu/navigation at the bottom of the screen */}
-      <div className="fixed bottom-4 left-0 right-0 bg-background border border-foreground/10 rounded-full p-4 shadow-lg w-6/12 mx-auto">
+      <div className="fixed bottom-4 left-0 right-0 bg-background border border-foreground/10 rounded-full p-4 shadow-lg w-fit px-10 mx-auto">
         <div className="flex justify-center gap-4">
           <Button
             variant={reportType === "daily" ? "default" : "outline"}
