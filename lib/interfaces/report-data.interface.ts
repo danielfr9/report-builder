@@ -30,7 +30,6 @@ export interface DailyReportData {
 }
 
 export interface DailyReportLocalStorageData {
-  date?: string | null;
   name?: string;
   project?: string;
   sprint?: {

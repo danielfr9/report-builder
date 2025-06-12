@@ -409,7 +409,7 @@ const SortableObservationItem = ({
 
 export default function DailyReportScreen() {
   const [reportData, setReportData] = useState<DailyReportData>({
-    date: null,
+    date: new Date(),
     name: "",
     project: "",
     sprint: {
@@ -541,7 +541,6 @@ export default function DailyReportScreen() {
   // Save daily-specific data to localStorage
   const saveData = (data: DailyReportData) => {
     const dataToSave: DailyReportLocalStorageData = {
-      date: data.date ? format(data.date, "dd/MM/yyyy") : null,
       name: data.name,
       project: data.project,
       sprint: {
@@ -606,13 +605,9 @@ export default function DailyReportScreen() {
       if (saved) {
         const savedData: DailyReportLocalStorageData = JSON.parse(saved);
 
-        const parsedDate = savedData.date
-          ? parse(savedData.date, "dd/MM/yyyy", new Date())
-          : null;
-
         setReportData((prev) => ({
           ...prev,
-          date: parsedDate,
+          date: new Date(),
           name: sharedHeader.name,
           project: sharedHeader.project,
           sprint: sharedHeader.sprint,
@@ -627,6 +622,7 @@ export default function DailyReportScreen() {
         // If no saved data, at least load the shared header
         setReportData((prev) => ({
           ...prev,
+          date: new Date(),
           name: sharedHeader.name,
           project: sharedHeader.project,
           sprint: sharedHeader.sprint,
