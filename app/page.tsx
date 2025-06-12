@@ -74,6 +74,12 @@ interface LocalStorageData {
     from?: string | null;
     to?: string | null;
   };
+  completedTasks?: Task[];
+  pendingTasks?: PendingTask[];
+  blocks?: string[];
+  observations?: string[];
+  hoursWorked?: number;
+  additionalNotes?: string;
 }
 
 // Sortable Task Item Component (moved outside main component)
@@ -434,7 +440,7 @@ export default function ReportBuilder() {
   const [isGenerating, startGenerating] = useTransition();
 
   // Keys for localStorage
-  const STORAGE_KEY = "report-builder-general-info";
+  const STORAGE_KEY = "report-builder-data";
 
   // DnD Kit sensors
   const sensors = useSensors(
@@ -528,9 +534,9 @@ export default function ReportBuilder() {
     }
   };
 
-  // Save general information to localStorage
-  const saveGeneralInfo = (data: ReportData) => {
-    const generalInfo: LocalStorageData = {
+  // Save data to localStorage
+  const saveData = (data: ReportData) => {
+    const dataToSave: LocalStorageData = {
       date: data.date ? format(data.date, "dd/MM/yyyy") : null,
       name: data.name,
       project: data.project,
@@ -538,39 +544,51 @@ export default function ReportBuilder() {
         from: data.sprint.from ? format(data.sprint.from, "dd/MM/yyyy") : null,
         to: data.sprint.to ? format(data.sprint.to, "dd/MM/yyyy") : null,
       },
+      completedTasks: data.completedTasks,
+      pendingTasks: data.pendingTasks,
+      blocks: data.blocks,
+      observations: data.observations,
+      hoursWorked: data.hoursWorked,
+      additionalNotes: data.additionalNotes,
     };
 
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(generalInfo));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     } catch (error) {
       console.error("Error saving to localStorage:", error);
     }
   };
 
-  // Load general information from localStorage
-  const loadGeneralInfo = () => {
+  // Load data from localStorage
+  const loadData = () => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        const generalInfo: LocalStorageData = JSON.parse(saved);
+        const savedData: LocalStorageData = JSON.parse(saved);
 
-        const parsedDate = generalInfo.date
-          ? parse(generalInfo.date, "dd/MM/yyyy", new Date())
+        const parsedDate = savedData.date
+          ? parse(savedData.date, "dd/MM/yyyy", new Date())
           : null;
 
         setReportData((prev) => ({
           ...prev,
           date: parsedDate,
-          name: generalInfo.name || "",
-          project: generalInfo.project || "",
+          name: savedData.name || "",
+          project: savedData.project || "",
           sprint: {
-            from: generalInfo.sprint?.from
-              ? parse(generalInfo.sprint?.from, "dd/MM/yyyy", new Date())
+            from: savedData.sprint?.from
+              ? parse(savedData.sprint?.from, "dd/MM/yyyy", new Date())
               : null,
-            to: generalInfo.sprint?.to
-              ? parse(generalInfo.sprint?.to, "dd/MM/yyyy", new Date())
+            to: savedData.sprint?.to
+              ? parse(savedData.sprint?.to, "dd/MM/yyyy", new Date())
               : null,
           },
+          completedTasks: savedData.completedTasks || [],
+          pendingTasks: savedData.pendingTasks || [],
+          blocks: savedData.blocks || [],
+          observations: savedData.observations || [],
+          hoursWorked: savedData.hoursWorked || 8,
+          additionalNotes: savedData.additionalNotes || "",
         }));
       }
     } catch (error) {
@@ -580,15 +598,26 @@ export default function ReportBuilder() {
 
   // Load data when component mounts
   useEffect(() => {
-    loadGeneralInfo();
+    loadData();
   }, []);
 
-  // Save general info whenever it changes
+  // Save data whenever it changes
   useEffect(() => {
-    saveGeneralInfo(reportData);
-  }, [reportData.date, reportData.name, reportData.project, reportData.sprint]);
+    saveData(reportData);
+  }, [
+    reportData.date,
+    reportData.name,
+    reportData.project,
+    reportData.sprint,
+    reportData.completedTasks,
+    reportData.pendingTasks,
+    reportData.blocks,
+    reportData.observations,
+    reportData.hoursWorked,
+    reportData.additionalNotes,
+  ]);
 
-  // Clear saved general information
+  // Clear saved data
   const clearSavedInfo = () => {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -601,11 +630,17 @@ export default function ReportBuilder() {
           from: null,
           to: null,
         },
+        completedTasks: [],
+        pendingTasks: [],
+        blocks: [],
+        observations: [],
+        hoursWorked: 8,
+        additionalNotes: "",
       }));
-      toast.success("Información general borrada");
+      toast.success("Datos guardados borrados");
     } catch (error) {
       console.error("Error clearing localStorage:", error);
-      toast.error("Error al borrar la información");
+      toast.error("Error al borrar los datos");
     }
   };
 
@@ -963,8 +998,8 @@ export default function ReportBuilder() {
                   /> */}
                 </div>
                 <small className="col-span-2 text-xs text-gray-500 inline-block ml-auto">
-                  *Esta información se guardará localmente para que no tengas
-                  que volver a ingresarla cada vez que abras la página.
+                  *Todos los datos del reporte se guardan automáticamente en tu
+                  navegador.
                 </small>
               </CardContent>
             </Card>
