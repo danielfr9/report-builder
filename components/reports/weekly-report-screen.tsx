@@ -66,9 +66,10 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon } from "lucide-react";
-
-// Keys for localStorage
-const STORAGE_KEY = "weekly-report-builder-data";
+import {
+  SHARED_HEADER_KEY,
+  WEEKLY_REPORT_STORAGE_KEY,
+} from "@/lib/constants/localstorage-keys";
 
 // Sortable Task Item Component (moved outside main component)
 interface SortableTaskItemProps {
@@ -540,7 +541,25 @@ export default function WeeklyReportScreen() {
     }
   };
 
-  // Save data to localStorage
+  // Save shared header data to localStorage
+  const saveSharedHeader = (data: DailyReportData) => {
+    const sharedHeader = {
+      name: data.name,
+      project: data.project,
+      sprint: {
+        from: data.sprint.from ? format(data.sprint.from, "dd/MM/yyyy") : null,
+        to: data.sprint.to ? format(data.sprint.to, "dd/MM/yyyy") : null,
+      },
+    };
+
+    try {
+      localStorage.setItem(SHARED_HEADER_KEY, JSON.stringify(sharedHeader));
+    } catch (error) {
+      console.error("Error saving shared header to localStorage:", error);
+    }
+  };
+
+  // Save weekly-specific data to localStorage
   const saveData = (data: DailyReportData) => {
     const dataToSave: DailyReportLocalStorageData = {
       date: data.date ? format(data.date, "dd/MM/yyyy") : null,
@@ -559,16 +578,52 @@ export default function WeeklyReportScreen() {
     };
 
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      localStorage.setItem(
+        WEEKLY_REPORT_STORAGE_KEY,
+        JSON.stringify(dataToSave)
+      );
+      // Also save shared header
+      saveSharedHeader(data);
     } catch (error) {
       console.error("Error saving to localStorage:", error);
     }
   };
 
+  // Load shared header data from localStorage
+  const loadSharedHeader = () => {
+    try {
+      const savedHeader = localStorage.getItem(SHARED_HEADER_KEY);
+      if (savedHeader) {
+        const headerData = JSON.parse(savedHeader);
+        return {
+          name: headerData.name || "",
+          project: headerData.project || "",
+          sprint: {
+            from: headerData.sprint?.from
+              ? parse(headerData.sprint?.from, "dd/MM/yyyy", new Date())
+              : null,
+            to: headerData.sprint?.to
+              ? parse(headerData.sprint?.to, "dd/MM/yyyy", new Date())
+              : null,
+          },
+        };
+      }
+    } catch (error) {
+      console.error("Error loading shared header from localStorage:", error);
+    }
+    return {
+      name: "",
+      project: "",
+      sprint: { from: null, to: null },
+    };
+  };
+
   // Load data from localStorage
   const loadData = () => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const sharedHeader = loadSharedHeader();
+      const saved = localStorage.getItem(WEEKLY_REPORT_STORAGE_KEY);
+
       if (saved) {
         const savedData: DailyReportLocalStorageData = JSON.parse(saved);
 
@@ -579,22 +634,23 @@ export default function WeeklyReportScreen() {
         setReportData((prev) => ({
           ...prev,
           date: parsedDate,
-          name: savedData.name || "",
-          project: savedData.project || "",
-          sprint: {
-            from: savedData.sprint?.from
-              ? parse(savedData.sprint?.from, "dd/MM/yyyy", new Date())
-              : null,
-            to: savedData.sprint?.to
-              ? parse(savedData.sprint?.to, "dd/MM/yyyy", new Date())
-              : null,
-          },
+          name: sharedHeader.name,
+          project: sharedHeader.project,
+          sprint: sharedHeader.sprint,
           completedTasks: savedData.completedTasks || [],
           pendingTasks: savedData.pendingTasks || [],
           blocks: savedData.blocks || [],
           observations: savedData.observations || [],
-          hoursWorked: savedData.hoursWorked || 8,
+          hoursWorked: savedData.hoursWorked || 40,
           additionalNotes: savedData.additionalNotes || "",
+        }));
+      } else {
+        // If no saved data, at least load the shared header
+        setReportData((prev) => ({
+          ...prev,
+          name: sharedHeader.name,
+          project: sharedHeader.project,
+          sprint: sharedHeader.sprint,
         }));
       }
     } catch (error) {
@@ -632,7 +688,7 @@ export default function WeeklyReportScreen() {
   // Clear saved data
   const clearSavedInfo = () => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(WEEKLY_REPORT_STORAGE_KEY);
       setReportData((prev) => ({
         ...prev,
         date: null,
