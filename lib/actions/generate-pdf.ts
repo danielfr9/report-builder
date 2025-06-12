@@ -3,9 +3,9 @@
 import puppeteerCore from "puppeteer-core";
 import puppeteer from "puppeteer";
 import chromium from "@sparticuz/chromium";
-import { ReportPreview } from "../report-preview";
+import { DailyReportPreview } from "../../components/reports/daily-report-preview";
 import React from "react";
-import { ReportData } from "@/lib/interfaces/report-data.interface";
+import { DailyReportData } from "@/lib/interfaces/report-data.interface";
 
 async function getBrowser() {
   if (process.env.VERCEL_ENV === "production") {
@@ -24,7 +24,7 @@ async function getBrowser() {
 }
 
 export async function generatePDFAction(
-  reportData: ReportData
+  reportData: DailyReportData
 ): Promise<Buffer> {
   const { renderToString } = await import("react-dom/server");
 
@@ -44,7 +44,7 @@ export async function generatePDFAction(
     await page.setViewport({ width: 1200, height: 800 });
 
     const html = renderToString(
-      React.createElement(ReportPreview, {
+      React.createElement(DailyReportPreview, {
         data: reportData,
       })
     );

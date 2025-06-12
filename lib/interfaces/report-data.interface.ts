@@ -13,7 +13,7 @@ export interface PendingTask {
   actionPlan: string;
 }
 
-export interface ReportData {
+export interface DailyReportData {
   date: Date | null;
   name: string;
   project: string;
@@ -27,4 +27,20 @@ export interface ReportData {
   observations: string[]; // Changed from string to string[]
   hoursWorked: number;
   additionalNotes: string;
+}
+
+export interface DailyReportLocalStorageData {
+  date?: string | null;
+  name?: string;
+  project?: string;
+  sprint?: {
+    from?: string | null;
+    to?: string | null;
+  };
+  completedTasks?: Task[];
+  pendingTasks?: PendingTask[];
+  blocks?: string[];
+  observations?: string[];
+  hoursWorked?: number;
+  additionalNotes?: string;
 }
