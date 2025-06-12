@@ -121,7 +121,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               </div>
             ) : (
               <p className="text-gray-500 dark:text-gray-400 italic text-sm">
-                No hay actividades registradas.
+                No hay actividades realizadas.
               </p>
             )}
           </div>
@@ -189,7 +189,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               </ul>
             ) : (
               <p className="text-gray-500 dark:text-gray-400 italic text-sm">
-                No hay bloqueos registrados.
+                No hay bloqueos o dificultades.
               </p>
             )}
           </div>
@@ -212,7 +212,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               </ul>
             ) : (
               <p className="text-gray-500 dark:text-gray-400 italic text-sm">
-                No hay observaciones registradas.
+                No hay observaciones o sugerencias.
               </p>
             )}
           </div>
