@@ -119,8 +119,8 @@ const SortableTaskItem = ({
           </Button>
         </div>
         <div className="flex-1 space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div className="col-span-3">
               <Label>Tarea</Label>
               <Input
                 placeholder="Descripción de la tarea"
@@ -228,8 +228,8 @@ const SortablePendingTaskItem = ({
           </Button>
         </div>
         <div className="flex-1 space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div className="col-span-3">
               <Label>Tarea</Label>
               <Input
                 placeholder="Descripción de la tarea en progreso"
@@ -700,7 +700,7 @@ export default function WeeklyReportScreen() {
         hoursWorked: 8,
         additionalNotes: "",
       }));
-      toast.success("Datos guardados borrados");
+      toast.success("Datos borrados del navegador");
     } catch (error) {
       console.error("Error clearing localStorage:", error);
       toast.error("Error al borrar los datos");
@@ -912,7 +912,7 @@ export default function WeeklyReportScreen() {
                     size="sm"
                     className="text-xs"
                   >
-                    Limpiar
+                    Limpiar Datos
                   </Button>
                 </div>
               </CardHeader>
