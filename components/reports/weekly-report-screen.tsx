@@ -27,6 +27,8 @@ import {
   Loader2Icon,
   DownloadIcon,
   CalendarIcon,
+  CheckIcon,
+  PencilIcon,
 } from "lucide-react";
 import { WeeklyReportPreview } from "@/components/reports/weekly-report-preview";
 import { toast } from "sonner";
@@ -71,6 +73,202 @@ import {
   WEEKLY_REPORT_STORAGE_KEY,
 } from "@/lib/constants/localstorage-keys";
 
+// Add Task Form Component
+interface AddTaskFormProps {
+  onAdd: (task: Omit<Task, "id">) => void;
+}
+
+const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
+  const [formData, setFormData] = useState<Omit<Task, "id">>({
+    name: "",
+    storyPoints: 1,
+    status: "Completado" as const,
+    comments: "",
+  });
+
+  const handleSubmit = () => {
+    if (formData.name.trim()) {
+      onAdd(formData);
+      setFormData({
+        name: "",
+        storyPoints: 1,
+        status: "Completado" as const,
+        comments: "",
+      });
+    }
+  };
+
+  return (
+    <div className="border-2 border-dashed border-primary/50 rounded-lg p-4 space-y-3 bg-primary/5">
+      <div className="flex items-center">
+        <h3 className="font-medium">Agregar Nueva Tarea</h3>
+      </div>
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="col-span-3">
+            <Label>Tarea</Label>
+            <Input
+              placeholder="Descripción de la tarea"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
+            />
+          </div>
+          <div>
+            <Label>Story Points</Label>
+            <Input
+              type="number"
+              min="1"
+              max="13"
+              value={formData.storyPoints}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  storyPoints: Number.parseInt(e.target.value) || 1,
+                }))
+              }
+            />
+          </div>
+          <div>
+            <Label>Estado</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(
+                value: "Completado" | "En Proceso" | "Pendiente"
+              ) => setFormData((prev) => ({ ...prev, status: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Completado">Completado</SelectItem>
+                <SelectItem value="En Proceso">En Proceso</SelectItem>
+                <SelectItem value="Pendiente">Pendiente</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div>
+          <Label>Comentarios / PR</Label>
+          <Textarea
+            placeholder="Comentarios adicionales o enlaces a PR"
+            value={formData.comments}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, comments: e.target.value }))
+            }
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSubmit} disabled={!formData.name.trim()}>
+            Agregar Tarea
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Add Pending Task Form Component
+interface AddPendingTaskFormProps {
+  onAdd: (task: Omit<PendingTask, "id">) => void;
+}
+
+const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
+  const [formData, setFormData] = useState<{
+    name: string;
+    storyPoints: number;
+    currentStatus: string;
+    nextStep: string;
+  }>({
+    name: "",
+    storyPoints: 1,
+    currentStatus: "En desarrollo",
+    nextStep: "",
+  });
+
+  const handleSubmit = () => {
+    if (formData.name.trim()) {
+      onAdd({
+        name: formData.name,
+        storyPoints: formData.storyPoints,
+        actionPlan: `${formData.currentStatus}|${formData.nextStep}`,
+      });
+      setFormData({
+        name: "",
+        storyPoints: 1,
+        currentStatus: "En desarrollo",
+        nextStep: "",
+      });
+    }
+  };
+
+  return (
+    <div className="border-2 border-dashed border-primary/50 rounded-lg p-4 space-y-3 bg-primary/5">
+      <div className="flex items-center">
+        <h3 className="font-medium">Agregar Nueva Tarea en Progreso</h3>
+      </div>
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="col-span-3">
+            <Label>Tarea</Label>
+            <Input
+              placeholder="Descripción de la tarea en progreso"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
+            />
+          </div>
+          <div>
+            <Label>Story Points</Label>
+            <Input
+              type="number"
+              min="1"
+              max="13"
+              value={formData.storyPoints}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  storyPoints: Number.parseInt(e.target.value) || 1,
+                }))
+              }
+            />
+          </div>
+          <div>
+            <Label>Estado Actual</Label>
+            <Input
+              placeholder="En desarrollo, bloqueado, etc."
+              value={formData.currentStatus}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  currentStatus: e.target.value,
+                }))
+              }
+            />
+          </div>
+        </div>
+        <div>
+          <Label>Próximo Paso</Label>
+          <Textarea
+            placeholder="¿Cuál es el siguiente paso para completar esta tarea?"
+            value={formData.nextStep}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, nextStep: e.target.value }))
+            }
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSubmit} disabled={!formData.name.trim()}>
+            Agregar Tarea
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Sortable Task Item Component (moved outside main component)
 interface SortableTaskItemProps {
   task: Task;
@@ -83,6 +281,7 @@ const SortableTaskItem = ({
   updateTask,
   removeTask,
 }: SortableTaskItemProps) => {
+  const [isEditing, setIsEditing] = useState(false);
   const {
     attributes,
     listeners,
@@ -98,11 +297,109 @@ const SortableTaskItem = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  if (isEditing) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`border rounded-lg p-4 space-y-3 bg-background border-primary ${
+          isDragging ? "z-50 shadow-lg" : ""
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="cursor-grab active:cursor-grabbing touch-none h-8 w-8 p-0"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVerticalIcon className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex-1 space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <div className="col-span-3">
+                <Label>Tarea</Label>
+                <Input
+                  placeholder="Descripción de la tarea"
+                  value={task.name}
+                  onChange={(e) => updateTask(task.id, "name", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>Story Points</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="13"
+                  value={task.storyPoints}
+                  onChange={(e) =>
+                    updateTask(
+                      task.id,
+                      "storyPoints",
+                      Number.parseInt(e.target.value) || 1
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label>Estado</Label>
+                <Select
+                  value={task.status}
+                  onValueChange={(value) =>
+                    updateTask(task.id, "status", value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Completado">Completado</SelectItem>
+                    <SelectItem value="En Proceso">En Proceso</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label>Comentarios / PR</Label>
+              <Textarea
+                placeholder="Comentarios adicionales o enlaces a PR"
+                value={task.comments}
+                onChange={(e) =>
+                  updateTask(task.id, "comments", e.target.value)
+                }
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(false)}
+            >
+              <CheckIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => removeTask(task.id)}
+            >
+              <Trash2Icon className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`border rounded-lg p-4 space-y-3 bg-background ${
+      className={`border rounded-lg p-4 space-y-3 bg-background hover:bg-muted/50 ${
         isDragging ? "z-50 shadow-lg" : ""
       }`}
     >
@@ -121,56 +418,35 @@ const SortableTaskItem = ({
         <div className="flex-1 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             <div className="col-span-3">
-              <Label>Tarea</Label>
-              <Input
-                placeholder="Descripción de la tarea"
-                value={task.name}
-                onChange={(e) => updateTask(task.id, "name", e.target.value)}
-              />
+              <Label className="text-xs text-muted-foreground">Tarea</Label>
+              <p className="text-sm font-medium">
+                {task.name || "Sin descripción"}
+              </p>
             </div>
             <div>
-              <Label>Story Points</Label>
-              <Input
-                type="number"
-                min="1"
-                max="13"
-                value={task.storyPoints}
-                onChange={(e) =>
-                  updateTask(
-                    task.id,
-                    "storyPoints",
-                    Number.parseInt(e.target.value) || 1
-                  )
-                }
-              />
+              <Label className="text-xs text-muted-foreground">
+                Story Points
+              </Label>
+              <p className="text-sm font-semibold">{task.storyPoints} pts</p>
             </div>
             <div>
-              <Label>Estado</Label>
-              <Select
-                value={task.status}
-                onValueChange={(value) => updateTask(task.id, "status", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Completado">Completado</SelectItem>
-                  <SelectItem value="En Proceso">En Proceso</SelectItem>
-                  <SelectItem value="Pendiente">Pendiente</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-xs text-muted-foreground">Estado</Label>
+              <p className="text-sm">{task.status}</p>
             </div>
           </div>
-          <div>
-            <Label>Comentarios / PR</Label>
-            <Textarea
-              placeholder="Comentarios adicionales o enlaces a PR"
-              value={task.comments}
-              onChange={(e) => updateTask(task.id, "comments", e.target.value)}
-            />
-          </div>
+          {task.comments && (
+            <div>
+              <Label className="text-xs text-muted-foreground">
+                Comentarios / PR
+              </Label>
+              <p className="text-sm text-muted-foreground">{task.comments}</p>
+            </div>
+          )}
         </div>
-        <div className="flex items-center">
+        <div className="flex flex-col gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+            <PencilIcon className="w-4 h-4" />
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => removeTask(task.id)}>
             <Trash2Icon className="w-4 h-4" />
           </Button>
@@ -192,6 +468,7 @@ const SortablePendingTaskItem = ({
   updateTask,
   removeTask,
 }: SortablePendingTaskItemProps) => {
+  const [isEditing, setIsEditing] = useState(false);
   const {
     attributes,
     listeners,
@@ -207,11 +484,112 @@ const SortablePendingTaskItem = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const currentStatus = task.actionPlan?.split("|")[0] || "En desarrollo";
+  const nextStep = task.actionPlan?.split("|")[1] || "";
+
+  if (isEditing) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`border rounded-lg p-4 space-y-3 bg-background border-primary ${
+          isDragging ? "z-50 shadow-lg" : ""
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="cursor-grab active:cursor-grabbing touch-none h-8 w-8 p-0"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVerticalIcon className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex-1 space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <div className="col-span-3">
+                <Label>Tarea</Label>
+                <Input
+                  placeholder="Descripción de la tarea en progreso"
+                  value={task.name}
+                  onChange={(e) => updateTask(task.id, "name", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>Story Points</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="13"
+                  value={task.storyPoints}
+                  onChange={(e) =>
+                    updateTask(
+                      task.id,
+                      "storyPoints",
+                      Number.parseInt(e.target.value) || 1
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label>Estado Actual</Label>
+                <Input
+                  placeholder="En desarrollo, bloqueado, etc."
+                  value={currentStatus}
+                  onChange={(e) => {
+                    updateTask(
+                      task.id,
+                      "actionPlan",
+                      `${e.target.value}|${nextStep}`
+                    );
+                  }}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Próximo Paso</Label>
+              <Textarea
+                placeholder="¿Cuál es el siguiente paso para completar esta tarea?"
+                value={nextStep}
+                onChange={(e) => {
+                  updateTask(
+                    task.id,
+                    "actionPlan",
+                    `${currentStatus}|${e.target.value}`
+                  );
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(false)}
+            >
+              <CheckIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => removeTask(task.id)}
+            >
+              <Trash2Icon className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`border rounded-lg p-4 space-y-3 bg-background ${
+      className={`border rounded-lg p-4 space-y-3 bg-background hover:bg-muted/50 ${
         isDragging ? "z-50 shadow-lg" : ""
       }`}
     >
@@ -230,63 +608,37 @@ const SortablePendingTaskItem = ({
         <div className="flex-1 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             <div className="col-span-3">
-              <Label>Tarea</Label>
-              <Input
-                placeholder="Descripción de la tarea en progreso"
-                value={task.name}
-                onChange={(e) => updateTask(task.id, "name", e.target.value)}
-              />
+              <Label className="text-xs text-muted-foreground">Tarea</Label>
+              <p className="text-sm font-medium">
+                {task.name || "Sin descripción"}
+              </p>
             </div>
             <div>
-              <Label>Story Points</Label>
-              <Input
-                type="number"
-                min="1"
-                max="13"
-                value={task.storyPoints}
-                onChange={(e) =>
-                  updateTask(
-                    task.id,
-                    "storyPoints",
-                    Number.parseInt(e.target.value) || 1
-                  )
-                }
-              />
+              <Label className="text-xs text-muted-foreground">
+                Story Points
+              </Label>
+              <p className="text-sm font-semibold">{task.storyPoints} pts</p>
             </div>
             <div>
-              <Label>Estado Actual</Label>
-              <Input
-                placeholder="En desarrollo, bloqueado, etc."
-                value={task.actionPlan.split("|")[0] || "En desarrollo"}
-                onChange={(e) => {
-                  const nextStep = task.actionPlan.split("|")[1] || "";
-                  updateTask(
-                    task.id,
-                    "actionPlan",
-                    `${e.target.value}|${nextStep}`
-                  );
-                }}
-              />
+              <Label className="text-xs text-muted-foreground">
+                Estado Actual
+              </Label>
+              <p className="text-sm">{currentStatus}</p>
             </div>
           </div>
-          <div>
-            <Label>Próximo Paso</Label>
-            <Textarea
-              placeholder="¿Cuál es el siguiente paso para completar esta tarea?"
-              value={task.actionPlan.split("|")[1] || ""}
-              onChange={(e) => {
-                const currentStatus =
-                  task.actionPlan.split("|")[0] || "En desarrollo";
-                updateTask(
-                  task.id,
-                  "actionPlan",
-                  `${currentStatus}|${e.target.value}`
-                );
-              }}
-            />
-          </div>
+          {nextStep && (
+            <div>
+              <Label className="text-xs text-muted-foreground">
+                Próximo Paso
+              </Label>
+              <p className="text-sm text-muted-foreground">{nextStep}</p>
+            </div>
+          )}
         </div>
-        <div className="flex items-center">
+        <div className="flex flex-col gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+            <PencilIcon className="w-4 h-4" />
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => removeTask(task.id)}>
             <Trash2Icon className="w-4 h-4" />
           </Button>
@@ -707,20 +1059,6 @@ export default function WeeklyReportScreen() {
     }
   };
 
-  const addCompletedTask = () => {
-    const newTask: Task = {
-      id: Date.now().toString(),
-      name: "",
-      storyPoints: 1,
-      status: "Completado",
-      comments: "",
-    };
-    setReportData((prev) => ({
-      ...prev,
-      completedTasks: [...prev.completedTasks, newTask],
-    }));
-  };
-
   const updateCompletedTask = (id: string, field: keyof Task, value: any) => {
     setReportData((prev) => ({
       ...prev,
@@ -734,19 +1072,6 @@ export default function WeeklyReportScreen() {
     setReportData((prev) => ({
       ...prev,
       completedTasks: prev.completedTasks.filter((task) => task.id !== id),
-    }));
-  };
-
-  const addPendingTask = () => {
-    const newTask: PendingTask = {
-      id: Date.now().toString(),
-      name: "",
-      storyPoints: 1,
-      actionPlan: "",
-    };
-    setReportData((prev) => ({
-      ...prev,
-      pendingTasks: [...prev.pendingTasks, newTask],
     }));
   };
 
@@ -1069,20 +1394,26 @@ export default function WeeklyReportScreen() {
             {/* Completed Tasks */}
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Tareas Completadas Esta Semana</CardTitle>
-                    <CardDescription>
-                      Tareas completadas durante la semana
-                    </CardDescription>
-                  </div>
-                  <Button onClick={addCompletedTask} size="sm">
-                    <PlusIcon className="w-4 h-4 mr-2" />
-                    Agregar Tarea
-                  </Button>
-                </div>
+                <CardTitle>Tareas Completadas Esta Semana</CardTitle>
+                <CardDescription>
+                  Tareas completadas durante la semana • Arrastra para reordenar
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Always visible add task form */}
+                <AddTaskForm
+                  onAdd={(taskData) => {
+                    const newTask: Task = {
+                      ...taskData,
+                      id: Date.now().toString(),
+                    };
+                    setReportData((prev) => ({
+                      ...prev,
+                      completedTasks: [...prev.completedTasks, newTask],
+                    }));
+                  }}
+                />
+
                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
@@ -1103,9 +1434,8 @@ export default function WeeklyReportScreen() {
                   </SortableContext>
                 </DndContext>
                 {reportData.completedTasks.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No hay tareas agregadas. Haz clic en "Agregar Tarea" para
-                    comenzar.
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    No hay tareas completadas aún.
                   </div>
                 )}
               </CardContent>
@@ -1114,20 +1444,27 @@ export default function WeeklyReportScreen() {
             {/* Pending Tasks */}
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Tareas en Progreso</CardTitle>
-                    <CardDescription>
-                      Tareas que continúan la próxima semana
-                    </CardDescription>
-                  </div>
-                  <Button onClick={addPendingTask} size="sm">
-                    <PlusIcon className="w-4 h-4 mr-2" />
-                    Agregar Tarea en Progreso
-                  </Button>
-                </div>
+                <CardTitle>Tareas en Progreso</CardTitle>
+                <CardDescription>
+                  Tareas que continúan la próxima semana • Arrastra para
+                  reordenar
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Always visible add pending task form */}
+                <AddPendingTaskForm
+                  onAdd={(taskData) => {
+                    const newTask: PendingTask = {
+                      ...taskData,
+                      id: Date.now().toString(),
+                    };
+                    setReportData((prev) => ({
+                      ...prev,
+                      pendingTasks: [...prev.pendingTasks, newTask],
+                    }));
+                  }}
+                />
+
                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
@@ -1148,8 +1485,8 @@ export default function WeeklyReportScreen() {
                   </SortableContext>
                 </DndContext>
                 {reportData.pendingTasks.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No hay tareas en progreso agregadas.
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    No hay tareas en progreso aún.
                   </div>
                 )}
               </CardContent>
