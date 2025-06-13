@@ -77,29 +77,29 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
           </div> */}
           <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
             <h1 className="text-center text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Reporte Resumen Semanal de Programador ☕
+              Reporte Resumen Semanal de Programador
             </h1>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm print:text-xs print:grid-cols-4">
               <div className="flex flex-col gap-1">
-                <span className="font-semibold">👨‍💻 Nombre:</span>{" "}
+                <span className="font-semibold">Nombre:</span>{" "}
                 <span className="text-gray-700 dark:text-gray-300">
                   {data.name}
                 </span>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="font-semibold">📅 Fecha:</span>{" "}
+                <span className="font-semibold">Fecha:</span>{" "}
                 <span className="text-gray-700 dark:text-gray-300">
                   {data.date ? format(data.date, "dd/MM/yyyy") : "No hay fecha"}
                 </span>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="font-semibold">🏢 Proyecto:</span>{" "}
+                <span className="font-semibold">Proyecto:</span>{" "}
                 <span className="text-gray-700 dark:text-gray-300">
                   {data.project}
                 </span>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="font-semibold">🏃‍♂️ Sprint:</span>{" "}
+                <span className="font-semibold">Sprint:</span>{" "}
                 <span className="text-gray-700 dark:text-gray-300">
                   {data.sprint.from
                     ? format(data.sprint.from, "dd/MM/yyyy")
