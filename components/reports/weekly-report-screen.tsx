@@ -648,6 +648,84 @@ const SortablePendingTaskItem = ({
   );
 };
 
+// Add Block Form Component
+interface AddBlockFormProps {
+  onAdd: (block: string) => void;
+}
+
+const AddBlockForm = ({ onAdd }: AddBlockFormProps) => {
+  const [formData, setFormData] = useState("");
+
+  const handleSubmit = () => {
+    if (formData.trim()) {
+      onAdd(formData);
+      setFormData("");
+    }
+  };
+
+  return (
+    <div className="border-2 border-dashed border-primary/50 rounded-lg p-4 space-y-3 bg-primary/5">
+      <div className="flex items-center">
+        <h3 className="font-medium">Agregar Nuevo Bloqueo/Dificultad</h3>
+      </div>
+      <div className="space-y-3">
+        <div>
+          <Label>Descripción</Label>
+          <Textarea
+            placeholder="Describe un bloqueo o dificultad encontrada"
+            value={formData}
+            onChange={(e) => setFormData(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSubmit} disabled={!formData.trim()}>
+            Agregar Bloqueo
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Add Observation Form Component
+interface AddObservationFormProps {
+  onAdd: (observation: string) => void;
+}
+
+const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {
+  const [formData, setFormData] = useState("");
+
+  const handleSubmit = () => {
+    if (formData.trim()) {
+      onAdd(formData);
+      setFormData("");
+    }
+  };
+
+  return (
+    <div className="border-2 border-dashed border-primary/50 rounded-lg p-4 space-y-3 bg-primary/5">
+      <div className="flex items-center">
+        <h3 className="font-medium">Agregar Nuevo Logro/Mejora</h3>
+      </div>
+      <div className="space-y-3">
+        <div>
+          <Label>Descripción</Label>
+          <Textarea
+            placeholder="Describe un logro, mejora o sugerencia"
+            value={formData}
+            onChange={(e) => setFormData(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSubmit} disabled={!formData.trim()}>
+            Agregar Logro/Mejora
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Sortable Block Item Component
 interface SortableBlockItemProps {
   block: string;
@@ -662,6 +740,7 @@ const SortableBlockItem = ({
   updateBlock,
   removeBlock,
 }: SortableBlockItemProps) => {
+  const [isEditing, setIsEditing] = useState(false);
   const {
     attributes,
     listeners,
@@ -677,11 +756,49 @@ const SortableBlockItem = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  if (isEditing) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`flex items-start bg-background border border-primary rounded-lg p-3 ${
+          isDragging ? "z-50 shadow-lg" : ""
+        }`}
+      >
+        <div className="flex items-center gap-2 mr-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="cursor-grab active:cursor-grabbing touch-none h-8 w-8 p-0"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVerticalIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <Textarea
+          placeholder="Describe un bloqueo o dificultad encontrada"
+          value={block}
+          onChange={(e) => updateBlock(index, e.target.value)}
+          className="flex-1"
+        />
+        <div className="flex flex-col gap-2 ml-2">
+          <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+            <CheckIcon className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => removeBlock(index)}>
+            <Trash2Icon className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-start bg-background border rounded-lg p-3 ${
+      className={`flex items-start bg-background border rounded-lg p-3 hover:bg-muted/50 ${
         isDragging ? "z-50 shadow-lg" : ""
       }`}
     >
@@ -696,20 +813,19 @@ const SortableBlockItem = ({
           <GripVerticalIcon className="w-4 h-4" />
         </Button>
       </div>
-      <Textarea
-        placeholder="Describe un bloqueo o dificultad encontrada"
-        value={block}
-        onChange={(e) => updateBlock(index, e.target.value)}
-        className="flex-1"
-      />
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => removeBlock(index)}
-        className="ml-2"
-      >
-        <Trash2Icon className="w-4 h-4" />
-      </Button>
+      <div className="flex-1">
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+          {block || "Sin descripción"}
+        </p>
+      </div>
+      <div className="flex flex-col gap-2 ml-2">
+        <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+          <PencilIcon className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => removeBlock(index)}>
+          <Trash2Icon className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 };
@@ -728,6 +844,7 @@ const SortableObservationItem = ({
   updateObservation,
   removeObservation,
 }: SortableObservationItemProps) => {
+  const [isEditing, setIsEditing] = useState(false);
   const {
     attributes,
     listeners,
@@ -743,11 +860,53 @@ const SortableObservationItem = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  if (isEditing) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`flex items-start bg-background border border-primary rounded-lg p-3 ${
+          isDragging ? "z-50 shadow-lg" : ""
+        }`}
+      >
+        <div className="flex items-center gap-2 mr-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="cursor-grab active:cursor-grabbing touch-none h-8 w-8 p-0"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVerticalIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <Textarea
+          placeholder="Observación o sugerencia adicional"
+          value={observation}
+          onChange={(e) => updateObservation(index, e.target.value)}
+          className="flex-1"
+        />
+        <div className="flex flex-col gap-2 ml-2">
+          <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+            <CheckIcon className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => removeObservation(index)}
+          >
+            <Trash2Icon className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-start bg-background border rounded-lg p-3 ${
+      className={`flex items-start bg-background border rounded-lg p-3 hover:bg-muted/50 ${
         isDragging ? "z-50 shadow-lg" : ""
       }`}
     >
@@ -762,20 +921,23 @@ const SortableObservationItem = ({
           <GripVerticalIcon className="w-4 h-4" />
         </Button>
       </div>
-      <Textarea
-        placeholder="Observación o sugerencia adicional"
-        value={observation}
-        onChange={(e) => updateObservation(index, e.target.value)}
-        className="flex-1"
-      />
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => removeObservation(index)}
-        className="ml-2"
-      >
-        <Trash2Icon className="w-4 h-4" />
-      </Button>
+      <div className="flex-1">
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+          {observation || "Sin descripción"}
+        </p>
+      </div>
+      <div className="flex flex-col gap-2 ml-2">
+        <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+          <PencilIcon className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => removeObservation(index)}
+        >
+          <Trash2Icon className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 };
@@ -1502,74 +1664,92 @@ export default function WeeklyReportScreen() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
-                    <Button onClick={addBlock} size="sm" variant="outline">
-                      <PlusIcon className="w-4 h-4 mr-2" />
-                      Agregar Bloqueo
-                    </Button>
-                  </div>
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleBlocksDragEnd}
-                  >
-                    <SortableContext
-                      items={reportData.blocks.map(
-                        (_, index) => `block-${index}`
-                      )}
-                      strategy={verticalListSortingStrategy}
+                  <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                  <div className="space-y-4 mt-2">
+                    {/* Always visible add block form */}
+                    <AddBlockForm
+                      onAdd={(blockData) => {
+                        setReportData((prev) => ({
+                          ...prev,
+                          blocks: [...prev.blocks, blockData],
+                        }));
+                      }}
+                    />
+
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleBlocksDragEnd}
                     >
-                      <div className="space-y-2">
-                        {reportData.blocks.map((block, index) => (
-                          <SortableBlockItem
-                            key={`block-${index}`}
-                            block={block}
-                            index={index}
-                            updateBlock={updateBlock}
-                            removeBlock={removeBlock}
-                          />
-                        ))}
+                      <SortableContext
+                        items={reportData.blocks.map(
+                          (_, index) => `block-${index}`
+                        )}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-2">
+                          {reportData.blocks.map((block, index) => (
+                            <SortableBlockItem
+                              key={`block-${index}`}
+                              block={block}
+                              index={index}
+                              updateBlock={updateBlock}
+                              removeBlock={removeBlock}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                    {reportData.blocks.length === 0 && (
+                      <div className="text-center py-4 text-gray-500 text-sm">
+                        No hay bloqueos/dificultades aún.
                       </div>
-                    </SortableContext>
-                  </DndContext>
+                    )}
+                  </div>
                 </div>
                 <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <Label htmlFor="observations">Logros y Mejoras</Label>
-                    <Button
-                      onClick={addObservation}
-                      size="sm"
-                      variant="outline"
+                  <Label htmlFor="observations">Logros y Mejoras</Label>
+                  <div className="space-y-4 mt-2">
+                    {/* Always visible add observation form */}
+                    <AddObservationForm
+                      onAdd={(observationData) => {
+                        setReportData((prev) => ({
+                          ...prev,
+                          observations: [...prev.observations, observationData],
+                        }));
+                      }}
+                    />
+
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleObservationsDragEnd}
                     >
-                      <PlusIcon className="w-4 h-4 mr-2" />
-                      Agregar Logro/Mejora
-                    </Button>
-                  </div>
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleObservationsDragEnd}
-                  >
-                    <SortableContext
-                      items={reportData.observations.map(
-                        (_, index) => `observation-${index}`
-                      )}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div className="space-y-2">
-                        {reportData.observations.map((observation, index) => (
-                          <SortableObservationItem
-                            key={`observation-${index}`}
-                            observation={observation}
-                            index={index}
-                            updateObservation={updateObservation}
-                            removeObservation={removeObservation}
-                          />
-                        ))}
+                      <SortableContext
+                        items={reportData.observations.map(
+                          (_, index) => `observation-${index}`
+                        )}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-2">
+                          {reportData.observations.map((observation, index) => (
+                            <SortableObservationItem
+                              key={`observation-${index}`}
+                              observation={observation}
+                              index={index}
+                              updateObservation={updateObservation}
+                              removeObservation={removeObservation}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                    {reportData.observations.length === 0 && (
+                      <div className="text-center py-4 text-gray-500 text-sm">
+                        No hay logros/mejoras aún.
                       </div>
-                    </SortableContext>
-                  </DndContext>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="hours">Horas Trabajadas Esta Semana</Label>
