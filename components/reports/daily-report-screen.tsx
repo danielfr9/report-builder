@@ -105,7 +105,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
       </div>
       <div className="space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <div className="col-span-3">
+          <div className="md:col-span-3">
             <Label>Tarea</Label>
             <Input
               placeholder="Descripción de la tarea"
@@ -206,7 +206,7 @@ const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
       </div>
       <div className="space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="col-span-3">
+          <div className="md:col-span-3">
             <Label>Tarea</Label>
             <Input
               placeholder="Descripción de la tarea pendiente"
@@ -1345,8 +1345,8 @@ export default function DailyReportScreen() {
           <div className="absolute top-0 right-0">
             <ThemeToggle />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Generador de Reportes Diarios
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Generador de reportes diarios
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Crea reportes profesionales de programación con Story Points
@@ -1369,16 +1369,16 @@ export default function DailyReportScreen() {
             {/* Header Information */}
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col md:flex-row gap-2 justify-between items-center">
                   <div>
-                    <CardTitle>Información General</CardTitle>
+                    <CardTitle>Información general</CardTitle>
                     <CardDescription>Datos básicos del reporte</CardDescription>
                   </div>
                   <Button
                     onClick={clearSavedInfo}
                     variant="outline"
                     size="sm"
-                    className="text-xs"
+                    className="text-xs max-md:ml-auto"
                   >
                     Limpiar Datos
                   </Button>
@@ -1427,17 +1427,6 @@ export default function DailyReportScreen() {
                       />
                     </PopoverContent>
                   </Popover>
-                  {/* <Input
-                    id="date"
-                    type="date"
-                    value={reportData.date}
-                    onChange={(e) =>
-                      setReportData((prev) => ({
-                        ...prev,
-                        date: e.target.value,
-                      }))
-                    }
-                  /> */}
                 </div>
                 <div>
                   <Label htmlFor="name">Nombre</Label>
@@ -1527,7 +1516,7 @@ export default function DailyReportScreen() {
                     }
                   /> */}
                 </div>
-                <small className="col-span-2 text-xs text-gray-500 inline-block ml-auto">
+                <small className="col-span-1 md:col-span-2 text-xs text-gray-500 inline-block ml-auto">
                   *Todos los datos del reporte se guardan automáticamente en tu
                   navegador.
                 </small>
@@ -1537,7 +1526,7 @@ export default function DailyReportScreen() {
             {/* Completed Tasks */}
             <Card>
               <CardHeader>
-                <CardTitle>Actividades Realizadas (Hoy)</CardTitle>
+                <CardTitle>Actividades realizadas</CardTitle>
                 <CardDescription>
                   Tareas completadas y en progreso • Arrastra para reordenar
                 </CardDescription>
@@ -1770,7 +1759,7 @@ export default function DailyReportScreen() {
             {/* Summary */}
             <Card>
               <CardHeader>
-                <CardTitle>Resumen del Día</CardTitle>
+                <CardTitle>Resumen del día</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1779,7 +1768,7 @@ export default function DailyReportScreen() {
                       {totalCompletedPoints}
                     </div>
                     <div className="text-sm text-gray-600">
-                      Story Points Completados
+                      Story Points completados
                     </div>
                   </div>
                   <div className="text-center">
@@ -1787,7 +1776,7 @@ export default function DailyReportScreen() {
                       {totalInProgressPoints}
                     </div>
                     <div className="text-sm text-gray-600">
-                      Story Points En Progreso
+                      Story Points en progreso
                     </div>
                   </div>
                   <div className="text-center">
@@ -1795,7 +1784,7 @@ export default function DailyReportScreen() {
                       {reportData.hoursWorked}
                     </div>
                     <div className="text-sm text-gray-600">
-                      Horas Trabajadas
+                      Horas trabajadas
                     </div>
                   </div>
                 </div>
@@ -1805,22 +1794,20 @@ export default function DailyReportScreen() {
 
           <TabsContent value="preview">
             <div className="space-y-4">
-              <div className="flex justify-end">
-                <Button
-                  onClick={generatePDF}
-                  disabled={isGenerating}
-                  className="flex items-center gap-2 fixed bottom-4 right-4"
-                >
-                  <>
-                    {isGenerating ? (
-                      <Loader2Icon className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <DownloadIcon className="w-4 h-4" />
-                    )}
-                    Descargar PDF
-                  </>
-                </Button>
-              </div>
+              <Button
+                onClick={generatePDF}
+                disabled={isGenerating}
+                className="flex items-center gap-2 ml-auto w-fit"
+              >
+                <>
+                  {isGenerating ? (
+                    <Loader2Icon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <DownloadIcon className="w-4 h-4" />
+                  )}
+                  <span className="hidden md:block">Descargar PDF</span>
+                </>
+              </Button>
               <DailyReportPreview data={reportData} />
             </div>
           </TabsContent>
