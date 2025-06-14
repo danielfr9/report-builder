@@ -1335,7 +1335,9 @@ export default function DailyReportScreen() {
     .reduce((sum, task) => sum + task.storyPoints, 0);
 
   const totalInProgressPoints = reportData.completedTasks
-    .filter((task) => task.status === "En Proceso")
+    .filter(
+      (task) => task.status === "En Proceso" || task.status === "Pendiente"
+    )
     .reduce((sum, task) => sum + task.storyPoints, 0);
 
   return (
