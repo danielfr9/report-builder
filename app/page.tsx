@@ -17,7 +17,12 @@ export default function ReportBuilder() {
 
   return (
     <div className="relative pb-24">
-      {reportType === "daily" ? <DailyReportScreen /> : <WeeklyReportScreen />}
+      <div className={`${reportType === "daily" ? "block" : "hidden"}`}>
+        <DailyReportScreen />
+      </div>
+      <div className={`${reportType === "weekly" ? "block" : "hidden"}`}>
+        <WeeklyReportScreen />
+      </div>
 
       {/* Pill-like menu/navigation at the bottom of the screen */}
       <div className="fixed bottom-4 left-0 right-0 bg-background border border-foreground/10 rounded-full p-4 shadow-lg w-fit px-10 mx-auto">
