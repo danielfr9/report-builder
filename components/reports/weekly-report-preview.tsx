@@ -1,10 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { DailyReportData } from "@/lib/interfaces/report-data.interface";
+import { WeeklyReportData } from "@/lib/interfaces/report-data.interface";
 
 interface WeeklyReportPreviewProps {
-  data: DailyReportData;
+  data: WeeklyReportData;
 }
 
 export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
@@ -111,9 +111,9 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                             {task.storyPoints} pts
                           </td>
                           <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
-                            {data.date
-                              ? format(data.date, "dd/MM/yyyy")
-                              : "[dd/mm]"}
+                            {task.finishDate
+                              ? format(task.finishDate, "dd/MM/yyyy")
+                              : "No especificada"}
                           </td>
                           <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
                             {task.comments}

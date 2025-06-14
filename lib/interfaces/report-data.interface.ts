@@ -43,3 +43,51 @@ export interface DailyReportLocalStorageData {
   hoursWorked?: number;
   additionalNotes?: string;
 }
+
+// Weekly Report Specific Interfaces
+export interface WeeklyTask {
+  id: string;
+  name: string;
+  storyPoints: number;
+  status: "Completado" | "En Proceso" | "Pendiente";
+  comments: string;
+  finishDate: Date | null;
+}
+
+export interface WeeklyPendingTask {
+  id: string;
+  name: string;
+  storyPoints: number;
+  actionPlan: string;
+}
+
+export interface WeeklyReportData {
+  date: Date | null;
+  name: string;
+  project: string;
+  sprint: {
+    from: Date | null;
+    to: Date | null;
+  };
+  completedTasks: WeeklyTask[];
+  pendingTasks: WeeklyPendingTask[];
+  blocks: string[];
+  observations: string[];
+  hoursWorked: number;
+  additionalNotes: string;
+}
+
+export interface WeeklyReportLocalStorageData {
+  name?: string;
+  project?: string;
+  sprint?: {
+    from?: string | null;
+    to?: string | null;
+  };
+  completedTasks?: WeeklyTask[];
+  pendingTasks?: WeeklyPendingTask[];
+  blocks?: string[];
+  observations?: string[];
+  hoursWorked?: number;
+  additionalNotes?: string;
+}

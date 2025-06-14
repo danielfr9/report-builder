@@ -45,10 +45,10 @@ import { format, parse } from "date-fns";
 import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf";
 import { DateRange } from "react-day-picker";
 import {
-  PendingTask,
-  DailyReportData,
-  Task,
-  DailyReportLocalStorageData,
+  WeeklyPendingTask,
+  WeeklyReportData,
+  WeeklyTask,
+  WeeklyReportLocalStorageData,
 } from "@/lib/interfaces/report-data.interface";
 import {
   DndContext,
@@ -75,15 +75,16 @@ import {
 
 // Add Task Form Component
 interface AddTaskFormProps {
-  onAdd: (task: Omit<Task, "id">) => void;
+  onAdd: (task: Omit<WeeklyTask, "id">) => void;
 }
 
 const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
-  const [formData, setFormData] = useState<Omit<Task, "id">>({
+  const [formData, setFormData] = useState<Omit<WeeklyTask, "id">>({
     name: "",
     storyPoints: 1,
     status: "Completado" as const,
     comments: "",
+    finishDate: null,
   });
 
   const handleSubmit = () => {
@@ -94,6 +95,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
         storyPoints: 1,
         status: "Completado" as const,
         comments: "",
+        finishDate: null,
       });
     }
   };
@@ -104,7 +106,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
         <h3 className="font-medium">Agregar Nueva Tarea</h3>
       </div>
       <div className="space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
           <div className="md:col-span-3">
             <Label>Tarea</Label>
             <Input
@@ -147,6 +149,38 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <Label>Fecha de Finalización</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "h-10 w-full justify-start pr-10 text-left font-normal",
+                    !formData.finishDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                  {formData.finishDate
+                    ? format(formData.finishDate, "dd/MM/yyyy")
+                    : "Seleccionar"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.finishDate || undefined}
+                  locale={es}
+                  onSelect={(date) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      finishDate: date || null,
+                    }));
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
         <div>
           <Label>Comentarios / PR</Label>
@@ -170,7 +204,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
 
 // Add Pending Task Form Component
 interface AddPendingTaskFormProps {
-  onAdd: (task: Omit<PendingTask, "id">) => void;
+  onAdd: (task: Omit<WeeklyPendingTask, "id">) => void;
 }
 
 const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
@@ -269,8 +303,8 @@ const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
 
 // Sortable Task Item Component (moved outside main component)
 interface SortableTaskItemProps {
-  task: Task;
-  updateTask: (id: string, field: keyof Task, value: any) => void;
+  task: WeeklyTask;
+  updateTask: (id: string, field: keyof WeeklyTask, value: any) => void;
   removeTask: (id: string) => void;
 }
 
@@ -317,7 +351,7 @@ const SortableTaskItem = ({
             </Button>
           </div>
           <div className="flex-1 space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
               <div className="col-span-3">
                 <Label>Tarea</Label>
                 <Input
@@ -358,6 +392,35 @@ const SortableTaskItem = ({
                     <SelectItem value="Pendiente">Pendiente</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label>Fecha de Finalización</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "h-10 w-full justify-start pr-10 text-left font-normal",
+                        !task.finishDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                      {task.finishDate
+                        ? format(task.finishDate, "dd/MM/yyyy")
+                        : "Seleccionar"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={task.finishDate || undefined}
+                      locale={es}
+                      onSelect={(date) => {
+                        updateTask(task.id, "finishDate", date || null);
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div>
@@ -413,7 +476,7 @@ const SortableTaskItem = ({
           </Button>
         </div>
         <div className="flex-1 space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
             <div className="col-span-3">
               <Label className="text-xs text-muted-foreground">Tarea</Label>
               <p className="text-sm font-medium">
@@ -429,6 +492,16 @@ const SortableTaskItem = ({
             <div>
               <Label className="text-xs text-muted-foreground">Estado</Label>
               <p className="text-sm">{task.status}</p>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">
+                Fecha de Finalización
+              </Label>
+              <p className="text-sm">
+                {task.finishDate
+                  ? format(task.finishDate, "dd/MM/yyyy")
+                  : "No especificada"}
+              </p>
             </div>
           </div>
           {task.comments && (
@@ -455,8 +528,8 @@ const SortableTaskItem = ({
 
 // Sortable Pending Task Item Component (moved outside main component)
 interface SortablePendingTaskItemProps {
-  task: PendingTask;
-  updateTask: (id: string, field: keyof PendingTask, value: any) => void;
+  task: WeeklyPendingTask;
+  updateTask: (id: string, field: keyof WeeklyPendingTask, value: any) => void;
   removeTask: (id: string) => void;
 }
 
@@ -939,7 +1012,7 @@ const SortableObservationItem = ({
 };
 
 export default function WeeklyReportScreen() {
-  const [reportData, setReportData] = useState<DailyReportData>({
+  const [reportData, setReportData] = useState<WeeklyReportData>({
     date: new Date(),
     name: "",
     project: "",
@@ -1052,7 +1125,7 @@ export default function WeeklyReportScreen() {
   };
 
   // Save shared header data to localStorage
-  const saveSharedHeader = (data: DailyReportData) => {
+  const saveSharedHeader = (data: WeeklyReportData) => {
     const sharedHeader = {
       name: data.name,
       project: data.project,
@@ -1070,8 +1143,8 @@ export default function WeeklyReportScreen() {
   };
 
   // Save weekly-specific data to localStorage
-  const saveData = (data: DailyReportData) => {
-    const dataToSave: DailyReportLocalStorageData = {
+  const saveData = (data: WeeklyReportData) => {
+    const dataToSave: WeeklyReportLocalStorageData = {
       name: data.name,
       project: data.project,
       sprint: {
@@ -1134,7 +1207,7 @@ export default function WeeklyReportScreen() {
       const saved = localStorage.getItem(WEEKLY_REPORT_STORAGE_KEY);
 
       if (saved) {
-        const savedData: DailyReportLocalStorageData = JSON.parse(saved);
+        const savedData: WeeklyReportLocalStorageData = JSON.parse(saved);
 
         setReportData((prev) => ({
           ...prev,
@@ -1217,7 +1290,11 @@ export default function WeeklyReportScreen() {
     }
   };
 
-  const updateCompletedTask = (id: string, field: keyof Task, value: any) => {
+  const updateCompletedTask = (
+    id: string,
+    field: keyof WeeklyTask,
+    value: any
+  ) => {
     setReportData((prev) => ({
       ...prev,
       completedTasks: prev.completedTasks.map((task) =>
@@ -1235,7 +1312,7 @@ export default function WeeklyReportScreen() {
 
   const updatePendingTask = (
     id: string,
-    field: keyof PendingTask,
+    field: keyof WeeklyPendingTask,
     value: any
   ) => {
     setReportData((prev) => ({
@@ -1550,7 +1627,7 @@ export default function WeeklyReportScreen() {
                 {/* Always visible add task form */}
                 <AddTaskForm
                   onAdd={(taskData) => {
-                    const newTask: Task = {
+                    const newTask: WeeklyTask = {
                       ...taskData,
                       id: Date.now().toString(),
                     };
@@ -1601,7 +1678,7 @@ export default function WeeklyReportScreen() {
                 {/* Always visible add pending task form */}
                 <AddPendingTaskForm
                   onAdd={(taskData) => {
-                    const newTask: PendingTask = {
+                    const newTask: WeeklyPendingTask = {
                       ...taskData,
                       id: Date.now().toString(),
                     };
