@@ -120,7 +120,6 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
             <Input
               type="number"
               min="1"
-              max="13"
               value={formData.storyPoints}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -222,7 +221,6 @@ const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
             <Input
               type="number"
               min="1"
-              max="13"
               value={formData.storyPoints}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -395,7 +393,6 @@ const SortableTaskItem = ({
                 <Input
                   type="number"
                   min="1"
-                  max="13"
                   value={task.storyPoints}
                   onChange={(e) =>
                     updateTask(
@@ -582,7 +579,6 @@ const SortablePendingTaskItem = ({
                 <Input
                   type="number"
                   min="1"
-                  max="13"
                   value={task.storyPoints}
                   onChange={(e) =>
                     updateTask(
