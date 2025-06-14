@@ -38,7 +38,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
           {/* Header */}
           <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
             <h1 className="text-center text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Reporte Diario de Programador
+              Reporte diario de programador
             </h1>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm print:text-xs print:grid-cols-4">
               <div className="flex flex-col gap-1">

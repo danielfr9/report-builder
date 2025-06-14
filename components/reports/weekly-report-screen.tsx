@@ -1310,13 +1310,16 @@ export default function WeeklyReportScreen() {
       const toastId = toast.loading("Generando PDF...");
       try {
         const currentDate = new Date();
-        const name =
-          reportData.name !== ""
-            ? toSentenceCase(reportData.name.trim())
-            : // .replace(/\s+/g, "-")
-              "reporte-diario";
 
-        const formattedDate = format(currentDate, "yyyy-MM-dd");
+        const name =
+          reportData.name !== "" ? toSentenceCase(reportData.name.trim()) : "";
+
+        const fechaInicioSprint = reportData?.sprint.from
+          ? format(reportData.sprint.from, "yyyy-MM-dd")
+          : "";
+        const fechaFinSprint = reportData?.sprint.to
+          ? format(reportData.sprint.to, "yyyy-MM-dd")
+          : format(currentDate, "yyyy-MM-dd");
 
         const res = await generateWeeklyReportPDFAction({
           ...reportData,
@@ -1327,7 +1330,9 @@ export default function WeeklyReportScreen() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${name} ${formattedDate.replace(/\//g, "-")}.pdf`;
+        a.download = ` Reporte Semanal ${name} ${
+          fechaInicioSprint ? `- ${fechaInicioSprint}` : ""
+        } ${fechaFinSprint ? `al ${fechaFinSprint}` : ""}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

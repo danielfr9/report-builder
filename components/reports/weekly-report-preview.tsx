@@ -36,50 +36,9 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
       <CardContent className="p-8 print:p-0" id="report-preview">
         <div className="space-y-6">
           {/* Header */}
-          {/* <div className="border border-gray-300 dark:border-gray-600 p-4">
-            <h1 className="text-center text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center justify-center gap-2">
-              📋 Plantilla de Reporte Resumen Semanal – Programador
-            </h1>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">📅 Semana:</span>
-                <span className="border-b border-dotted border-gray-400 flex-1 min-h-[1.5rem] flex items-end">
-                  {data.sprint.from && data.sprint.to
-                    ? `${format(data.sprint.from, "dd/MM/yyyy")} - ${format(
-                        data.sprint.to,
-                        "dd/MM/yyyy"
-                      )}`
-                    : "[Fecha inicio – Fecha fin]"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">👨‍💻 Nombre:</span>
-                <span className="border-b border-dotted border-gray-400 flex-1 min-h-[1.5rem] flex items-end">
-                  {data.name || "________________"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">🏢 Proyecto:</span>
-                <span className="border-b border-dotted border-gray-400 flex-1 min-h-[1.5rem] flex items-end">
-                  {data.project || "________________"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">🏃‍♂️ Sprint:</span>
-                <span className="border-b border-dotted border-gray-400 flex-1 min-h-[1.5rem] flex items-end">
-                  {data.sprint.from && data.sprint.to
-                    ? `${format(data.sprint.from, "dd/MM/yyyy")} - ${format(
-                        data.sprint.to,
-                        "dd/MM/yyyy"
-                      )}`
-                    : "________________"}
-                </span>
-              </div>
-            </div>
-          </div> */}
           <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
             <h1 className="text-center text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Reporte Resumen Semanal de Programador
+              Reporte semanal de programador
             </h1>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm print:text-xs print:grid-cols-4">
               <div className="flex flex-col gap-1">
@@ -286,7 +245,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
           {/* Story Points Summary */}
           <div>
             <h2 className="text-lg print:text-base font-semibold mb-2 ">
-              6. Story Points Totales de la semana
+              6. Story points totales de la semana
             </h2>
             <div className="space-y-1 text-xs">
               <p className="text-gray-700 dark:text-gray-300 flex items-center gap-2">
