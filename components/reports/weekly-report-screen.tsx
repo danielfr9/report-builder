@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -1345,15 +1345,19 @@ export default function WeeklyReportScreen() {
     });
   };
 
-  const totalCompletedPoints = reportData.completedTasks
-    .filter((task) => task.status === "Completado")
-    .reduce((sum, task) => sum + task.storyPoints, 0);
+  const totalCompletedPoints = useMemo(() => {
+    return reportData.completedTasks.reduce(
+      (sum, task) => sum + task.storyPoints,
+      0
+    );
+  }, [reportData.completedTasks]);
 
-  const totalInProgressPoints = reportData.completedTasks
-    .filter(
-      (task) => task.status === "En Proceso" || task.status === "Pendiente"
-    )
-    .reduce((sum, task) => sum + task.storyPoints, 0);
+  const totalInProgressPoints = useMemo(() => {
+    return reportData.pendingTasks.reduce(
+      (sum, task) => sum + task.storyPoints,
+      0
+    );
+  }, [reportData.completedTasks]);
 
   return (
     <div className="min-h-screen bg-background p-4">
