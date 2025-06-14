@@ -2,20 +2,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { DailyReportData } from "@/lib/interfaces/report-data.interface";
-import { useMemo } from "react";
 
 interface DailyReportPreviewProps {
   data: DailyReportData;
 }
 
 export function DailyReportPreview({ data }: DailyReportPreviewProps) {
-  const totalCompletedPoints = useMemo(() => {
-    return data.completedTasks.reduce((sum, task) => sum + task.storyPoints, 0);
-  }, [data.completedTasks]);
+  const totalCompletedPoints = data.completedTasks.reduce(
+    (sum, task) => sum + task.storyPoints,
+    0
+  );
 
-  const totalInProgressPoints = useMemo(() => {
-    return data.pendingTasks.reduce((sum, task) => sum + task.storyPoints, 0);
-  }, [data.pendingTasks]);
+  const totalInProgressPoints = data.pendingTasks.reduce(
+    (sum, task) => sum + task.storyPoints,
+    0
+  );
 
   const getStatusIcon = (status: string) => {
     switch (status) {
