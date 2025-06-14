@@ -42,7 +42,7 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { es } from "date-fns/locale";
 import { format, parse } from "date-fns";
-import { generatePDFAction } from "@/lib/actions/generate-pdf";
+import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
 import { DateRange } from "react-day-picker";
 import {
   PendingTask,
@@ -1303,7 +1303,7 @@ export default function DailyReportScreen() {
 
         const formattedDate = format(currentDate, "yyyy-MM-dd");
 
-        const res = await generatePDFAction({
+        const res = await generateDailyReportPDFAction({
           ...reportData,
           date: reportData.date,
         });
