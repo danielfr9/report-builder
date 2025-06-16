@@ -502,7 +502,7 @@ export default function WeeklyReportScreen() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-2 mb-6 sticky top-0 z-40 ">
             <TabsTrigger value="builder" className="flex items-center gap-2">
               <PlusIcon className="w-4 h-4" />
               Constructor
