@@ -14,14 +14,12 @@ import { useState } from "react";
 // Sortable Block Item Component
 interface SortableBlockItemProps {
   block: DailyBlock;
-  index: number;
-  updateBlock: (index: number, value: DailyBlock) => void;
-  removeBlock: (index: number) => void;
+  updateBlock: (id: string, value: DailyBlock) => void;
+  removeBlock: (id: string) => void;
 }
 
 const SortableBlockItem = ({
   block,
-  index,
   updateBlock,
   removeBlock,
 }: SortableBlockItemProps) => {
@@ -33,7 +31,7 @@ const SortableBlockItem = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: `block-${index}` });
+  } = useSortable({ id: block.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -65,7 +63,7 @@ const SortableBlockItem = ({
           placeholder="Describe un bloqueo o dificultad encontrada"
           value={block.name}
           onChange={(e) =>
-            updateBlock(index, { ...block, name: e.target.value })
+            updateBlock(block.id, { ...block, name: e.target.value })
           }
           className="flex-1"
         />
@@ -73,7 +71,11 @@ const SortableBlockItem = ({
           <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
             <CheckIcon className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => removeBlock(index)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => removeBlock(block.id)}
+          >
             <Trash2Icon className="w-4 h-4" />
           </Button>
         </div>
@@ -109,7 +111,7 @@ const SortableBlockItem = ({
         <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
           <PencilIcon className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => removeBlock(index)}>
+        <Button variant="ghost" size="sm" onClick={() => removeBlock(block.id)}>
           <Trash2Icon className="w-4 h-4" />
         </Button>
       </div>

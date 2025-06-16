@@ -147,16 +147,16 @@ export default function DailyReportScreen() {
 
     if (active.id !== over?.id) {
       setReportData((prev) => {
-        const activeIndex = parseInt(
-          active.id.toString().replace("block-", "")
+        const oldIndex = prev.blocks.findIndex(
+          (block) => block.id === active.id
         );
-        const overIndex = parseInt(
-          over?.id.toString().replace("block-", "") || "0"
+        const newIndex = prev.blocks.findIndex(
+          (block) => block.id === over?.id
         );
 
         return {
           ...prev,
-          blocks: arrayMove(prev.blocks, activeIndex, overIndex),
+          blocks: arrayMove(prev.blocks, oldIndex, newIndex),
         };
       });
     }
@@ -168,16 +168,16 @@ export default function DailyReportScreen() {
 
     if (active.id !== over?.id) {
       setReportData((prev) => {
-        const activeIndex = parseInt(
-          active.id.toString().replace("observation-", "")
+        const oldIndex = prev.observations.findIndex(
+          (observation) => observation.id === active.id
         );
-        const overIndex = parseInt(
-          over?.id.toString().replace("observation-", "") || "0"
+        const newIndex = prev.observations.findIndex(
+          (observation) => observation.id === over?.id
         );
 
         return {
           ...prev,
-          observations: arrayMove(prev.observations, activeIndex, overIndex),
+          observations: arrayMove(prev.observations, oldIndex, newIndex),
         };
       });
     }
@@ -390,33 +390,35 @@ export default function DailyReportScreen() {
     }));
   };
 
-  const updateBlock = (index: number, value: DailyBlock) => {
+  const updateBlock = (id: string, value: DailyBlock) => {
     setReportData((prev) => ({
       ...prev,
-      blocks: prev.blocks.map((block, i) => (i === index ? value : block)), // TODO: fix this
+      blocks: prev.blocks.map((block) => (block.id === id ? value : block)), // TODO: fix this
     }));
   };
 
-  const removeBlock = (index: number) => {
+  const removeBlock = (id: string) => {
     setReportData((prev) => ({
       ...prev,
-      blocks: prev.blocks.filter((_, i) => i !== index),
+      blocks: prev.blocks.filter((block) => block.id !== id),
     }));
   };
 
-  const updateObservation = (index: number, value: DailyObservation) => {
+  const updateObservation = (id: string, value: DailyObservation) => {
     setReportData((prev) => ({
       ...prev,
-      observations: prev.observations.map((observation, i) =>
-        i === index ? value : observation
+      observations: prev.observations.map((observation) =>
+        observation.id === id ? value : observation
       ),
     }));
   };
 
-  const removeObservation = (index: number) => {
+  const removeObservation = (id: string) => {
     setReportData((prev) => ({
       ...prev,
-      observations: prev.observations.filter((_, i) => i !== index),
+      observations: prev.observations.filter(
+        (observation) => observation.id !== id
+      ),
     }));
   };
 
@@ -797,17 +799,16 @@ export default function DailyReportScreen() {
                       onDragEnd={handleBlocksDragEnd}
                     >
                       <SortableContext
-                        items={reportData.blocks.map(
-                          (block) => `block-${block.id}`
-                        )}
+                        items={reportData.blocks
+                          .filter(Boolean)
+                          .map((block) => block.id)}
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="space-y-2">
-                          {reportData.blocks.map((block, index) => (
+                          {reportData.blocks.filter(Boolean).map((block) => (
                             <SortableBlockItem
-                              key={`block-${block.id}`}
+                              key={block.id}
                               block={block}
-                              index={index}
                               updateBlock={updateBlock}
                               removeBlock={removeBlock}
                             />
@@ -830,9 +831,13 @@ export default function DailyReportScreen() {
                     {/* Always visible add observation form */}
                     <AddObservationForm
                       onAdd={(observationData) => {
+                        const newObservation: DailyObservation = {
+                          ...observationData,
+                          id: Date.now().toString(),
+                        };
                         setReportData((prev) => ({
                           ...prev,
-                          observations: [...prev.observations, observationData],
+                          observations: [...prev.observations, newObservation],
                         }));
                       }}
                     />
@@ -843,21 +848,22 @@ export default function DailyReportScreen() {
                       onDragEnd={handleObservationsDragEnd}
                     >
                       <SortableContext
-                        items={reportData.observations.map(
-                          (observation) => `observation-${observation.id}`
-                        )}
+                        items={reportData.observations
+                          .filter(Boolean)
+                          .map((observation) => observation.id)}
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="space-y-2">
-                          {reportData.observations.map((observation, index) => (
-                            <SortableObservationItem
-                              key={`observation-${observation.id}`}
-                              observation={observation}
-                              index={index}
-                              updateObservation={updateObservation}
-                              removeObservation={removeObservation}
-                            />
-                          ))}
+                          {reportData.observations
+                            .filter(Boolean)
+                            .map((observation) => (
+                              <SortableObservationItem
+                                key={observation.id}
+                                observation={observation}
+                                updateObservation={updateObservation}
+                                removeObservation={removeObservation}
+                              />
+                            ))}
                         </div>
                       </SortableContext>
                     </DndContext>

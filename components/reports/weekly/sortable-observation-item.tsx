@@ -14,14 +14,12 @@ import { useState } from "react";
 // Sortable Observation Item Component
 interface SortableObservationItemProps {
   observation: WeeklyObservation;
-  index: number;
-  updateObservation: (index: number, value: WeeklyObservation) => void;
-  removeObservation: (index: number) => void;
+  updateObservation: (id: string, value: WeeklyObservation) => void;
+  removeObservation: (id: string) => void;
 }
 
 const SortableObservationItem = ({
   observation,
-  index,
   updateObservation,
   removeObservation,
 }: SortableObservationItemProps) => {
@@ -33,7 +31,7 @@ const SortableObservationItem = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: `observation-${index}` });
+  } = useSortable({ id: observation.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -65,7 +63,7 @@ const SortableObservationItem = ({
           placeholder="Observación o sugerencia adicional"
           value={observation.name}
           onChange={(e) =>
-            updateObservation(index, {
+            updateObservation(observation.id, {
               ...observation,
               name: e.target.value,
             })
@@ -79,7 +77,7 @@ const SortableObservationItem = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => removeObservation(index)}
+            onClick={() => removeObservation(observation.id)}
           >
             <Trash2Icon className="w-4 h-4" />
           </Button>
@@ -119,7 +117,7 @@ const SortableObservationItem = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => removeObservation(index)}
+          onClick={() => removeObservation(observation.id)}
         >
           <Trash2Icon className="w-4 h-4" />
         </Button>

@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
-import { es } from "date-fns/locale";
+import { es, id } from "date-fns/locale";
 import { format, parse } from "date-fns";
 import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf";
 import { DateRange } from "react-day-picker";
@@ -388,33 +388,35 @@ export default function WeeklyReportScreen() {
     }));
   };
 
-  const updateBlock = (index: number, value: WeeklyBlock) => {
+  const updateBlock = (id: string, value: WeeklyBlock) => {
     setReportData((prev) => ({
       ...prev,
-      blocks: prev.blocks.map((block, i) => (i === index ? value : block)),
+      blocks: prev.blocks.map((block) => (block.id === id ? value : block)),
     }));
   };
 
-  const removeBlock = (index: number) => {
+  const removeBlock = (id: string) => {
     setReportData((prev) => ({
       ...prev,
-      blocks: prev.blocks.filter((_, i) => i !== index),
+      blocks: prev.blocks.filter((block) => block.id !== id),
     }));
   };
 
-  const updateObservation = (index: number, value: WeeklyObservation) => {
+  const updateObservation = (id: string, value: WeeklyObservation) => {
     setReportData((prev) => ({
       ...prev,
-      observations: prev.observations.map((observation, i) =>
-        i === index ? value : observation
+      observations: prev.observations.map((observation) =>
+        observation.id === id ? value : observation
       ),
     }));
   };
 
-  const removeObservation = (index: number) => {
+  const removeObservation = (id: string) => {
     setReportData((prev) => ({
       ...prev,
-      observations: prev.observations.filter((_, i) => i !== index),
+      observations: prev.observations.filter(
+        (observation) => observation.id !== id
+      ),
     }));
   };
 
@@ -787,17 +789,14 @@ export default function WeeklyReportScreen() {
                       onDragEnd={handleBlocksDragEnd}
                     >
                       <SortableContext
-                        items={reportData.blocks.map(
-                          (_, index) => `block-${index}`
-                        )}
+                        items={reportData.blocks.map((block) => block.id)}
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="space-y-2">
                           {reportData.blocks.map((block, index) => (
                             <SortableBlockItem
-                              key={`block-${index}`}
+                              key={block.id}
                               block={block}
-                              index={index}
                               updateBlock={updateBlock}
                               removeBlock={removeBlock}
                             />
@@ -832,16 +831,15 @@ export default function WeeklyReportScreen() {
                     >
                       <SortableContext
                         items={reportData.observations.map(
-                          (_, index) => `observation-${index}`
+                          (observation) => observation.id
                         )}
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="space-y-2">
-                          {reportData.observations.map((observation, index) => (
+                          {reportData.observations.map((observation) => (
                             <SortableObservationItem
-                              key={`observation-${index}`}
+                              key={observation.id}
                               observation={observation}
-                              index={index}
                               updateObservation={updateObservation}
                               removeObservation={removeObservation}
                             />
