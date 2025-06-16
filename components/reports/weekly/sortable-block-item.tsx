@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { WeeklyBlock } from "@/lib/interfaces/report-data.interface";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -12,9 +13,9 @@ import { useState } from "react";
 
 // Sortable Block Item Component
 interface SortableBlockItemProps {
-  block: string;
+  block: WeeklyBlock;
   index: number;
-  updateBlock: (index: number, value: string) => void;
+  updateBlock: (index: number, value: WeeklyBlock) => void;
   removeBlock: (index: number) => void;
 }
 
@@ -62,8 +63,10 @@ const SortableBlockItem = ({
         </div>
         <Textarea
           placeholder="Describe un bloqueo o dificultad encontrada"
-          value={block}
-          onChange={(e) => updateBlock(index, e.target.value)}
+          value={block.name}
+          onChange={(e) =>
+            updateBlock(index, { ...block, name: e.target.value })
+          }
           className="flex-1"
         />
         <div className="flex flex-col gap-2 ml-2">
@@ -99,7 +102,7 @@ const SortableBlockItem = ({
       </div>
       <div className="flex-1">
         <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-          {block || "Sin descripción"}
+          {block.name || "Sin descripción"}
         </p>
       </div>
       <div className="flex flex-col gap-2 ml-2">

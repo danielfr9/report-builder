@@ -39,6 +39,8 @@ import {
   WeeklyReportData,
   WeeklyTask,
   WeeklyReportLocalStorageData,
+  WeeklyBlock,
+  WeeklyObservation,
 } from "@/lib/interfaces/report-data.interface";
 import {
   DndContext,
@@ -57,7 +59,7 @@ import {
 } from "@dnd-kit/sortable";
 import {
   SHARED_HEADER_KEY,
-  WEEKLY_REPORT_STORAGE_KEY,
+  V2_WEEKLY_REPORT_STORAGE_KEY,
 } from "@/lib/constants/localstorage-keys";
 import AddTaskForm from "./weekly/add-task-form";
 import AddPendingTaskForm from "./weekly/add-pending-task-form";
@@ -217,7 +219,7 @@ export default function WeeklyReportScreen() {
 
     try {
       localStorage.setItem(
-        WEEKLY_REPORT_STORAGE_KEY,
+        V2_WEEKLY_REPORT_STORAGE_KEY,
         JSON.stringify(dataToSave)
       );
       // Also save shared header
@@ -260,7 +262,7 @@ export default function WeeklyReportScreen() {
   const loadData = () => {
     try {
       const sharedHeader = loadSharedHeader();
-      const saved = localStorage.getItem(WEEKLY_REPORT_STORAGE_KEY);
+      const saved = localStorage.getItem(V2_WEEKLY_REPORT_STORAGE_KEY);
 
       if (saved) {
         const savedData: WeeklyReportLocalStorageData = JSON.parse(saved);
@@ -322,7 +324,7 @@ export default function WeeklyReportScreen() {
   // Clear saved data
   const clearSavedInfo = () => {
     try {
-      localStorage.removeItem(WEEKLY_REPORT_STORAGE_KEY);
+      localStorage.removeItem(V2_WEEKLY_REPORT_STORAGE_KEY);
       setReportData((prev) => ({
         ...prev,
         date: null,
@@ -386,7 +388,7 @@ export default function WeeklyReportScreen() {
     }));
   };
 
-  const updateBlock = (index: number, value: string) => {
+  const updateBlock = (index: number, value: WeeklyBlock) => {
     setReportData((prev) => ({
       ...prev,
       blocks: prev.blocks.map((block, i) => (i === index ? value : block)),
@@ -400,7 +402,7 @@ export default function WeeklyReportScreen() {
     }));
   };
 
-  const updateObservation = (index: number, value: string) => {
+  const updateObservation = (index: number, value: WeeklyObservation) => {
     setReportData((prev) => ({
       ...prev,
       observations: prev.observations.map((observation, i) =>

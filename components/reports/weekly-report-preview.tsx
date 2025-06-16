@@ -195,7 +195,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                     className="text-gray-700 dark:text-gray-300 flex items-start gap-2"
                   >
                     <span>•</span>
-                    <span>{block}</span>
+                    <span>{block.name}</span>
                   </li>
                 ))}
               </ul>
@@ -219,7 +219,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                     className="text-gray-700 dark:text-gray-300 flex items-start gap-2"
                   >
                     <span>•</span>
-                    <span>{observation}</span>
+                    <span>{observation.name}</span>
                   </li>
                 ))}
               </ul>

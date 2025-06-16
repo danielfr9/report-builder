@@ -10,16 +10,16 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { Task } from "@/lib/interfaces/report-data.interface";
+import { DailyTask } from "@/lib/interfaces/report-data.interface";
 import { useState } from "react";
 
 // Add Task Form Component
 interface AddTaskFormProps {
-  onAdd: (task: Omit<Task, "id">) => void;
+  onAdd: (task: Omit<DailyTask, "id">) => void;
 }
 
 const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
-  const [formData, setFormData] = useState<Omit<Task, "id">>({
+  const [formData, setFormData] = useState<Omit<DailyTask, "id">>({
     name: "",
     storyPoints: 1,
     status: "Completado" as const,
@@ -86,9 +86,6 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
                     {status}
                   </SelectItem>
                 ))}
-                {/* <SelectItem value="Completado">Completado</SelectItem>
-                <SelectItem value="En Proceso">En Proceso</SelectItem>
-                <SelectItem value="Pendiente">Pendiente</SelectItem> */}
               </SelectContent>
             </Select>
           </div>

@@ -36,10 +36,12 @@ import { format, parse } from "date-fns";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
 import { DateRange } from "react-day-picker";
 import {
-  PendingTask,
+  DailyPendingTask,
   DailyReportData,
-  Task,
+  DailyTask,
   DailyReportLocalStorageData,
+  DailyBlock,
+  DailyObservation,
 } from "@/lib/interfaces/report-data.interface";
 import {
   DndContext,
@@ -58,7 +60,7 @@ import {
 } from "@dnd-kit/sortable";
 import {
   SHARED_HEADER_KEY,
-  DAILY_REPORT_STORAGE_KEY,
+  V2_DAILY_REPORT_STORAGE_KEY,
 } from "@/lib/constants/localstorage-keys";
 import AddTaskForm from "./daily/add-task-form";
 import AddPendingTaskForm from "./daily/add-pending-task-form";
@@ -218,7 +220,7 @@ export default function DailyReportScreen() {
 
     try {
       localStorage.setItem(
-        DAILY_REPORT_STORAGE_KEY,
+        V2_DAILY_REPORT_STORAGE_KEY,
         JSON.stringify(dataToSave)
       );
       // Also save shared header
@@ -261,7 +263,7 @@ export default function DailyReportScreen() {
   const loadData = () => {
     try {
       const sharedHeader = loadSharedHeader();
-      const saved = localStorage.getItem(DAILY_REPORT_STORAGE_KEY);
+      const saved = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
 
       if (saved) {
         const savedData: DailyReportLocalStorageData = JSON.parse(saved);
@@ -324,7 +326,7 @@ export default function DailyReportScreen() {
   // Clear saved data
   const clearSavedInfo = () => {
     try {
-      localStorage.removeItem(DAILY_REPORT_STORAGE_KEY);
+      localStorage.removeItem(V2_DAILY_REPORT_STORAGE_KEY);
       setReportData((prev) => ({
         ...prev,
         date: null,
@@ -348,7 +350,11 @@ export default function DailyReportScreen() {
     }
   };
 
-  const updateCompletedTask = (id: string, field: keyof Task, value: any) => {
+  const updateCompletedTask = (
+    id: string,
+    field: keyof DailyTask,
+    value: any
+  ) => {
     setReportData((prev) => ({
       ...prev,
       completedTasks: prev.completedTasks.map((task) =>
@@ -366,7 +372,7 @@ export default function DailyReportScreen() {
 
   const updatePendingTask = (
     id: string,
-    field: keyof PendingTask,
+    field: keyof DailyPendingTask,
     value: any
   ) => {
     setReportData((prev) => ({
@@ -384,10 +390,10 @@ export default function DailyReportScreen() {
     }));
   };
 
-  const updateBlock = (index: number, value: string) => {
+  const updateBlock = (index: number, value: DailyBlock) => {
     setReportData((prev) => ({
       ...prev,
-      blocks: prev.blocks.map((block, i) => (i === index ? value : block)),
+      blocks: prev.blocks.map((block, i) => (i === index ? value : block)), // TODO: fix this
     }));
   };
 
@@ -398,7 +404,7 @@ export default function DailyReportScreen() {
     }));
   };
 
-  const updateObservation = (index: number, value: string) => {
+  const updateObservation = (index: number, value: DailyObservation) => {
     setReportData((prev) => ({
       ...prev,
       observations: prev.observations.map((observation, i) =>
@@ -671,7 +677,7 @@ export default function DailyReportScreen() {
                 {/* Always visible add task form */}
                 <AddTaskForm
                   onAdd={(taskData) => {
-                    const newTask: Task = {
+                    const newTask: DailyTask = {
                       ...taskData,
                       id: Date.now().toString(),
                     };
@@ -721,7 +727,7 @@ export default function DailyReportScreen() {
                 {/* Always visible add pending task form */}
                 <AddPendingTaskForm
                   onAdd={(taskData) => {
-                    const newTask: PendingTask = {
+                    const newTask: DailyPendingTask = {
                       ...taskData,
                       id: Date.now().toString(),
                     };
@@ -774,9 +780,13 @@ export default function DailyReportScreen() {
                     {/* Always visible add block form */}
                     <AddBlockForm
                       onAdd={(blockData) => {
+                        const newBlock: DailyBlock = {
+                          ...blockData,
+                          id: Date.now().toString(),
+                        };
                         setReportData((prev) => ({
                           ...prev,
-                          blocks: [...prev.blocks, blockData],
+                          blocks: [...prev.blocks, newBlock],
                         }));
                       }}
                     />
@@ -788,14 +798,14 @@ export default function DailyReportScreen() {
                     >
                       <SortableContext
                         items={reportData.blocks.map(
-                          (_, index) => `block-${index}`
+                          (block) => `block-${block.id}`
                         )}
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="space-y-2">
                           {reportData.blocks.map((block, index) => (
                             <SortableBlockItem
-                              key={`block-${index}`}
+                              key={`block-${block.id}`}
                               block={block}
                               index={index}
                               updateBlock={updateBlock}
@@ -834,14 +844,14 @@ export default function DailyReportScreen() {
                     >
                       <SortableContext
                         items={reportData.observations.map(
-                          (_, index) => `observation-${index}`
+                          (observation) => `observation-${observation.id}`
                         )}
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="space-y-2">
                           {reportData.observations.map((observation, index) => (
                             <SortableObservationItem
-                              key={`observation-${index}`}
+                              key={`observation-${observation.id}`}
                               observation={observation}
                               index={index}
                               updateObservation={updateObservation}

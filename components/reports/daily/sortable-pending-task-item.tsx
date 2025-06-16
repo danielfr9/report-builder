@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PendingTask } from "@/lib/interfaces/report-data.interface";
+import { DailyPendingTask } from "@/lib/interfaces/report-data.interface";
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -15,8 +15,8 @@ import {
 
 // Sortable Pending Task Item Component (moved outside main component)
 interface SortablePendingTaskItemProps {
-  task: PendingTask;
-  updateTask: (id: string, field: keyof PendingTask, value: any) => void;
+  task: DailyPendingTask;
+  updateTask: (id: string, field: keyof DailyPendingTask, value: any) => void;
   removeTask: (id: string) => void;
 }
 

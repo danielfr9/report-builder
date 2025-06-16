@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { WeeklyObservation } from "@/lib/interfaces/report-data.interface";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -12,9 +13,9 @@ import { useState } from "react";
 
 // Sortable Observation Item Component
 interface SortableObservationItemProps {
-  observation: string;
+  observation: WeeklyObservation;
   index: number;
-  updateObservation: (index: number, value: string) => void;
+  updateObservation: (index: number, value: WeeklyObservation) => void;
   removeObservation: (index: number) => void;
 }
 
@@ -62,8 +63,13 @@ const SortableObservationItem = ({
         </div>
         <Textarea
           placeholder="Observación o sugerencia adicional"
-          value={observation}
-          onChange={(e) => updateObservation(index, e.target.value)}
+          value={observation.name}
+          onChange={(e) =>
+            updateObservation(index, {
+              ...observation,
+              name: e.target.value,
+            })
+          }
           className="flex-1"
         />
         <div className="flex flex-col gap-2 ml-2">
@@ -103,7 +109,7 @@ const SortableObservationItem = ({
       </div>
       <div className="flex-1">
         <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-          {observation || "Sin descripción"}
+          {observation.name || "Sin descripción"}
         </p>
       </div>
       <div className="flex flex-col gap-2 ml-2">

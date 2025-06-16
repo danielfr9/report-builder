@@ -1,13 +1,13 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PendingTask } from "@/lib/interfaces/report-data.interface";
+import { DailyPendingTask } from "@/lib/interfaces/report-data.interface";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 // Add Pending Task Form Component
 interface AddPendingTaskFormProps {
-  onAdd: (task: Omit<PendingTask, "id">) => void;
+  onAdd: (task: Omit<DailyPendingTask, "id">) => void;
 }
 
 const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {

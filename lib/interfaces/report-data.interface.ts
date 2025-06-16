@@ -1,4 +1,4 @@
-export interface Task {
+export interface DailyTask {
   id: string;
   name: string;
   storyPoints: number;
@@ -6,11 +6,21 @@ export interface Task {
   comments: string;
 }
 
-export interface PendingTask {
+export interface DailyPendingTask {
   id: string;
   name: string;
   storyPoints: number;
   actionPlan: string;
+}
+
+export interface DailyBlock {
+  id: string;
+  name: string;
+}
+
+export interface DailyObservation {
+  id: string;
+  name: string;
 }
 
 export interface DailyReportData {
@@ -21,10 +31,10 @@ export interface DailyReportData {
     from: Date | null;
     to: Date | null;
   };
-  completedTasks: Task[];
-  pendingTasks: PendingTask[];
-  blocks: string[]; // Changed from string to string[]
-  observations: string[]; // Changed from string to string[]
+  completedTasks: DailyTask[];
+  pendingTasks: DailyPendingTask[];
+  blocks: DailyBlock[];
+  observations: DailyObservation[];
   hoursWorked: number;
   additionalNotes: string;
 }
@@ -36,10 +46,10 @@ export interface DailyReportLocalStorageData {
     from?: string | null;
     to?: string | null;
   };
-  completedTasks?: Task[];
-  pendingTasks?: PendingTask[];
-  blocks?: string[];
-  observations?: string[];
+  completedTasks?: DailyTask[];
+  pendingTasks?: DailyPendingTask[];
+  blocks?: DailyBlock[];
+  observations?: DailyObservation[];
   hoursWorked?: number;
   additionalNotes?: string;
 }
@@ -61,6 +71,16 @@ export interface WeeklyPendingTask {
   actionPlan: string;
 }
 
+export interface WeeklyBlock {
+  id: string;
+  name: string;
+}
+
+export interface WeeklyObservation {
+  id: string;
+  name: string;
+}
+
 export interface WeeklyReportData {
   date: Date | null;
   name: string;
@@ -71,8 +91,8 @@ export interface WeeklyReportData {
   };
   completedTasks: WeeklyTask[];
   pendingTasks: WeeklyPendingTask[];
-  blocks: string[];
-  observations: string[];
+  blocks: WeeklyBlock[];
+  observations: WeeklyObservation[];
   hoursWorked: number;
   additionalNotes: string;
 }
@@ -86,8 +106,8 @@ export interface WeeklyReportLocalStorageData {
   };
   completedTasks?: WeeklyTask[];
   pendingTasks?: WeeklyPendingTask[];
-  blocks?: string[];
-  observations?: string[];
+  blocks?: WeeklyBlock[];
+  observations?: WeeklyObservation[];
   hoursWorked?: number;
   additionalNotes?: string;
 }

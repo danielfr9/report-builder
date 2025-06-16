@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Task } from "@/lib/interfaces/report-data.interface";
+import { DailyTask } from "@/lib/interfaces/report-data.interface";
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -23,8 +23,8 @@ import { TASK_STATUS } from "@/lib/constants/task-status";
 
 // Sortable Task Item Component (moved outside main component)
 interface SortableTaskItemProps {
-  task: Task;
-  updateTask: (id: string, field: keyof Task, value: any) => void;
+  task: DailyTask;
+  updateTask: (id: string, field: keyof DailyTask, value: any) => void;
   removeTask: (id: string) => void;
 }
 

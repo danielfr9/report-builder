@@ -1,20 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DailyObservation } from "@/lib/interfaces/report-data.interface";
 import { useState } from "react";
 
 // Add Observation Form Component
 interface AddObservationFormProps {
-  onAdd: (observation: string) => void;
+  onAdd: (observation: DailyObservation) => void;
 }
 
 const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {
-  const [formData, setFormData] = useState("");
+  const [formData, setFormData] = useState<DailyObservation>({
+    id: "",
+    name: "",
+  });
 
   const handleSubmit = () => {
-    if (formData.trim()) {
+    if (formData.name.trim()) {
       onAdd(formData);
-      setFormData("");
+      setFormData({
+        id: "",
+        name: "",
+      });
     }
   };
 
@@ -28,12 +35,14 @@ const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {
           <Label>Descripción</Label>
           <Textarea
             placeholder="Observación o sugerencia adicional"
-            value={formData}
-            onChange={(e) => setFormData(e.target.value)}
+            value={formData.name}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, name: e.target.value }))
+            }
           />
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleSubmit} disabled={!formData.trim()}>
+          <Button onClick={handleSubmit} disabled={!formData.name.trim()}>
             Agregar Observación
           </Button>
         </div>

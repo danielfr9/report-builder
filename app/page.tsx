@@ -4,16 +4,106 @@ import DailyReportScreen from "@/components/reports/daily-report-screen";
 import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CalendarIcon, ClockIcon, FolderDotIcon, SunIcon } from "lucide-react";
-import { useState } from "react";
+  DAILY_REPORT_STORAGE_KEY,
+  LOCAL_STORAGE_DATA_VERSION_KEY,
+  V2_DAILY_REPORT_STORAGE_KEY,
+  V2_WEEKLY_REPORT_STORAGE_KEY,
+  WEEKLY_REPORT_STORAGE_KEY,
+} from "@/lib/constants/localstorage-keys";
+import { LOCAL_STORAGE_VERSION } from "@/lib/constants/versions";
+import {
+  DailyReportLocalStorageData,
+  WeeklyReportLocalStorageData,
+} from "@/lib/interfaces/report-data.interface";
+import { CalendarIcon, ClockIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+
+interface PreviousDailyReportLocalStorageData
+  extends Omit<DailyReportLocalStorageData, "blocks" | "observations"> {
+  blocks: string[];
+  observations: string[];
+}
+
+interface PreviousWeeklyReportLocalStorageData
+  extends Omit<WeeklyReportLocalStorageData, "blocks" | "observations"> {
+  blocks: string[];
+  observations: string[];
+}
+
+const migrateLocalStorageData = () => {
+  const version = localStorage.getItem(LOCAL_STORAGE_DATA_VERSION_KEY);
+
+  if (version === LOCAL_STORAGE_VERSION) {
+    console.log("Local storage version is up to date");
+    return;
+  }
+
+  console.log("Migrating local storage data");
+
+  const dailyData = localStorage.getItem(DAILY_REPORT_STORAGE_KEY);
+  if (dailyData) {
+    const dailyDataObject: PreviousDailyReportLocalStorageData =
+      JSON.parse(dailyData);
+
+    // Blocks and observations are now arrays of objects
+    // We need to convert them to the new format
+    const blocks = dailyDataObject.blocks || [];
+    const observations = dailyDataObject.observations || [];
+
+    // We need to convert them to the new format
+    const newDailyData: DailyReportLocalStorageData = {
+      ...dailyDataObject,
+      blocks: blocks.map((block) => ({
+        id: Date.now().toString(),
+        name: block,
+      })),
+      observations: observations.map((observation) => ({
+        id: Date.now().toString(),
+        name: observation,
+      })),
+    };
+
+    localStorage.setItem(
+      V2_DAILY_REPORT_STORAGE_KEY,
+      JSON.stringify(newDailyData)
+    );
+  }
+
+  const weeklyData = localStorage.getItem(WEEKLY_REPORT_STORAGE_KEY);
+  if (weeklyData) {
+    const weeklyDataObject: PreviousWeeklyReportLocalStorageData =
+      JSON.parse(weeklyData);
+
+    const blocks = weeklyDataObject.blocks || [];
+    const observations = weeklyDataObject.observations || [];
+
+    const newWeeklyData: WeeklyReportLocalStorageData = {
+      ...weeklyDataObject,
+      blocks: blocks.map((block) => ({
+        id: Date.now().toString(),
+        name: block,
+      })),
+      observations: observations.map((observation) => ({
+        id: Date.now().toString(),
+        name: observation,
+      })),
+    };
+
+    localStorage.setItem(
+      V2_WEEKLY_REPORT_STORAGE_KEY,
+      JSON.stringify(newWeeklyData)
+    );
+  }
+
+  localStorage.setItem(LOCAL_STORAGE_DATA_VERSION_KEY, LOCAL_STORAGE_VERSION);
+};
 
 export default function ReportBuilder() {
   const [reportType, setReportType] = useState<"daily" | "weekly">("daily");
+
+  useEffect(() => {
+    migrateLocalStorageData();
+  }, []);
 
   return (
     <div className="relative pb-24">
@@ -45,28 +135,6 @@ export default function ReportBuilder() {
           </Button>
         </div>
       </div>
-      {/* <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            size="icon"
-            variant="outline"
-            aria-label="Seleccionar reporte"
-            className="rounded-full"
-          >
-            <FolderDotIcon className="w-4 h-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="min-w-32">
-          <DropdownMenuItem onClick={() => setReportType("daily")}>
-            <ClockIcon size={16} className="opacity-60" aria-hidden="true" />
-            <span>Daily</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setReportType("weekly")}>
-            <CalendarIcon size={16} className="opacity-60" aria-hidden="true" />
-            <span>Weekly</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu> */}
     </div>
   );
 }
