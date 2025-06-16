@@ -1,0 +1,154 @@
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectItem,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { WeeklyTask } from "@/lib/interfaces/report-data.interface";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
+
+// Add Task Form Component
+interface AddTaskFormProps {
+  onAdd: (task: Omit<WeeklyTask, "id">) => void;
+}
+
+const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
+  const [formData, setFormData] = useState<Omit<WeeklyTask, "id">>({
+    name: "",
+    storyPoints: 1,
+    status: "Completado" as const,
+    comments: "",
+    finishDate: null,
+  });
+
+  const handleSubmit = () => {
+    if (formData.name.trim()) {
+      onAdd(formData);
+      setFormData({
+        name: "",
+        storyPoints: 1,
+        status: "Completado" as const,
+        comments: "",
+        finishDate: null,
+      });
+    }
+  };
+
+  return (
+    <div className="border-2 border-dashed border-primary/50 rounded-lg p-4 space-y-3 bg-primary/5">
+      <div className="flex items-center">
+        <h3 className="font-medium">Agregar Nueva Tarea</h3>
+      </div>
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+          <div className="md:col-span-3">
+            <Label>Tarea</Label>
+            <Input
+              placeholder="Descripción de la tarea"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
+            />
+          </div>
+          <div>
+            <Label>Story Points</Label>
+            <Input
+              type="number"
+              min="1"
+              value={formData.storyPoints}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  storyPoints: Number.parseInt(e.target.value) || 1,
+                }))
+              }
+            />
+          </div>
+          <div>
+            <Label>Estado</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(
+                value: "Completado" | "En Proceso" | "Pendiente"
+              ) => setFormData((prev) => ({ ...prev, status: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Completado">Completado</SelectItem>
+                <SelectItem value="En Proceso">En Proceso</SelectItem>
+                <SelectItem value="Pendiente">Pendiente</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Fecha de Finalización</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "h-10 w-full justify-start pr-10 text-left font-normal",
+                    !formData.finishDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                  {formData.finishDate
+                    ? format(formData.finishDate, "dd/MM/yyyy")
+                    : "Seleccionar"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.finishDate || undefined}
+                  locale={es}
+                  onSelect={(date) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      finishDate: date || null,
+                    }));
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+        <div>
+          <Label>Comentarios / PR</Label>
+          <Textarea
+            placeholder="Comentarios adicionales o enlaces a PR"
+            value={formData.comments}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, comments: e.target.value }))
+            }
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSubmit} disabled={!formData.name.trim()}>
+            Agregar Tarea
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AddTaskForm;
