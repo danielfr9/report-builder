@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useMemo } from "react";
+import { useState, useTransition, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -70,7 +70,15 @@ import SortableBlockItem from "./weekly/sortable-block-item";
 import AddObservationForm from "./weekly/add-observation-form";
 import SortableObservationItem from "./weekly/sortable-observation-item";
 
-export default function WeeklyReportScreen() {
+interface WeeklyReportScreenProps {
+  initialData: WeeklyReportLocalStorageData;
+  onDataChange: (data: WeeklyReportData) => void;
+}
+
+export default function WeeklyReportScreen({
+  initialData,
+  onDataChange,
+}: WeeklyReportScreenProps) {
   const [reportData, setReportData] = useState<WeeklyReportData>({
     date: new Date(),
     name: "",
@@ -89,6 +97,7 @@ export default function WeeklyReportScreen() {
 
   const [isGenerating, startGenerating] = useTransition();
   const [activeTab, setActiveTab] = useState("builder");
+  const isInitialLoad = useRef(true);
 
   // DnD Kit sensors
   const sensors = useSensors(
@@ -297,10 +306,16 @@ export default function WeeklyReportScreen() {
   // Load data when component mounts
   useEffect(() => {
     loadData();
+    // Set flag to false after initial load is complete
+    const timer = setTimeout(() => (isInitialLoad.current = false), 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Debounced save function to prevent excessive localStorage writes
   useEffect(() => {
+    // Don't save during initial load to prevent overwriting migrated data
+    if (isInitialLoad.current) return;
+
     const debounceTimer = setTimeout(() => {
       saveData(reportData);
     }, 500); // Wait 500ms after the last change before saving

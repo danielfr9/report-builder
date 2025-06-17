@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useMemo } from "react";
+import { useState, useTransition, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -71,25 +71,38 @@ import SortablePendingTaskItem from "./daily/sortable-pending-task-item";
 import SortableBlockItem from "./daily/sortable-block-item";
 import SortableObservationItem from "./daily/sortable-observation-item";
 
-export default function DailyReportScreen() {
+interface DailyReportScreenProps {
+  initialData: DailyReportLocalStorageData;
+  onDataChange: (data: DailyReportData) => void;
+}
+
+export default function DailyReportScreen({
+  initialData,
+  onDataChange,
+}: DailyReportScreenProps) {
   const [reportData, setReportData] = useState<DailyReportData>({
     date: new Date(),
-    name: "",
-    project: "",
+    name: initialData.name || "",
+    project: initialData.project || "",
     sprint: {
-      from: null,
-      to: null,
+      from: initialData.sprint?.from
+        ? parse(initialData.sprint.from, "dd/MM/yyyy", new Date())
+        : null,
+      to: initialData.sprint?.to
+        ? parse(initialData.sprint.to, "dd/MM/yyyy", new Date())
+        : null,
     },
-    completedTasks: [],
-    pendingTasks: [],
-    blocks: [],
-    observations: [],
-    hoursWorked: 8,
-    additionalNotes: "",
+    completedTasks: initialData.completedTasks || [],
+    pendingTasks: initialData.pendingTasks || [],
+    blocks: initialData.blocks || [],
+    observations: initialData.observations || [],
+    hoursWorked: initialData.hoursWorked || 8,
+    additionalNotes: initialData.additionalNotes || "",
   });
 
   const [isGenerating, startGenerating] = useTransition();
   const [activeTab, setActiveTab] = useState("builder");
+  const isInitialLoad = useRef(true);
 
   // DnD Kit sensors
   const sensors = useSensors(
@@ -183,129 +196,20 @@ export default function DailyReportScreen() {
     }
   };
 
-  // Save shared header data to localStorage
-  const saveSharedHeader = (data: DailyReportData) => {
-    const sharedHeader = {
-      name: data.name,
-      project: data.project,
-      sprint: {
-        from: data.sprint.from ? format(data.sprint.from, "dd/MM/yyyy") : null,
-        to: data.sprint.to ? format(data.sprint.to, "dd/MM/yyyy") : null,
-      },
-    };
-
-    try {
-      localStorage.setItem(SHARED_HEADER_KEY, JSON.stringify(sharedHeader));
-    } catch (error) {
-      console.error("Error saving shared header to localStorage:", error);
-    }
-  };
-
-  // Save daily-specific data to localStorage
-  const saveData = (data: DailyReportData) => {
-    const dataToSave: DailyReportLocalStorageData = {
-      name: data.name,
-      project: data.project,
-      sprint: {
-        from: data.sprint.from ? format(data.sprint.from, "dd/MM/yyyy") : null,
-        to: data.sprint.to ? format(data.sprint.to, "dd/MM/yyyy") : null,
-      },
-      completedTasks: data.completedTasks,
-      pendingTasks: data.pendingTasks,
-      blocks: data.blocks,
-      observations: data.observations,
-      hoursWorked: data.hoursWorked,
-      additionalNotes: data.additionalNotes,
-    };
-
-    try {
-      localStorage.setItem(
-        V2_DAILY_REPORT_STORAGE_KEY,
-        JSON.stringify(dataToSave)
-      );
-      // Also save shared header
-      saveSharedHeader(data);
-    } catch (error) {
-      console.error("Error saving to localStorage:", error);
-    }
-  };
-
-  // Load shared header data from localStorage
-  const loadSharedHeader = () => {
-    try {
-      const savedHeader = localStorage.getItem(SHARED_HEADER_KEY);
-      if (savedHeader) {
-        const headerData = JSON.parse(savedHeader);
-        return {
-          name: headerData.name || "",
-          project: headerData.project || "",
-          sprint: {
-            from: headerData.sprint?.from
-              ? parse(headerData.sprint?.from, "dd/MM/yyyy", new Date())
-              : null,
-            to: headerData.sprint?.to
-              ? parse(headerData.sprint?.to, "dd/MM/yyyy", new Date())
-              : null,
-          },
-        };
-      }
-    } catch (error) {
-      console.error("Error loading shared header from localStorage:", error);
-    }
-    return {
-      name: "",
-      project: "",
-      sprint: { from: null, to: null },
-    };
-  };
-
-  // Load data from localStorage
-  const loadData = () => {
-    try {
-      const sharedHeader = loadSharedHeader();
-      const saved = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
-
-      if (saved) {
-        const savedData: DailyReportLocalStorageData = JSON.parse(saved);
-
-        setReportData((prev) => ({
-          ...prev,
-          date: new Date(),
-          name: sharedHeader.name,
-          project: sharedHeader.project,
-          sprint: sharedHeader.sprint,
-          completedTasks: savedData.completedTasks || [],
-          pendingTasks: savedData.pendingTasks || [],
-          blocks: savedData.blocks || [],
-          observations: savedData.observations || [],
-          hoursWorked: savedData.hoursWorked || 8,
-          additionalNotes: savedData.additionalNotes || "",
-        }));
-      } else {
-        // If no saved data, at least load the shared header
-        setReportData((prev) => ({
-          ...prev,
-          date: new Date(),
-          name: sharedHeader.name,
-          project: sharedHeader.project,
-          sprint: sharedHeader.sprint,
-        }));
-      }
-    } catch (error) {
-      console.error("Error loading from localStorage:", error);
-    }
-  };
-
-  // Load data when component mounts
+  // Set flag to false after initial load is complete
   useEffect(() => {
-    loadData();
+    const timer = setTimeout(() => (isInitialLoad.current = false), 1000);
+    return () => clearTimeout(timer);
   }, []);
 
-  // Debounced save function to prevent excessive localStorage writes
+  // Debounced function to notify parent of data changes
   useEffect(() => {
+    // Don't notify during initial load to prevent overwriting migrated data
+    if (isInitialLoad.current) return;
+
     const debounceTimer = setTimeout(() => {
-      saveData(reportData);
-    }, 500); // Wait 500ms after the last change before saving
+      onDataChange(reportData);
+    }, 500); // Wait 500ms after the last change before notifying parent
 
     return () => {
       clearTimeout(debounceTimer);
@@ -325,29 +229,25 @@ export default function DailyReportScreen() {
 
   // Clear saved data
   const clearSavedInfo = () => {
-    try {
-      localStorage.removeItem(V2_DAILY_REPORT_STORAGE_KEY);
-      setReportData((prev) => ({
-        ...prev,
-        date: null,
-        name: "",
-        project: "",
-        sprint: {
-          from: null,
-          to: null,
-        },
-        completedTasks: [],
-        pendingTasks: [],
-        blocks: [],
-        observations: [],
-        hoursWorked: 8,
-        additionalNotes: "",
-      }));
-      toast.success("Datos borrados del navegador");
-    } catch (error) {
-      console.error("Error clearing localStorage:", error);
-      toast.error("Error al borrar los datos");
-    }
+    const clearedData = {
+      date: new Date(),
+      name: "",
+      project: "",
+      sprint: {
+        from: null,
+        to: null,
+      },
+      completedTasks: [],
+      pendingTasks: [],
+      blocks: [],
+      observations: [],
+      hoursWorked: 8,
+      additionalNotes: "",
+    };
+
+    setReportData(clearedData);
+    onDataChange(clearedData);
+    toast.success("Datos borrados del navegador");
   };
 
   const updateCompletedTask = (
