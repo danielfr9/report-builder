@@ -35,9 +35,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn, debounce } from "@/lib/utils";
+import { cn, debounce, toSentenceCase } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
-import { es, id } from "date-fns/locale";
+import { es } from "date-fns/locale";
 import { format, parse } from "date-fns";
 import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf";
 import { DateRange } from "react-day-picker";
@@ -323,13 +323,6 @@ export default function WeeklyReportScreen({
         (observation) => observation.id !== id
       ),
     }));
-  };
-
-  const toSentenceCase = (str: string) => {
-    return str
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
   };
 
   const generatePDF = () => {
