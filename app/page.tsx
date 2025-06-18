@@ -9,6 +9,7 @@ import {
   V2_WEEKLY_REPORT_STORAGE_KEY,
   V1_WEEKLY_REPORT_STORAGE_KEY,
   V2_SHARED_HEADER_KEY,
+  V1_SHARED_HEADER_KEY,
 } from "@/lib/constants/localstorage-keys";
 import {
   DailyReportLocalStorageData,
@@ -35,6 +36,8 @@ interface PreviousWeeklyReportLocalStorageData
 }
 
 const migrateLocalStorageData = () => {
+  localStorage.removeItem(V1_SHARED_HEADER_KEY);
+
   const v2DailyData = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
   const v2WeeklyData = localStorage.getItem(V2_WEEKLY_REPORT_STORAGE_KEY);
 
