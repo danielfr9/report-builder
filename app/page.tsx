@@ -32,11 +32,9 @@ interface PreviousWeeklyReportLocalStorageData
 }
 
 const migrateLocalStorageData = () => {
-  console.log("Starting migration...");
   const v2DailyData = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
   const v2WeeklyData = localStorage.getItem(V2_WEEKLY_REPORT_STORAGE_KEY);
 
-  console.log("Current v2 data:", { v2DailyData, v2WeeklyData });
   const dailyData = localStorage.getItem(DAILY_REPORT_STORAGE_KEY);
   if (dailyData && !v2DailyData) {
     const dailyDataObject: PreviousDailyReportLocalStorageData =
@@ -63,17 +61,11 @@ const migrateLocalStorageData = () => {
       })),
     };
 
-    console.log("Migrating daily data:", {
-      from: dailyDataObject,
-      to: newDailyData,
-    });
-
     try {
       localStorage.setItem(
         V2_DAILY_REPORT_STORAGE_KEY,
         JSON.stringify(newDailyData)
       );
-      console.log("Daily data migration successful");
     } catch (error) {
       console.error("Error saving daily data:", error);
     }
@@ -102,17 +94,11 @@ const migrateLocalStorageData = () => {
       })),
     };
 
-    console.log("Migrating weekly data:", {
-      from: weeklyDataObject,
-      to: newWeeklyData,
-    });
-
     try {
       localStorage.setItem(
         V2_WEEKLY_REPORT_STORAGE_KEY,
         JSON.stringify(newWeeklyData)
       );
-      console.log("Weekly data migration successful");
     } catch (error) {
       console.error("Error saving weekly data:", error);
     }
@@ -285,43 +271,43 @@ export default function ReportBuilder() {
   };
 
   // Clear all data
-  // const clearAllData = () => {
-  //   try {
-  //     localStorage.removeItem(V2_DAILY_REPORT_STORAGE_KEY);
-  //     localStorage.removeItem(V2_WEEKLY_REPORT_STORAGE_KEY);
-  //     localStorage.removeItem("shared-header");
+  const clearAllData = () => {
+    try {
+      localStorage.removeItem(V2_DAILY_REPORT_STORAGE_KEY);
+      localStorage.removeItem(V2_WEEKLY_REPORT_STORAGE_KEY);
+      localStorage.removeItem("shared-header");
 
-  //     // Reset state to empty data
-  //     const emptyDailyData: DailyReportLocalStorageData = {
-  //       name: "",
-  //       project: "",
-  //       sprint: { from: null, to: null },
-  //       completedTasks: [],
-  //       pendingTasks: [],
-  //       blocks: [],
-  //       observations: [],
-  //       hoursWorked: 8,
-  //       additionalNotes: "",
-  //     };
+      // Reset state to empty data
+      const emptyDailyData: DailyReportLocalStorageData = {
+        name: "",
+        project: "",
+        sprint: { from: null, to: null },
+        completedTasks: [],
+        pendingTasks: [],
+        blocks: [],
+        observations: [],
+        hoursWorked: 8,
+        additionalNotes: "",
+      };
 
-  //     const emptyWeeklyData: WeeklyReportLocalStorageData = {
-  //       name: "",
-  //       project: "",
-  //       sprint: { from: null, to: null },
-  //       completedTasks: [],
-  //       pendingTasks: [],
-  //       blocks: [],
-  //       observations: [],
-  //       hoursWorked: 40,
-  //       additionalNotes: "",
-  //     };
+      const emptyWeeklyData: WeeklyReportLocalStorageData = {
+        name: "",
+        project: "",
+        sprint: { from: null, to: null },
+        completedTasks: [],
+        pendingTasks: [],
+        blocks: [],
+        observations: [],
+        hoursWorked: 40,
+        additionalNotes: "",
+      };
 
-  //     setDailyData(emptyDailyData);
-  //     setWeeklyData(emptyWeeklyData);
-  //   } catch (error) {
-  //     console.error("Error clearing localStorage:", error);
-  //   }
-  // };
+      setDailyData(emptyDailyData);
+      setWeeklyData(emptyWeeklyData);
+    } catch (error) {
+      console.error("Error clearing localStorage:", error);
+    }
+  };
 
   useEffect(() => {
     migrateLocalStorageData();

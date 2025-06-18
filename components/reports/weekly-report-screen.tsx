@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useTransition, useEffect, useMemo, useRef } from "react";
+import {
+  useState,
+  useTransition,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,7 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { cn, debounce } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { es, id } from "date-fns/locale";
 import { format, parse } from "date-fns";
@@ -57,10 +64,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import {
-  SHARED_HEADER_KEY,
-  V2_WEEKLY_REPORT_STORAGE_KEY,
-} from "@/lib/constants/localstorage-keys";
+
 import AddTaskForm from "./weekly/add-task-form";
 import AddPendingTaskForm from "./weekly/add-pending-task-form";
 import SortableTaskItem from "./weekly/sortable-task-item";
@@ -81,23 +85,33 @@ export default function WeeklyReportScreen({
 }: WeeklyReportScreenProps) {
   const [reportData, setReportData] = useState<WeeklyReportData>({
     date: new Date(),
-    name: "",
-    project: "",
+    name: initialData.name || "",
+    project: initialData.project || "",
     sprint: {
-      from: null,
-      to: null,
+      from: initialData.sprint?.from
+        ? parse(initialData.sprint.from, "dd/MM/yyyy", new Date())
+        : null,
+      to: initialData.sprint?.to
+        ? parse(initialData.sprint.to, "dd/MM/yyyy", new Date())
+        : null,
     },
-    completedTasks: [],
-    pendingTasks: [],
-    blocks: [],
-    observations: [],
-    hoursWorked: 8,
-    additionalNotes: "",
+    completedTasks: initialData.completedTasks || [],
+    pendingTasks: initialData.pendingTasks || [],
+    blocks: initialData.blocks || [],
+    observations: initialData.observations || [],
+    hoursWorked: initialData.hoursWorked || 40,
+    additionalNotes: initialData.additionalNotes || "",
   });
 
   const [isGenerating, startGenerating] = useTransition();
   const [activeTab, setActiveTab] = useState("builder");
   const isInitialLoad = useRef(true);
+  const debouncedOnChange = useCallback(
+    debounce((data) => {
+      onDataChange(data);
+    }, 1000),
+    [onDataChange]
+  );
 
   // DnD Kit sensors
   const sensors = useSensors(
@@ -191,138 +205,18 @@ export default function WeeklyReportScreen({
     }
   };
 
-  // Save shared header data to localStorage
-  const saveSharedHeader = (data: WeeklyReportData) => {
-    const sharedHeader = {
-      name: data.name,
-      project: data.project,
-      sprint: {
-        from: data.sprint.from ? format(data.sprint.from, "dd/MM/yyyy") : null,
-        to: data.sprint.to ? format(data.sprint.to, "dd/MM/yyyy") : null,
-      },
-    };
-
-    try {
-      localStorage.setItem(SHARED_HEADER_KEY, JSON.stringify(sharedHeader));
-    } catch (error) {
-      console.error("Error saving shared header to localStorage:", error);
-    }
-  };
-
-  // Save weekly-specific data to localStorage
-  const saveData = (data: WeeklyReportData) => {
-    const dataToSave: WeeklyReportLocalStorageData = {
-      name: data.name,
-      project: data.project,
-      sprint: {
-        from: data.sprint.from ? format(data.sprint.from, "dd/MM/yyyy") : null,
-        to: data.sprint.to ? format(data.sprint.to, "dd/MM/yyyy") : null,
-      },
-      completedTasks: data.completedTasks,
-      pendingTasks: data.pendingTasks,
-      blocks: data.blocks,
-      observations: data.observations,
-      hoursWorked: data.hoursWorked,
-      additionalNotes: data.additionalNotes,
-    };
-
-    try {
-      localStorage.setItem(
-        V2_WEEKLY_REPORT_STORAGE_KEY,
-        JSON.stringify(dataToSave)
-      );
-      // Also save shared header
-      saveSharedHeader(data);
-    } catch (error) {
-      console.error("Error saving to localStorage:", error);
-    }
-  };
-
-  // Load shared header data from localStorage
-  const loadSharedHeader = () => {
-    try {
-      const savedHeader = localStorage.getItem(SHARED_HEADER_KEY);
-      if (savedHeader) {
-        const headerData = JSON.parse(savedHeader);
-        return {
-          name: headerData.name || "",
-          project: headerData.project || "",
-          sprint: {
-            from: headerData.sprint?.from
-              ? parse(headerData.sprint?.from, "dd/MM/yyyy", new Date())
-              : null,
-            to: headerData.sprint?.to
-              ? parse(headerData.sprint?.to, "dd/MM/yyyy", new Date())
-              : null,
-          },
-        };
-      }
-    } catch (error) {
-      console.error("Error loading shared header from localStorage:", error);
-    }
-    return {
-      name: "",
-      project: "",
-      sprint: { from: null, to: null },
-    };
-  };
-
-  // Load data from localStorage
-  const loadData = () => {
-    try {
-      const sharedHeader = loadSharedHeader();
-      const saved = localStorage.getItem(V2_WEEKLY_REPORT_STORAGE_KEY);
-
-      if (saved) {
-        const savedData: WeeklyReportLocalStorageData = JSON.parse(saved);
-
-        setReportData((prev) => ({
-          ...prev,
-          date: new Date(),
-          name: sharedHeader.name,
-          project: sharedHeader.project,
-          sprint: sharedHeader.sprint,
-          completedTasks: savedData.completedTasks || [],
-          pendingTasks: savedData.pendingTasks || [],
-          blocks: savedData.blocks || [],
-          observations: savedData.observations || [],
-          hoursWorked: savedData.hoursWorked || 40,
-          additionalNotes: savedData.additionalNotes || "",
-        }));
-      } else {
-        // If no saved data, at least load the shared header
-        setReportData((prev) => ({
-          ...prev,
-          name: sharedHeader.name,
-          project: sharedHeader.project,
-          sprint: sharedHeader.sprint,
-        }));
-      }
-    } catch (error) {
-      console.error("Error loading from localStorage:", error);
-    }
-  };
-
-  // Load data when component mounts
+  // Set flag to false after initial load is complete
   useEffect(() => {
-    loadData();
-    // Set flag to false after initial load is complete
     const timer = setTimeout(() => (isInitialLoad.current = false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Debounced save function to prevent excessive localStorage writes
+  // Debounced function to notify parent of data changes
   useEffect(() => {
-    // Don't save during initial load to prevent overwriting migrated data
+    // Don't notify during initial load to prevent overwriting migrated data
     if (isInitialLoad.current) return;
 
-    const debounceTimer = setTimeout(() => {
-      saveData(reportData);
-    }, 500); // Wait 500ms after the last change before saving
-
-    return () => {
-      clearTimeout(debounceTimer);
-    };
+    debouncedOnChange(reportData); // Wait 1000ms after the last change before notifying parent
   }, [
     reportData.date,
     reportData.name,
@@ -338,29 +232,25 @@ export default function WeeklyReportScreen({
 
   // Clear saved data
   const clearSavedInfo = () => {
-    try {
-      localStorage.removeItem(V2_WEEKLY_REPORT_STORAGE_KEY);
-      setReportData((prev) => ({
-        ...prev,
-        date: null,
-        name: "",
-        project: "",
-        sprint: {
-          from: null,
-          to: null,
-        },
-        completedTasks: [],
-        pendingTasks: [],
-        blocks: [],
-        observations: [],
-        hoursWorked: 8,
-        additionalNotes: "",
-      }));
-      toast.success("Datos borrados del navegador");
-    } catch (error) {
-      console.error("Error clearing localStorage:", error);
-      toast.error("Error al borrar los datos");
-    }
+    const clearedData = {
+      date: new Date(),
+      name: "",
+      project: "",
+      sprint: {
+        from: null,
+        to: null,
+      },
+      completedTasks: [],
+      pendingTasks: [],
+      blocks: [],
+      observations: [],
+      hoursWorked: 40,
+      additionalNotes: "",
+    };
+
+    setReportData(clearedData);
+    onDataChange(clearedData);
+    toast.success("Datos borrados del navegador");
   };
 
   const updateCompletedTask = (

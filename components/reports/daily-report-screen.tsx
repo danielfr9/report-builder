@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useTransition, useEffect, useMemo, useRef } from "react";
+import {
+  useState,
+  useTransition,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,7 +36,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { cn, debounce } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { es } from "date-fns/locale";
 import { format, parse } from "date-fns";
@@ -58,10 +65,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import {
-  SHARED_HEADER_KEY,
-  V2_DAILY_REPORT_STORAGE_KEY,
-} from "@/lib/constants/localstorage-keys";
+
 import AddTaskForm from "./daily/add-task-form";
 import AddPendingTaskForm from "./daily/add-pending-task-form";
 import AddBlockForm from "./daily/add-block-form";
@@ -103,6 +107,14 @@ export default function DailyReportScreen({
   const [isGenerating, startGenerating] = useTransition();
   const [activeTab, setActiveTab] = useState("builder");
   const isInitialLoad = useRef(true);
+
+  // Only create the debounced function once
+  const debouncedOnChange = useCallback(
+    debounce((data) => {
+      onDataChange(data);
+    }, 1000),
+    [onDataChange]
+  );
 
   // DnD Kit sensors
   const sensors = useSensors(
@@ -207,13 +219,7 @@ export default function DailyReportScreen({
     // Don't notify during initial load to prevent overwriting migrated data
     if (isInitialLoad.current) return;
 
-    const debounceTimer = setTimeout(() => {
-      onDataChange(reportData);
-    }, 500); // Wait 500ms after the last change before notifying parent
-
-    return () => {
-      clearTimeout(debounceTimer);
-    };
+    debouncedOnChange(reportData); // Wait 1000ms after the last change before notifying parent
   }, [
     reportData.date,
     reportData.name,
