@@ -36,8 +36,6 @@ interface PreviousWeeklyReportLocalStorageData
 }
 
 const migrateLocalStorageData = () => {
-  localStorage.removeItem(V1_SHARED_HEADER_KEY);
-
   const v2DailyData = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
   const v2WeeklyData = localStorage.getItem(V2_WEEKLY_REPORT_STORAGE_KEY);
 
@@ -213,7 +211,10 @@ export default function ReportBuilder() {
   const handleWeeklyDataChange = (data: WeeklyReportData) => {
     const dataToSave: WeeklyReportLocalStorageData = {
       header: formatHeaderData(data.header),
-      completedTasks: data.completedTasks,
+      completedTasks: data.completedTasks.map((task) => ({
+        ...task,
+        finishDate: task.finishDate?.toISOString() ?? null,
+      })),
       pendingTasks: data.pendingTasks,
       blocks: data.blocks,
       observations: data.observations,
@@ -276,7 +277,11 @@ export default function ReportBuilder() {
 
         setWeeklyData({
           header: sharedHeader ?? parsedHeader,
-          completedTasks: weeklyDataParsed.completedTasks || [],
+          completedTasks:
+            weeklyDataParsed.completedTasks?.map((task) => ({
+              ...task,
+              finishDate: task.finishDate ? parseISO(task.finishDate) : null,
+            })) || [],
           pendingTasks: weeklyDataParsed.pendingTasks || [],
           blocks: weeklyDataParsed.blocks || [],
           observations: weeklyDataParsed.observations || [],
@@ -345,7 +350,10 @@ export default function ReportBuilder() {
   };
 
   useEffect(() => {
-    migrateLocalStorageData();
+    // migrateLocalStorageData();
+    localStorage.removeItem(V1_SHARED_HEADER_KEY);
+    localStorage.removeItem(V1_DAILY_REPORT_STORAGE_KEY);
+    localStorage.removeItem(V1_WEEKLY_REPORT_STORAGE_KEY);
     loadData();
   }, []);
 

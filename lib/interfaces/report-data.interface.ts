@@ -75,6 +75,10 @@ export interface WeeklyTask {
   finishDate: Date | null;
 }
 
+type WeeklyTaskLocalStorage = Omit<WeeklyTask, "finishDate"> & {
+  finishDate: string | null;
+};
+
 export interface WeeklyPendingTask {
   id: string;
   name: string;
@@ -104,7 +108,7 @@ export interface WeeklyReportData {
 
 export interface WeeklyReportLocalStorageData {
   header?: ReportHeaderLocalStorage;
-  completedTasks?: WeeklyTask[];
+  completedTasks?: WeeklyTaskLocalStorage[];
   pendingTasks?: WeeklyPendingTask[];
   blocks?: WeeklyBlock[];
   observations?: WeeklyObservation[];
