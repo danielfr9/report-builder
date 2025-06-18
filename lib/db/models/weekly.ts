@@ -35,6 +35,7 @@ export interface WeeklyReportMeta {
   sprintTo: string;
   hoursWorked: number;
   additionalNotes: string;
+  lastModified: string;
 }
 
 export interface WeeklyReport {

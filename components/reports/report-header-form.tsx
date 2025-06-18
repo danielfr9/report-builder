@@ -26,7 +26,7 @@ import { ReportHeader } from "@/lib/interfaces/report-data.interface";
 interface ReportHeaderFormProps {
   header: ReportHeader;
   onHeaderChange: (header: ReportHeader) => void;
-  onClearData: () => void;
+  onClearData: () => Promise<void>;
 }
 
 export default function ReportHeaderForm({
@@ -159,8 +159,7 @@ export default function ReportHeaderForm({
           </Popover>
         </div>
         <small className="col-span-1 md:col-span-2 text-xs text-gray-500 inline-block ml-auto">
-          *Todos los datos del reporte se guardan automáticamente en tu
-          navegador.
+          *Todos los datos del reporte se guardan automáticamente en IndexedDB.
         </small>
       </CardContent>
     </Card>

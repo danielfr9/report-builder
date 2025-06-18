@@ -63,7 +63,7 @@ import ReportHeaderForm from "./report-header-form";
 
 interface WeeklyReportScreenProps {
   initialData: WeeklyReportData;
-  onDataChange: (data: WeeklyReportData) => void;
+  onDataChange: (data: WeeklyReportData) => Promise<void>;
 }
 
 export default function WeeklyReportScreen({
@@ -92,8 +92,8 @@ export default function WeeklyReportScreen({
   const [activeTab, setActiveTab] = useState("builder");
   const isInitialLoad = useRef(true);
   const debouncedOnChange = useCallback(
-    debounce((data) => {
-      onDataChange(data);
+    debounce(async (data) => {
+      await onDataChange(data);
     }, 1000),
     [onDataChange]
   );
@@ -216,7 +216,7 @@ export default function WeeklyReportScreen({
   ]);
 
   // Clear saved data
-  const clearSavedInfo = () => {
+  const clearSavedInfo = async () => {
     const clearedData = {
       header: {
         date: new Date(),
@@ -236,7 +236,7 @@ export default function WeeklyReportScreen({
     };
 
     setReportData(clearedData);
-    onDataChange(clearedData);
+    await onDataChange(clearedData);
     toast.success("Datos borrados del navegador");
   };
 

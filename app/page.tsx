@@ -4,227 +4,153 @@ import DailyReportScreen from "@/components/reports/daily-report-screen";
 import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
 import {
-  V1_DAILY_REPORT_STORAGE_KEY,
-  V2_DAILY_REPORT_STORAGE_KEY,
-  V2_WEEKLY_REPORT_STORAGE_KEY,
-  V1_WEEKLY_REPORT_STORAGE_KEY,
-  V2_SHARED_HEADER_KEY,
-  V1_SHARED_HEADER_KEY,
-} from "@/lib/constants/localstorage-keys";
-import {
-  DailyReportLocalStorageData,
-  WeeklyReportLocalStorageData,
   DailyReportData,
   WeeklyReportData,
-  ReportHeaderLocalStorage,
-  ReportHeader,
 } from "@/lib/interfaces/report-data.interface";
-import { parseISO } from "date-fns";
+import {
+  DailyReportService,
+  WeeklyReportService,
+  MigrationService,
+} from "@/lib/db/services/report-service";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function ReportBuilder() {
   const [reportType, setReportType] = useState<"daily" | "weekly">("daily");
   const [dailyData, setDailyData] = useState<DailyReportData | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeeklyReportData | null>(null);
-
-  // Helper function to parse header data with proper date conversion
-  const parseHeaderData = (
-    headerData: ReportHeaderLocalStorage | null | undefined
-  ): ReportHeader => {
-    if (!headerData)
-      return {
-        date: null,
-        name: "",
-        project: "",
-        sprint: { from: null, to: null },
-      };
-
-    return {
-      date: headerData.date ? parseISO(headerData.date) : null,
-      name: headerData.name || "",
-      project: headerData.project || "",
-      sprint: {
-        from: headerData.sprint?.from ? parseISO(headerData.sprint.from) : null,
-        to: headerData.sprint?.to ? parseISO(headerData.sprint.to) : null,
-      },
-    };
-  };
-
-  // Format header data to be saved to localStorage
-  const formatHeaderData = (
-    headerData: ReportHeader
-  ): ReportHeaderLocalStorage => {
-    return {
-      date: headerData.date?.toISOString() ?? null,
-      name: headerData.name,
-      project: headerData.project,
-      sprint: {
-        from: headerData.sprint?.from?.toISOString() ?? null,
-        to: headerData.sprint?.to?.toISOString() ?? null,
-      },
-    };
-  };
-
-  // Load shared header data from localStorage
-  const loadSharedHeader = (): ReportHeader => {
-    try {
-      const savedHeader = localStorage.getItem(V2_SHARED_HEADER_KEY);
-      if (savedHeader) {
-        return parseHeaderData(JSON.parse(savedHeader));
-      }
-    } catch (error) {
-      console.error("Error loading shared header from localStorage:", error);
-    }
-    return {
-      date: new Date(),
-      name: "",
-      project: "",
-      sprint: { from: null, to: null },
-    };
-  };
-
-  // Save shared header data to localStorage
-  const saveSharedHeader = (header: ReportHeader) => {
-    try {
-      const sharedHeader = formatHeaderData(header);
-      localStorage.setItem(V2_SHARED_HEADER_KEY, JSON.stringify(sharedHeader));
-    } catch (error) {
-      console.error("Error saving shared header to localStorage:", error);
-    }
-  };
+  const [currentDailyReportId, setCurrentDailyReportId] = useState<
+    number | null
+  >(null);
+  const [currentWeeklyReportId, setCurrentWeeklyReportId] = useState<
+    number | null
+  >(null);
 
   // Handle daily data changes
-  const handleDailyDataChange = (data: DailyReportData) => {
-    const dataToSave: DailyReportLocalStorageData = {
-      header: formatHeaderData(data.header),
-      completedTasks: data.completedTasks,
-      pendingTasks: data.pendingTasks,
-      blocks: data.blocks,
-      observations: data.observations,
-      hoursWorked: data.hoursWorked,
-      additionalNotes: data.additionalNotes,
-    };
-
+  const handleDailyDataChange = async (data: DailyReportData) => {
     try {
-      localStorage.setItem(
-        V2_DAILY_REPORT_STORAGE_KEY,
-        JSON.stringify(dataToSave)
-      );
-      saveSharedHeader(data.header);
+      let reportId: number;
+
+      if (currentDailyReportId) {
+        // Update existing report
+        await DailyReportService.update(currentDailyReportId, data);
+        reportId = currentDailyReportId;
+      } else {
+        // Create new report
+        reportId = await DailyReportService.save(data);
+        setCurrentDailyReportId(reportId);
+      }
+
       setDailyData(data);
     } catch (error) {
-      console.error("Error saving daily data to localStorage:", error);
+      console.error("Error saving daily data to IndexedDB:", error);
+      toast.error("Error al guardar el reporte diario");
     }
   };
 
   // Handle weekly data changes
-  const handleWeeklyDataChange = (data: WeeklyReportData) => {
-    const dataToSave: WeeklyReportLocalStorageData = {
-      header: formatHeaderData(data.header),
-      completedTasks: data.completedTasks.map((task) => ({
-        ...task,
-        finishDate: task.finishDate?.toISOString() ?? null,
-      })),
-      pendingTasks: data.pendingTasks,
-      blocks: data.blocks,
-      observations: data.observations,
-      hoursWorked: data.hoursWorked,
-      additionalNotes: data.additionalNotes,
-    };
-
+  const handleWeeklyDataChange = async (data: WeeklyReportData) => {
     try {
-      localStorage.setItem(
-        V2_WEEKLY_REPORT_STORAGE_KEY,
-        JSON.stringify(dataToSave)
-      );
-      saveSharedHeader(data.header);
+      let reportId: number;
+
+      if (currentWeeklyReportId) {
+        // Update existing report
+        await WeeklyReportService.update(currentWeeklyReportId, data);
+        reportId = currentWeeklyReportId;
+      } else {
+        // Create new report
+        reportId = await WeeklyReportService.save(data);
+        setCurrentWeeklyReportId(reportId);
+      }
+
       setWeeklyData(data);
     } catch (error) {
-      console.error("Error saving weekly data to localStorage:", error);
+      console.error("Error saving weekly data to IndexedDB:", error);
+      toast.error("Error al guardar el reporte semanal");
     }
   };
 
-  // Load data from localStorage
-  const loadData = () => {
+  // Load data from IndexedDB
+  const loadData = async () => {
     try {
-      const sharedHeader = loadSharedHeader();
+      // Run migration first
+      await MigrationService.migrateFromLocalStorage();
 
-      // Load daily data
-      const savedDaily = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
-      if (savedDaily) {
-        const dailyDataParsed: DailyReportLocalStorageData =
-          JSON.parse(savedDaily);
-        const parsedHeader = parseHeaderData(dailyDataParsed.header);
+      // Load latest reports
+      const [latestDaily, latestWeekly] = await Promise.all([
+        DailyReportService.getLatest(),
+        WeeklyReportService.getLatest(),
+      ]);
 
-        setDailyData({
-          header: sharedHeader ?? parsedHeader,
-          completedTasks: dailyDataParsed.completedTasks || [],
-          pendingTasks: dailyDataParsed.pendingTasks || [],
-          blocks: dailyDataParsed.blocks || [],
-          observations: dailyDataParsed.observations || [],
-          hoursWorked: dailyDataParsed.hoursWorked || 8,
-          additionalNotes: dailyDataParsed.additionalNotes || "",
-        });
+      // Set daily data
+      if (latestDaily) {
+        setDailyData(latestDaily);
+        // Get the report ID from the latest report metadata
+        const dailyMeta = await DailyReportService.getAllMeta();
+        if (dailyMeta.length > 0) {
+          setCurrentDailyReportId(dailyMeta[0].id || null);
+        }
       } else {
-        setDailyData({
-          header: sharedHeader,
+        // Create empty daily data
+        const emptyDailyData: DailyReportData = {
+          header: {
+            date: new Date(),
+            name: "",
+            project: "",
+            sprint: { from: null, to: null },
+          },
           completedTasks: [],
           pendingTasks: [],
           blocks: [],
           observations: [],
           hoursWorked: 8,
           additionalNotes: "",
-        });
+        };
+        setDailyData(emptyDailyData);
       }
 
-      // Load weekly data
-      const savedWeekly = localStorage.getItem(V2_WEEKLY_REPORT_STORAGE_KEY);
-      if (savedWeekly) {
-        const weeklyDataParsed: WeeklyReportLocalStorageData =
-          JSON.parse(savedWeekly);
-        const parsedHeader = parseHeaderData(weeklyDataParsed.header);
-
-        setWeeklyData({
-          header: sharedHeader ?? parsedHeader,
-          completedTasks:
-            weeklyDataParsed.completedTasks?.map((task) => ({
-              ...task,
-              finishDate: task.finishDate ? parseISO(task.finishDate) : null,
-            })) || [],
-          pendingTasks: weeklyDataParsed.pendingTasks || [],
-          blocks: weeklyDataParsed.blocks || [],
-          observations: weeklyDataParsed.observations || [],
-          hoursWorked: weeklyDataParsed.hoursWorked || 40,
-          additionalNotes: weeklyDataParsed.additionalNotes || "",
-        });
+      // Set weekly data
+      if (latestWeekly) {
+        setWeeklyData(latestWeekly);
+        // Get the report ID from the latest report metadata
+        const weeklyMeta = await WeeklyReportService.getAllMeta();
+        if (weeklyMeta.length > 0) {
+          setCurrentWeeklyReportId(weeklyMeta[0].id || null);
+        }
       } else {
-        setWeeklyData({
-          header: sharedHeader,
+        // Create empty weekly data
+        const emptyWeeklyData: WeeklyReportData = {
+          header: {
+            date: new Date(),
+            name: "",
+            project: "",
+            sprint: { from: null, to: null },
+          },
           completedTasks: [],
           pendingTasks: [],
           blocks: [],
           observations: [],
           hoursWorked: 40,
           additionalNotes: "",
-        });
+        };
+        setWeeklyData(emptyWeeklyData);
       }
     } catch (error) {
-      console.error("Error loading from localStorage:", error);
+      console.error("Error loading from IndexedDB:", error);
+      toast.error("Error al cargar los datos");
     }
   };
 
   // Clear all data
-  const clearAllData = () => {
+  const clearAllData = async () => {
     try {
-      localStorage.removeItem(V2_DAILY_REPORT_STORAGE_KEY);
-      localStorage.removeItem(V2_WEEKLY_REPORT_STORAGE_KEY);
-      localStorage.removeItem(V2_SHARED_HEADER_KEY);
+      await MigrationService.clearAll();
 
       // Reset state to empty data
       const emptyDailyData: DailyReportData = {
         header: {
-          date: null,
+          date: new Date(),
           name: "",
           project: "",
           sprint: { from: null, to: null },
@@ -239,7 +165,7 @@ export default function ReportBuilder() {
 
       const emptyWeeklyData: WeeklyReportData = {
         header: {
-          date: null,
+          date: new Date(),
           name: "",
           project: "",
           sprint: { from: null, to: null },
@@ -254,15 +180,17 @@ export default function ReportBuilder() {
 
       setDailyData(emptyDailyData);
       setWeeklyData(emptyWeeklyData);
+      setCurrentDailyReportId(null);
+      setCurrentWeeklyReportId(null);
+
+      toast.success("Todos los datos han sido borrados");
     } catch (error) {
-      console.error("Error clearing localStorage:", error);
+      console.error("Error clearing IndexedDB:", error);
+      toast.error("Error al borrar los datos");
     }
   };
 
   useEffect(() => {
-    localStorage.removeItem(V1_SHARED_HEADER_KEY);
-    localStorage.removeItem(V1_DAILY_REPORT_STORAGE_KEY);
-    localStorage.removeItem(V1_WEEKLY_REPORT_STORAGE_KEY);
     loadData();
   }, []);
 
