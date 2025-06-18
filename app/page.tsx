@@ -35,6 +35,7 @@ export default function ReportBuilder() {
       if (currentDailyReportId) {
         // Update existing report
         await DailyReportService.update(currentDailyReportId, data);
+
         reportId = currentDailyReportId;
       } else {
         // Create new report
@@ -211,13 +212,13 @@ export default function ReportBuilder() {
       <div className={`${reportType === "daily" ? "block" : "hidden"}`}>
         <DailyReportScreen
           initialData={dailyData}
-          onDataChange={handleDailyDataChange}
+          saveChanges={handleDailyDataChange}
         />
       </div>
       <div className={`${reportType === "weekly" ? "block" : "hidden"}`}>
         <WeeklyReportScreen
           initialData={weeklyData}
-          onDataChange={handleWeeklyDataChange}
+          saveChanges={handleWeeklyDataChange}
         />
       </div>
 

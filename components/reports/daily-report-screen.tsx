@@ -26,13 +26,12 @@ import { DailyReportPreview } from "@/components/reports/daily-report-preview";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { debounce, toSentenceCase } from "@/lib/utils";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
 import {
   DailyPendingTask,
   DailyReportData,
   DailyTask,
-  DailyReportLocalStorageData,
   DailyBlock,
   DailyObservation,
 } from "@/lib/interfaces/report-data.interface";
@@ -64,12 +63,12 @@ import ReportHeaderForm from "./report-header-form";
 
 interface DailyReportScreenProps {
   initialData: DailyReportData;
-  onDataChange: (data: DailyReportData) => Promise<void>;
+  saveChanges: (data: DailyReportData) => Promise<void>;
 }
 
 export default function DailyReportScreen({
   initialData,
-  onDataChange,
+  saveChanges,
 }: DailyReportScreenProps) {
   const [reportData, setReportData] = useState<DailyReportData>({
     header: {
@@ -96,9 +95,9 @@ export default function DailyReportScreen({
   // Only create the debounced function once
   const debouncedOnChange = useCallback(
     debounce(async (data) => {
-      await onDataChange(data);
+      await saveChanges(data);
     }, 1000),
-    [onDataChange]
+    [saveChanges]
   );
 
   // DnD Kit sensors
@@ -205,18 +204,7 @@ export default function DailyReportScreen({
     if (isInitialLoad.current) return;
 
     debouncedOnChange(reportData); // Wait 1000ms after the last change before notifying parent
-  }, [
-    reportData.header.date,
-    reportData.header.name,
-    reportData.header.project,
-    reportData.header.sprint,
-    reportData.completedTasks,
-    reportData.pendingTasks,
-    reportData.blocks,
-    reportData.observations,
-    reportData.hoursWorked,
-    reportData.additionalNotes,
-  ]);
+  }, [reportData]);
 
   // Clear saved data
   const clearSavedInfo = async () => {
@@ -239,7 +227,7 @@ export default function DailyReportScreen({
     };
 
     setReportData(clearedData);
-    await onDataChange(clearedData);
+    await saveChanges(clearedData);
     toast.success("Datos borrados del navegador");
   };
 

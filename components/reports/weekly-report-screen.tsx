@@ -31,7 +31,6 @@ import {
   WeeklyPendingTask,
   WeeklyReportData,
   WeeklyTask,
-  WeeklyReportLocalStorageData,
   WeeklyBlock,
   WeeklyObservation,
 } from "@/lib/interfaces/report-data.interface";
@@ -63,12 +62,12 @@ import ReportHeaderForm from "./report-header-form";
 
 interface WeeklyReportScreenProps {
   initialData: WeeklyReportData;
-  onDataChange: (data: WeeklyReportData) => Promise<void>;
+  saveChanges: (data: WeeklyReportData) => Promise<void>;
 }
 
 export default function WeeklyReportScreen({
   initialData,
-  onDataChange,
+  saveChanges,
 }: WeeklyReportScreenProps) {
   const [reportData, setReportData] = useState<WeeklyReportData>({
     header: {
@@ -93,9 +92,9 @@ export default function WeeklyReportScreen({
   const isInitialLoad = useRef(true);
   const debouncedOnChange = useCallback(
     debounce(async (data) => {
-      await onDataChange(data);
+      await saveChanges(data);
     }, 1000),
-    [onDataChange]
+    [saveChanges]
   );
 
   // DnD Kit sensors
@@ -202,18 +201,7 @@ export default function WeeklyReportScreen({
     if (isInitialLoad.current) return;
 
     debouncedOnChange(reportData); // Wait 1000ms after the last change before notifying parent
-  }, [
-    reportData.header.date,
-    reportData.header.name,
-    reportData.header.project,
-    reportData.header.sprint,
-    reportData.completedTasks,
-    reportData.pendingTasks,
-    reportData.blocks,
-    reportData.observations,
-    reportData.hoursWorked,
-    reportData.additionalNotes,
-  ]);
+  }, [reportData]);
 
   // Clear saved data
   const clearSavedInfo = async () => {
@@ -236,7 +224,7 @@ export default function WeeklyReportScreen({
     };
 
     setReportData(clearedData);
-    await onDataChange(clearedData);
+    await saveChanges(clearedData);
     toast.success("Datos borrados del navegador");
   };
 
