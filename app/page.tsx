@@ -23,92 +23,6 @@ import { parseISO } from "date-fns";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-interface PreviousDailyReportLocalStorageData
-  extends Omit<DailyReportLocalStorageData, "blocks" | "observations"> {
-  blocks: string[];
-  observations: string[];
-}
-
-interface PreviousWeeklyReportLocalStorageData
-  extends Omit<WeeklyReportLocalStorageData, "blocks" | "observations"> {
-  blocks: string[];
-  observations: string[];
-}
-
-const migrateLocalStorageData = () => {
-  const v2DailyData = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
-  const v2WeeklyData = localStorage.getItem(V2_WEEKLY_REPORT_STORAGE_KEY);
-
-  const dailyData = localStorage.getItem(V1_DAILY_REPORT_STORAGE_KEY);
-  if (dailyData && !v2DailyData) {
-    const dailyDataObject: PreviousDailyReportLocalStorageData =
-      JSON.parse(dailyData);
-
-    // Blocks and observations are now arrays of objects
-    // We need to convert them to the new format
-    const blocks = dailyDataObject.blocks || [];
-    const observations = dailyDataObject.observations || [];
-
-    // We need to convert them to the new format
-    let timestamp = Date.now();
-    const newDailyData: DailyReportLocalStorageData = {
-      ...dailyDataObject,
-      blocks: blocks.map((block) => {
-        return {
-          id: (timestamp++).toString(),
-          name: block,
-        };
-      }),
-      observations: observations.map((observation) => ({
-        id: (timestamp++).toString(),
-        name: observation,
-      })),
-    };
-
-    try {
-      localStorage.setItem(
-        V2_DAILY_REPORT_STORAGE_KEY,
-        JSON.stringify(newDailyData)
-      );
-    } catch (error) {
-      console.error("Error saving daily data:", error);
-    }
-  }
-
-  const weeklyData = localStorage.getItem(V1_WEEKLY_REPORT_STORAGE_KEY);
-  if (weeklyData && !v2WeeklyData) {
-    const weeklyDataObject: PreviousWeeklyReportLocalStorageData =
-      JSON.parse(weeklyData);
-
-    const blocks = weeklyDataObject.blocks || [];
-    const observations = weeklyDataObject.observations || [];
-
-    let timestamp = Date.now();
-    const newWeeklyData: WeeklyReportLocalStorageData = {
-      ...weeklyDataObject,
-      blocks: blocks.map((block) => {
-        return {
-          id: (timestamp++).toString(),
-          name: block,
-        };
-      }),
-      observations: observations.map((observation) => ({
-        id: (timestamp++).toString(),
-        name: observation,
-      })),
-    };
-
-    try {
-      localStorage.setItem(
-        V2_WEEKLY_REPORT_STORAGE_KEY,
-        JSON.stringify(newWeeklyData)
-      );
-    } catch (error) {
-      console.error("Error saving weekly data:", error);
-    }
-  }
-};
-
 export default function ReportBuilder() {
   const [reportType, setReportType] = useState<"daily" | "weekly">("daily");
   const [dailyData, setDailyData] = useState<DailyReportData | null>(null);
@@ -125,8 +39,6 @@ export default function ReportBuilder() {
         project: "",
         sprint: { from: null, to: null },
       };
-
-    console.log("headerData", headerData);
 
     return {
       date: headerData.date ? parseISO(headerData.date) : null,
@@ -158,7 +70,6 @@ export default function ReportBuilder() {
   const loadSharedHeader = (): ReportHeader => {
     try {
       const savedHeader = localStorage.getItem(V2_SHARED_HEADER_KEY);
-      console.log("savedHeaderRAW", savedHeader);
       if (savedHeader) {
         return parseHeaderData(JSON.parse(savedHeader));
       }
@@ -238,7 +149,6 @@ export default function ReportBuilder() {
   const loadData = () => {
     try {
       const sharedHeader = loadSharedHeader();
-      console.log("sharedHeader", sharedHeader);
 
       // Load daily data
       const savedDaily = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
@@ -350,7 +260,6 @@ export default function ReportBuilder() {
   };
 
   useEffect(() => {
-    // migrateLocalStorageData();
     localStorage.removeItem(V1_SHARED_HEADER_KEY);
     localStorage.removeItem(V1_DAILY_REPORT_STORAGE_KEY);
     localStorage.removeItem(V1_WEEKLY_REPORT_STORAGE_KEY);
