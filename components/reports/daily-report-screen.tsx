@@ -21,27 +21,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import {
-  PlusIcon,
-  EyeIcon,
-  Loader2Icon,
-  DownloadIcon,
-  CalendarIcon,
-} from "lucide-react";
+import { PlusIcon, EyeIcon, Loader2Icon, DownloadIcon } from "lucide-react";
 import { DailyReportPreview } from "@/components/reports/daily-report-preview";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn, debounce, toSentenceCase } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import { es } from "date-fns/locale";
+import { debounce, toSentenceCase } from "@/lib/utils";
 import { format, parse } from "date-fns";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
-import { DateRange } from "react-day-picker";
 import {
   DailyPendingTask,
   DailyReportData,
@@ -74,9 +60,10 @@ import SortableTaskItem from "./daily/sortable-task-item";
 import SortablePendingTaskItem from "./daily/sortable-pending-task-item";
 import SortableBlockItem from "./daily/sortable-block-item";
 import SortableObservationItem from "./daily/sortable-observation-item";
+import ReportHeaderForm from "./report-header-form";
 
 interface DailyReportScreenProps {
-  initialData: DailyReportLocalStorageData;
+  initialData: DailyReportData;
   onDataChange: (data: DailyReportData) => void;
 }
 
@@ -85,16 +72,14 @@ export default function DailyReportScreen({
   onDataChange,
 }: DailyReportScreenProps) {
   const [reportData, setReportData] = useState<DailyReportData>({
-    date: new Date(),
-    name: initialData.name || "",
-    project: initialData.project || "",
-    sprint: {
-      from: initialData.sprint?.from
-        ? parse(initialData.sprint.from, "dd/MM/yyyy", new Date())
-        : null,
-      to: initialData.sprint?.to
-        ? parse(initialData.sprint.to, "dd/MM/yyyy", new Date())
-        : null,
+    header: {
+      date: initialData.header?.date || new Date(),
+      name: initialData.header?.name || "",
+      project: initialData.header?.project || "",
+      sprint: {
+        from: initialData.header?.sprint?.from ?? null,
+        to: initialData.header?.sprint?.to ?? null,
+      },
     },
     completedTasks: initialData.completedTasks || [],
     pendingTasks: initialData.pendingTasks || [],
@@ -221,10 +206,10 @@ export default function DailyReportScreen({
 
     debouncedOnChange(reportData); // Wait 1000ms after the last change before notifying parent
   }, [
-    reportData.date,
-    reportData.name,
-    reportData.project,
-    reportData.sprint,
+    reportData.header.date,
+    reportData.header.name,
+    reportData.header.project,
+    reportData.header.sprint,
     reportData.completedTasks,
     reportData.pendingTasks,
     reportData.blocks,
@@ -236,12 +221,14 @@ export default function DailyReportScreen({
   // Clear saved data
   const clearSavedInfo = () => {
     const clearedData = {
-      date: new Date(),
-      name: "",
-      project: "",
-      sprint: {
-        from: null,
-        to: null,
+      header: {
+        date: new Date(),
+        name: "",
+        project: "",
+        sprint: {
+          from: null,
+          to: null,
+        },
       },
       completedTasks: [],
       pendingTasks: [],
@@ -334,15 +321,15 @@ export default function DailyReportScreen({
       try {
         const currentDate = new Date();
         const name =
-          reportData.name !== ""
-            ? toSentenceCase(reportData.name.trim())
+          reportData.header.name !== ""
+            ? toSentenceCase(reportData.header.name.trim())
             : "reporte-diario";
 
         const formattedDate = format(currentDate, "yyyy-MM-dd");
 
         const res = await generateDailyReportPDFAction({
           ...reportData,
-          date: reportData.date,
+          header: reportData.header,
         });
 
         const blob = new Blob([res], { type: "application/pdf" });
@@ -410,161 +397,13 @@ export default function DailyReportScreen({
 
           <TabsContent value="builder" className="space-y-6">
             {/* Header Information */}
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col md:flex-row gap-2 justify-between items-center">
-                  <div>
-                    <CardTitle>Información general</CardTitle>
-                    <CardDescription>Datos básicos del reporte</CardDescription>
-                  </div>
-                  <Button
-                    onClick={clearSavedInfo}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs max-md:ml-auto"
-                  >
-                    Limpiar Datos
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="date">Fecha</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "h-10 w-full justify-start pr-10 text-left font-normal",
-                          !reportData.date && "text-muted-foreground"
-                        )}
-                        id="calendar-input"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                        {reportData.date
-                          ? format(reportData.date, "dd/MM/yyyy")
-                          : "Selecciona una fecha"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-[--radix-popover-trigger-width] p-0"
-                      align="start"
-                    >
-                      <Calendar
-                        className="!w-[var(--radix-popover-trigger-width)]"
-                        mode="single"
-                        selected={
-                          reportData.date
-                            ? new Date(reportData.date)
-                            : undefined
-                        }
-                        locale={es}
-                        onSelect={(date) => {
-                          if (date) {
-                            setReportData((prev) => ({
-                              ...prev,
-                              date: date,
-                            }));
-                          }
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div>
-                  <Label htmlFor="name">Nombre</Label>
-                  <Input
-                    id="name"
-                    placeholder="Tu nombre completo"
-                    value={reportData.name}
-                    onChange={(e) =>
-                      setReportData((prev) => ({
-                        ...prev,
-                        name: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="project">Proyecto</Label>
-                  <Input
-                    id="project"
-                    placeholder="Nombre del proyecto"
-                    value={reportData.project}
-                    onChange={(e) =>
-                      setReportData((prev) => ({
-                        ...prev,
-                        project: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="sprint">Sprint</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        id="sprint-input"
-                        variant="outline"
-                        className={cn(
-                          "h-10 w-full justify-start pr-10 text-left font-normal",
-                          !reportData.sprint && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                        {reportData.sprint.from ? (
-                          reportData.sprint.to ? (
-                            <>
-                              {format(reportData.sprint.from, "LLL dd, y")} -{" "}
-                              {format(reportData.sprint.to, "LLL dd, y")}
-                            </>
-                          ) : (
-                            format(reportData.sprint.from, "LLL dd, y")
-                          )
-                        ) : (
-                          <span>Selecciona un rango de fechas</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        autoFocus
-                        mode="range"
-                        defaultMonth={reportData.sprint.from || undefined}
-                        selected={reportData.sprint as DateRange}
-                        onSelect={(date: DateRange | undefined) => {
-                          if (date) {
-                            setReportData((prev) => ({
-                              ...prev,
-                              sprint: {
-                                from: date.from || null,
-                                to: date.to || null,
-                              },
-                            }));
-                          }
-                        }}
-                        numberOfMonths={2}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {/* <Input
-                    id="sprint"
-                    placeholder="Ej: 09 Junio - 13 Junio"
-                    value={reportData.sprint}
-                    onChange={(e) =>
-                      setReportData((prev) => ({
-                        ...prev,
-                        sprint: e.target.value,
-                      }))
-                    }
-                  /> */}
-                </div>
-                <small className="col-span-1 md:col-span-2 text-xs text-gray-500 inline-block ml-auto">
-                  *Todos los datos del reporte se guardan automáticamente en tu
-                  navegador.
-                </small>
-              </CardContent>
-            </Card>
+            <ReportHeaderForm
+              header={reportData.header}
+              onHeaderChange={(header) =>
+                setReportData((prev) => ({ ...prev, header }))
+              }
+              onClearData={clearSavedInfo}
+            />
 
             {/* Completed Tasks */}
             <Card>

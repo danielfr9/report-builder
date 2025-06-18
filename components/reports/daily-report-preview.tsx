@@ -45,32 +45,32 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Nombre:</span>{" "}
                   <span className="text-gray-700 dark:text-gray-300">
-                    {data.name}
+                    {data.header.name}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Fecha:</span>{" "}
                   <span className="text-gray-700 dark:text-gray-300">
-                    {data.date
-                      ? format(data.date, "dd/MM/yyyy")
+                    {data.header.date
+                      ? format(data.header.date, "dd/MM/yyyy")
                       : "No hay fecha"}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Proyecto:</span>{" "}
                   <span className="text-gray-700 dark:text-gray-300">
-                    {data.project}
+                    {data.header.project}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Sprint:</span>{" "}
                   <span className="text-gray-700 dark:text-gray-300">
-                    {data.sprint.from
-                      ? format(data.sprint.from, "dd/MM/yyyy")
+                    {data.header.sprint.from
+                      ? format(data.header.sprint.from, "dd/MM/yyyy")
                       : "No hay fecha"}
                     -{" "}
-                    {data.sprint.to
-                      ? format(data.sprint.to, "dd/MM/yyyy")
+                    {data.header.sprint.to
+                      ? format(data.header.sprint.to, "dd/MM/yyyy")
                       : "No hay fecha"}
                   </span>
                 </div>

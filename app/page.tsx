@@ -4,18 +4,21 @@ import DailyReportScreen from "@/components/reports/daily-report-screen";
 import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
 import {
-  DAILY_REPORT_STORAGE_KEY,
+  V1_DAILY_REPORT_STORAGE_KEY,
   V2_DAILY_REPORT_STORAGE_KEY,
   V2_WEEKLY_REPORT_STORAGE_KEY,
-  WEEKLY_REPORT_STORAGE_KEY,
+  V1_WEEKLY_REPORT_STORAGE_KEY,
+  V2_SHARED_HEADER_KEY,
 } from "@/lib/constants/localstorage-keys";
 import {
   DailyReportLocalStorageData,
   WeeklyReportLocalStorageData,
   DailyReportData,
   WeeklyReportData,
+  ReportHeaderLocalStorage,
+  ReportHeader,
 } from "@/lib/interfaces/report-data.interface";
-import { format } from "date-fns";
+import { parseISO } from "date-fns";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -35,7 +38,7 @@ const migrateLocalStorageData = () => {
   const v2DailyData = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
   const v2WeeklyData = localStorage.getItem(V2_WEEKLY_REPORT_STORAGE_KEY);
 
-  const dailyData = localStorage.getItem(DAILY_REPORT_STORAGE_KEY);
+  const dailyData = localStorage.getItem(V1_DAILY_REPORT_STORAGE_KEY);
   if (dailyData && !v2DailyData) {
     const dailyDataObject: PreviousDailyReportLocalStorageData =
       JSON.parse(dailyData);
@@ -71,7 +74,7 @@ const migrateLocalStorageData = () => {
     }
   }
 
-  const weeklyData = localStorage.getItem(WEEKLY_REPORT_STORAGE_KEY);
+  const weeklyData = localStorage.getItem(V1_WEEKLY_REPORT_STORAGE_KEY);
   if (weeklyData && !v2WeeklyData) {
     const weeklyDataObject: PreviousWeeklyReportLocalStorageData =
       JSON.parse(weeklyData);
@@ -107,28 +110,73 @@ const migrateLocalStorageData = () => {
 
 export default function ReportBuilder() {
   const [reportType, setReportType] = useState<"daily" | "weekly">("daily");
-  const [dailyData, setDailyData] =
-    useState<DailyReportLocalStorageData | null>(null);
-  const [weeklyData, setWeeklyData] =
-    useState<WeeklyReportLocalStorageData | null>(null);
+  const [dailyData, setDailyData] = useState<DailyReportData | null>(null);
+  const [weeklyData, setWeeklyData] = useState<WeeklyReportData | null>(null);
 
-  // Save shared header data to localStorage
-  const saveSharedHeader = (
-    name: string,
-    project: string,
-    sprint: { from: Date | null; to: Date | null }
-  ) => {
-    const sharedHeader = {
-      name,
-      project,
+  // Helper function to parse header data with proper date conversion
+  const parseHeaderData = (
+    headerData: ReportHeaderLocalStorage | null | undefined
+  ): ReportHeader => {
+    if (!headerData)
+      return {
+        date: null,
+        name: "",
+        project: "",
+        sprint: { from: null, to: null },
+      };
+
+    console.log("headerData", headerData);
+
+    return {
+      date: headerData.date ? parseISO(headerData.date) : null,
+      name: headerData.name || "",
+      project: headerData.project || "",
       sprint: {
-        from: sprint.from ? format(sprint.from, "dd/MM/yyyy") : null,
-        to: sprint.to ? format(sprint.to, "dd/MM/yyyy") : null,
+        from: headerData.sprint?.from ? parseISO(headerData.sprint.from) : null,
+        to: headerData.sprint?.to ? parseISO(headerData.sprint.to) : null,
       },
     };
+  };
 
+  // Format header data to be saved to localStorage
+  const formatHeaderData = (
+    headerData: ReportHeader
+  ): ReportHeaderLocalStorage => {
+    return {
+      date: headerData.date?.toISOString() ?? null,
+      name: headerData.name,
+      project: headerData.project,
+      sprint: {
+        from: headerData.sprint?.from?.toISOString() ?? null,
+        to: headerData.sprint?.to?.toISOString() ?? null,
+      },
+    };
+  };
+
+  // Load shared header data from localStorage
+  const loadSharedHeader = (): ReportHeader => {
     try {
-      localStorage.setItem("shared-header", JSON.stringify(sharedHeader));
+      const savedHeader = localStorage.getItem(V2_SHARED_HEADER_KEY);
+      console.log("savedHeaderRAW", savedHeader);
+      if (savedHeader) {
+        return parseHeaderData(JSON.parse(savedHeader));
+      }
+    } catch (error) {
+      console.error("Error loading shared header from localStorage:", error);
+    }
+    return {
+      date: new Date(),
+      name: "",
+      project: "",
+      sprint: { from: null, to: null },
+    };
+  };
+
+  // Save shared header data to localStorage
+  const saveSharedHeader = (header: ReportHeader) => {
+    try {
+      const sharedHeader = formatHeaderData(header);
+      localStorage.setItem(V2_SHARED_HEADER_KEY, JSON.stringify(sharedHeader));
     } catch (error) {
       console.error("Error saving shared header to localStorage:", error);
     }
@@ -137,12 +185,7 @@ export default function ReportBuilder() {
   // Handle daily data changes
   const handleDailyDataChange = (data: DailyReportData) => {
     const dataToSave: DailyReportLocalStorageData = {
-      name: data.name,
-      project: data.project,
-      sprint: {
-        from: data.sprint.from ? format(data.sprint.from, "dd/MM/yyyy") : null,
-        to: data.sprint.to ? format(data.sprint.to, "dd/MM/yyyy") : null,
-      },
+      header: formatHeaderData(data.header),
       completedTasks: data.completedTasks,
       pendingTasks: data.pendingTasks,
       blocks: data.blocks,
@@ -156,8 +199,8 @@ export default function ReportBuilder() {
         V2_DAILY_REPORT_STORAGE_KEY,
         JSON.stringify(dataToSave)
       );
-      saveSharedHeader(data.name, data.project, data.sprint);
-      setDailyData(dataToSave);
+      saveSharedHeader(data.header);
+      setDailyData(data);
     } catch (error) {
       console.error("Error saving daily data to localStorage:", error);
     }
@@ -166,12 +209,7 @@ export default function ReportBuilder() {
   // Handle weekly data changes
   const handleWeeklyDataChange = (data: WeeklyReportData) => {
     const dataToSave: WeeklyReportLocalStorageData = {
-      name: data.name,
-      project: data.project,
-      sprint: {
-        from: data.sprint.from ? format(data.sprint.from, "dd/MM/yyyy") : null,
-        to: data.sprint.to ? format(data.sprint.to, "dd/MM/yyyy") : null,
-      },
+      header: formatHeaderData(data.header),
       completedTasks: data.completedTasks,
       pendingTasks: data.pendingTasks,
       blocks: data.blocks,
@@ -185,56 +223,38 @@ export default function ReportBuilder() {
         V2_WEEKLY_REPORT_STORAGE_KEY,
         JSON.stringify(dataToSave)
       );
-      saveSharedHeader(data.name, data.project, data.sprint);
-      setWeeklyData(dataToSave);
+      saveSharedHeader(data.header);
+      setWeeklyData(data);
     } catch (error) {
       console.error("Error saving weekly data to localStorage:", error);
     }
-  };
-
-  // Load shared header data from localStorage
-  const loadSharedHeader = () => {
-    try {
-      const savedHeader = localStorage.getItem("shared-header");
-      if (savedHeader) {
-        const headerData = JSON.parse(savedHeader);
-        return {
-          name: headerData.name || "",
-          project: headerData.project || "",
-          sprint: {
-            from: headerData.sprint?.from || null,
-            to: headerData.sprint?.to || null,
-          },
-        };
-      }
-    } catch (error) {
-      console.error("Error loading shared header from localStorage:", error);
-    }
-    return {
-      name: "",
-      project: "",
-      sprint: { from: null, to: null },
-    };
   };
 
   // Load data from localStorage
   const loadData = () => {
     try {
       const sharedHeader = loadSharedHeader();
+      console.log("sharedHeader", sharedHeader);
 
       // Load daily data
       const savedDaily = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
       if (savedDaily) {
         const dailyDataParsed: DailyReportLocalStorageData =
           JSON.parse(savedDaily);
+        const parsedHeader = parseHeaderData(dailyDataParsed.header);
+
         setDailyData({
-          ...sharedHeader,
-          ...dailyDataParsed,
-          sprint: sharedHeader.sprint,
+          header: sharedHeader ?? parsedHeader,
+          completedTasks: dailyDataParsed.completedTasks || [],
+          pendingTasks: dailyDataParsed.pendingTasks || [],
+          blocks: dailyDataParsed.blocks || [],
+          observations: dailyDataParsed.observations || [],
+          hoursWorked: dailyDataParsed.hoursWorked || 8,
+          additionalNotes: dailyDataParsed.additionalNotes || "",
         });
       } else {
         setDailyData({
-          ...sharedHeader,
+          header: sharedHeader,
           completedTasks: [],
           pendingTasks: [],
           blocks: [],
@@ -249,14 +269,20 @@ export default function ReportBuilder() {
       if (savedWeekly) {
         const weeklyDataParsed: WeeklyReportLocalStorageData =
           JSON.parse(savedWeekly);
+        const parsedHeader = parseHeaderData(weeklyDataParsed.header);
+
         setWeeklyData({
-          ...sharedHeader,
-          ...weeklyDataParsed,
-          sprint: sharedHeader.sprint,
+          header: sharedHeader ?? parsedHeader,
+          completedTasks: weeklyDataParsed.completedTasks || [],
+          pendingTasks: weeklyDataParsed.pendingTasks || [],
+          blocks: weeklyDataParsed.blocks || [],
+          observations: weeklyDataParsed.observations || [],
+          hoursWorked: weeklyDataParsed.hoursWorked || 40,
+          additionalNotes: weeklyDataParsed.additionalNotes || "",
         });
       } else {
         setWeeklyData({
-          ...sharedHeader,
+          header: sharedHeader,
           completedTasks: [],
           pendingTasks: [],
           blocks: [],
@@ -275,13 +301,16 @@ export default function ReportBuilder() {
     try {
       localStorage.removeItem(V2_DAILY_REPORT_STORAGE_KEY);
       localStorage.removeItem(V2_WEEKLY_REPORT_STORAGE_KEY);
-      localStorage.removeItem("shared-header");
+      localStorage.removeItem(V2_SHARED_HEADER_KEY);
 
       // Reset state to empty data
-      const emptyDailyData: DailyReportLocalStorageData = {
-        name: "",
-        project: "",
-        sprint: { from: null, to: null },
+      const emptyDailyData: DailyReportData = {
+        header: {
+          date: null,
+          name: "",
+          project: "",
+          sprint: { from: null, to: null },
+        },
         completedTasks: [],
         pendingTasks: [],
         blocks: [],
@@ -290,10 +319,13 @@ export default function ReportBuilder() {
         additionalNotes: "",
       };
 
-      const emptyWeeklyData: WeeklyReportLocalStorageData = {
-        name: "",
-        project: "",
-        sprint: { from: null, to: null },
+      const emptyWeeklyData: WeeklyReportData = {
+        header: {
+          date: null,
+          name: "",
+          project: "",
+          sprint: { from: null, to: null },
+        },
         completedTasks: [],
         pendingTasks: [],
         blocks: [],

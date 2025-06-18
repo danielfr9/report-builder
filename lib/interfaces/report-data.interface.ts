@@ -1,8 +1,30 @@
+import { TASK_STATUS } from "../constants/task-status";
+
+export interface ReportHeader {
+  date: Date | null;
+  name: string;
+  project: string;
+  sprint: {
+    from: Date | null;
+    to: Date | null;
+  };
+}
+
+export interface ReportHeaderLocalStorage {
+  date: string | null;
+  name?: string;
+  project?: string;
+  sprint?: {
+    from: string | null;
+    to: string | null;
+  };
+}
+
 export interface DailyTask {
   id: string;
   name: string;
   storyPoints: number;
-  status: "Completado" | "En Proceso" | "Pendiente";
+  status: (typeof TASK_STATUS)[keyof typeof TASK_STATUS];
   comments: string;
 }
 
@@ -24,13 +46,7 @@ export interface DailyObservation {
 }
 
 export interface DailyReportData {
-  date: Date | null;
-  name: string;
-  project: string;
-  sprint: {
-    from: Date | null;
-    to: Date | null;
-  };
+  header: ReportHeader;
   completedTasks: DailyTask[];
   pendingTasks: DailyPendingTask[];
   blocks: DailyBlock[];
@@ -40,12 +56,7 @@ export interface DailyReportData {
 }
 
 export interface DailyReportLocalStorageData {
-  name?: string;
-  project?: string;
-  sprint?: {
-    from?: string | null;
-    to?: string | null;
-  };
+  header?: ReportHeaderLocalStorage;
   completedTasks?: DailyTask[];
   pendingTasks?: DailyPendingTask[];
   blocks?: DailyBlock[];
@@ -59,7 +70,7 @@ export interface WeeklyTask {
   id: string;
   name: string;
   storyPoints: number;
-  status: "Completado" | "En Proceso" | "Pendiente";
+  status: (typeof TASK_STATUS)[keyof typeof TASK_STATUS];
   comments: string;
   finishDate: Date | null;
 }
@@ -82,13 +93,7 @@ export interface WeeklyObservation {
 }
 
 export interface WeeklyReportData {
-  date: Date | null;
-  name: string;
-  project: string;
-  sprint: {
-    from: Date | null;
-    to: Date | null;
-  };
+  header: ReportHeader;
   completedTasks: WeeklyTask[];
   pendingTasks: WeeklyPendingTask[];
   blocks: WeeklyBlock[];
@@ -98,12 +103,7 @@ export interface WeeklyReportData {
 }
 
 export interface WeeklyReportLocalStorageData {
-  name?: string;
-  project?: string;
-  sprint?: {
-    from?: string | null;
-    to?: string | null;
-  };
+  header?: ReportHeaderLocalStorage;
   completedTasks?: WeeklyTask[];
   pendingTasks?: WeeklyPendingTask[];
   blocks?: WeeklyBlock[];
