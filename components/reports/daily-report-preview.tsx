@@ -106,6 +106,15 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                         <tr key={task.id}>
                           <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
                             {task.name}
+                            {task.image && (
+                              <div className="mt-2">
+                                <img
+                                  src={task.image}
+                                  alt="Imagen de la tarea"
+                                  className="max-w-full max-h-32 object-contain rounded border"
+                                />
+                              </div>
+                            )}
                           </td>
                           <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center font-semibold">
                             {task.storyPoints} pts
@@ -157,6 +166,15 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                         <tr key={task.id}>
                           <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
                             {task.name}
+                            {task.image && (
+                              <div className="mt-2">
+                                <img
+                                  src={task.image}
+                                  alt="Imagen de la tarea pendiente"
+                                  className="max-w-full max-h-32 object-contain rounded border"
+                                />
+                              </div>
+                            )}
                           </td>
                           <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center font-semibold">
                             {task.storyPoints} pts

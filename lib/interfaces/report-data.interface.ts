@@ -26,6 +26,7 @@ export interface DailyTask {
   storyPoints: number;
   status: (typeof TASK_STATUS)[keyof typeof TASK_STATUS];
   comments: string;
+  image?: string;
 }
 
 export interface DailyPendingTask {
@@ -33,6 +34,7 @@ export interface DailyPendingTask {
   name: string;
   storyPoints: number;
   actionPlan: string;
+  image?: string;
 }
 
 export interface DailyBlock {
@@ -73,6 +75,7 @@ export interface WeeklyTask {
   status: (typeof TASK_STATUS)[keyof typeof TASK_STATUS];
   comments: string;
   finishDate: Date | null;
+  image?: string;
 }
 
 type WeeklyTaskLocalStorage = Omit<WeeklyTask, "finishDate"> & {
@@ -84,6 +87,7 @@ export interface WeeklyPendingTask {
   name: string;
   storyPoints: number;
   actionPlan: string;
+  image?: string;
 }
 
 export interface WeeklyBlock {

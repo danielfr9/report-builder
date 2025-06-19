@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { DailyTask } from "@/lib/interfaces/report-data.interface";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -18,6 +18,8 @@ import {
   GripVerticalIcon,
   PencilIcon,
   Trash2Icon,
+  ImageIcon,
+  XIcon,
 } from "lucide-react";
 import { TASK_STATUS } from "@/lib/constants/task-status";
 
@@ -34,6 +36,7 @@ const SortableTaskItem = ({
   removeTask,
 }: SortableTaskItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     attributes,
     listeners,
@@ -47,6 +50,37 @@ const SortableTaskItem = ({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        alert("Por favor selecciona un archivo de imagen válido");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La imagen debe ser menor a 5MB");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        updateTask(task.id, "image", base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    updateTask(task.id, "image", undefined);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   if (isEditing) {
@@ -126,6 +160,50 @@ const SortableTaskItem = ({
                 }
               />
             </div>
+            <div>
+              <Label>Imagen adjunta (opcional)</Label>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2"
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                    {task.image ? "Cambiar imagen" : "Seleccionar imagen"}
+                  </Button>
+                  {task.image && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={removeImage}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <XIcon className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  aria-label="Seleccionar imagen para la tarea"
+                />
+                {task.image && (
+                  <div className="mt-2">
+                    <img
+                      src={task.image}
+                      alt="Imagen de la tarea"
+                      className="max-w-full max-h-32 object-contain rounded border"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <Button
@@ -193,6 +271,20 @@ const SortableTaskItem = ({
                 Comentarios / PR
               </Label>
               <p className="text-sm text-muted-foreground">{task.comments}</p>
+            </div>
+          )}
+          {task.image && (
+            <div>
+              <Label className="text-xs text-muted-foreground">
+                Imagen adjunta
+              </Label>
+              <div className="mt-1">
+                <img
+                  src={task.image}
+                  alt="Imagen de la tarea"
+                  className="max-w-full max-h-40 object-contain rounded border"
+                />
+              </div>
             </div>
           )}
         </div>

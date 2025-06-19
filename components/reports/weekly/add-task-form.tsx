@@ -19,8 +19,8 @@ import { WeeklyTask } from "@/lib/interfaces/report-data.interface";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
-import { useState } from "react";
+import { CalendarIcon, ImageIcon, XIcon } from "lucide-react";
+import { useState, useRef } from "react";
 
 // Add Task Form Component
 interface AddTaskFormProps {
@@ -34,7 +34,40 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
     status: "Completado" as const,
     comments: "",
     finishDate: null,
+    image: undefined,
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        alert("Por favor selecciona un archivo de imagen válido");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La imagen debe ser menor a 5MB");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        setFormData((prev) => ({ ...prev, image: base64 }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData((prev) => ({ ...prev, image: undefined }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleSubmit = () => {
     if (formData.name.trim()) {
@@ -45,7 +78,11 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
         status: "Completado" as const,
         comments: "",
         finishDate: null,
+        image: undefined,
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -85,7 +122,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
             <Select
               value={formData.status}
               onValueChange={(
-                value: "Completado" | "En Proceso" | "Pendiente"
+                value: "Completado" | "En progreso" | "Pendiente" | "Bloqueado"
               ) => setFormData((prev) => ({ ...prev, status: value }))}
             >
               <SelectTrigger>
@@ -93,8 +130,9 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Completado">Completado</SelectItem>
-                <SelectItem value="En Proceso">En Proceso</SelectItem>
+                <SelectItem value="En progreso">En progreso</SelectItem>
                 <SelectItem value="Pendiente">Pendiente</SelectItem>
+                <SelectItem value="Bloqueado">Bloqueado</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -140,6 +178,50 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
               setFormData((prev) => ({ ...prev, comments: e.target.value }))
             }
           />
+        </div>
+        <div>
+          <Label>Imagen adjunta (opcional)</Label>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2"
+              >
+                <ImageIcon className="w-4 h-4" />
+                Seleccionar imagen
+              </Button>
+              {formData.image && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={removeImage}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <XIcon className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              aria-label="Seleccionar imagen para la tarea"
+            />
+            {formData.image && (
+              <div className="mt-2">
+                <img
+                  src={formData.image}
+                  alt="Vista previa"
+                  className="max-w-full max-h-32 object-contain rounded border"
+                />
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleSubmit} disabled={!formData.name.trim()}>
