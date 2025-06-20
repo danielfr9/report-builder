@@ -22,7 +22,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
   const [formData, setFormData] = useState<Omit<DailyTask, "id">>({
     name: "",
     storyPoints: 1,
-    status: "Completado" as const,
+    status: TASK_STATUS.COMPLETED,
     comments: "",
   });
 
@@ -32,7 +32,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
       setFormData({
         name: "",
         storyPoints: 1,
-        status: "Completado" as const,
+        status: TASK_STATUS.COMPLETED,
         comments: "",
       });
     }
@@ -74,7 +74,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
             <Select
               value={formData.status}
               onValueChange={(
-                value: "Completado" | "En Proceso" | "Pendiente"
+                value: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
               ) => setFormData((prev) => ({ ...prev, status: value }))}
             >
               <SelectTrigger>

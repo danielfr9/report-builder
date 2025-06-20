@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { TASK_STATUS } from "@/lib/constants/task-status";
 import { WeeklyTask } from "@/lib/interfaces/report-data.interface";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -31,7 +32,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
   const [formData, setFormData] = useState<Omit<WeeklyTask, "id">>({
     name: "",
     storyPoints: 1,
-    status: "Completado" as const,
+    status: TASK_STATUS.COMPLETED,
     comments: "",
     finishDate: null,
   });
@@ -39,13 +40,13 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
   const handleSubmit = () => {
     if (formData.name.trim()) {
       onAdd(formData);
-      setFormData({
+      setFormData((prev) => ({
+        ...prev,
         name: "",
         storyPoints: 1,
-        status: "Completado" as const,
+        status: TASK_STATUS.COMPLETED,
         comments: "",
-        finishDate: null,
-      });
+      }));
     }
   };
 
@@ -85,16 +86,18 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
             <Select
               value={formData.status}
               onValueChange={(
-                value: "Completado" | "En Proceso" | "Pendiente"
+                value: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
               ) => setFormData((prev) => ({ ...prev, status: value }))}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Completado">Completado</SelectItem>
-                <SelectItem value="En Proceso">En Proceso</SelectItem>
-                <SelectItem value="Pendiente">Pendiente</SelectItem>
+                {Object.values(TASK_STATUS).map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

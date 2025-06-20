@@ -99,9 +99,9 @@ const SortableTaskItem = ({
                 <Label>Estado</Label>
                 <Select
                   value={task.status}
-                  onValueChange={(value) =>
-                    updateTask(task.id, "status", value)
-                  }
+                  onValueChange={(
+                    value: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
+                  ) => updateTask(task.id, "status", value)}
                 >
                   <SelectTrigger>
                     <SelectValue />

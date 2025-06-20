@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { PencilIcon } from "lucide-react";
+import { TASK_STATUS } from "@/lib/constants/task-status";
 
 // Sortable Task Item Component (moved outside main component)
 interface SortableTaskItemProps {
@@ -108,17 +109,19 @@ const SortableTaskItem = ({
                 <Label>Estado</Label>
                 <Select
                   value={task.status}
-                  onValueChange={(value) =>
-                    updateTask(task.id, "status", value)
-                  }
+                  onValueChange={(
+                    value: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
+                  ) => updateTask(task.id, "status", value)}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Completado">Completado</SelectItem>
-                    <SelectItem value="En Proceso">En Proceso</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    {Object.values(TASK_STATUS).map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

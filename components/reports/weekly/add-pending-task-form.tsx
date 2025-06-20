@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { TASK_STATUS } from "@/lib/constants/task-status";
 
 // Add Pending Task Form Component
 interface AddPendingTaskFormProps {
@@ -19,7 +20,7 @@ const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
   }>({
     name: "",
     storyPoints: 1,
-    currentStatus: "En desarrollo",
+    currentStatus: TASK_STATUS.IN_PROGRESS,
     nextStep: "",
   });
 
@@ -33,7 +34,7 @@ const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
       setFormData({
         name: "",
         storyPoints: 1,
-        currentStatus: "En desarrollo",
+        currentStatus: TASK_STATUS.IN_PROGRESS,
         nextStep: "",
       });
     }
