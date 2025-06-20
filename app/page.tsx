@@ -19,7 +19,7 @@ import {
   ReportHeaderLocalStorage,
   ReportHeader,
 } from "@/lib/interfaces/report-data.interface";
-import { parseISO } from "date-fns";
+import { isYesterday, parseISO } from "date-fns";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -238,7 +238,12 @@ export default function ReportBuilder() {
   const loadData = () => {
     try {
       const sharedHeader = loadSharedHeader();
-      console.log("sharedHeader", sharedHeader);
+
+      // Check if saved date is from older than today
+      if (sharedHeader.date && isYesterday(sharedHeader.date)) {
+        // If so, set the date to today
+        sharedHeader.date = new Date();
+      }
 
       // Load daily data
       const savedDaily = localStorage.getItem(V2_DAILY_REPORT_STORAGE_KEY);
