@@ -5,7 +5,10 @@ import puppeteer from "puppeteer";
 import chromium from "@sparticuz/chromium";
 import { DailyReportPreview } from "../../components/reports/daily-report-preview";
 import React from "react";
-import { DailyReportData } from "@/lib/interfaces/report-data.interface";
+import {
+  DailyReportData,
+  WeeklyReportData,
+} from "@/lib/interfaces/report-data.interface";
 import { WeeklyReportPreview } from "@/components/reports/weekly-report-preview";
 
 async function getBrowser() {
@@ -79,7 +82,7 @@ export async function generateDailyReportPDFAction(
 }
 
 export async function generateWeeklyReportPDFAction(
-  reportData: DailyReportData
+  reportData: WeeklyReportData
 ) {
   const { renderToString } = await import("react-dom/server");
 
