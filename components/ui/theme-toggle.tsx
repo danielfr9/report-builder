@@ -11,12 +11,73 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+
+type ThemeOption = {
+  name: string;
+  value: string;
+};
+
+const themes: ThemeOption[] = [
+  {
+    name: "System",
+    value: "system",
+  },
+  {
+    name: "Light",
+    value: "light",
+  },
+  {
+    name: "Dark",
+    value: "dark",
+  },
+  {
+    name: "Caffeine",
+    value: "caffeine",
+  },
+  {
+    name: "Caffeine Dark",
+    value: "caffeine-dark",
+  },
+  {
+    name: "Tangenrine",
+    value: "tangenrine",
+  },
+  {
+    name: "Tangenrine Dark",
+    value: "tangenrine-dark",
+  },
+  {
+    name: "Twitter",
+    value: "twitter",
+  },
+  {
+    name: "Twitter Dark",
+    value: "twitter-dark",
+  },
+  {
+    name: "Supabase",
+    value: "supabase",
+  },
+  {
+    name: "Supabase Dark",
+    value: "supabase-dark",
+  },
+];
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+
+  const handleThemeChange = (
+    e: React.MouseEvent<HTMLDivElement>,
+    theme: string
+  ) => {
+    e.preventDefault();
+    setTheme(theme);
+  };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -24,40 +85,24 @@ export function ThemeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          Sistema
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Claro
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Oscuro
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("caffeine")}>
-          Caffeine
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("caffeine-dark")}>
-          Caffeine Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("tangenrine")}>
-          Tangenrine
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("tangenrine-dark")}>
-          Tangenrine Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("twitter")}>
-          Twitter
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("twitter-dark")}>
-          Twitter Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("supabase")}>
-          Supabase
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("supabase-dark")}>
-          Supabase Dark
-        </DropdownMenuItem>
+      <DropdownMenuContent
+        align="end"
+        className="max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-auto"
+      >
+        {themes.map((option) => (
+          <DropdownMenuItem
+            key={option.value}
+            className={cn(
+              "cursor-pointer",
+              option.value === theme
+                ? "bg-primary text-background hover:!bg-primary hover:!text-background"
+                : ""
+            )}
+            onClick={(e) => handleThemeChange(e, option.value)}
+          >
+            {option.name}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
