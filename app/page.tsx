@@ -3,6 +3,7 @@
 import DailyReportScreen from "@/components/reports/daily-report-screen";
 import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   V1_DAILY_REPORT_STORAGE_KEY,
   V2_DAILY_REPORT_STORAGE_KEY,
@@ -375,7 +376,10 @@ export default function ReportBuilder() {
   }
 
   return (
-    <div className="relative pb-24">
+    <div className="relative p-4 pb-24 min-h-screen bg-background">
+      <div className="fixed top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
       <div className={`${reportType === "daily" ? "block" : "hidden"}`}>
         <DailyReportScreen
           initialData={dailyData}

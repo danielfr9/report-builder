@@ -25,14 +25,38 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          Sistema
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
+          Claro
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
+          Oscuro
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
+        <DropdownMenuItem onClick={() => setTheme("caffeine")}>
+          Caffeine
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("caffeine-dark")}>
+          Caffeine Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("tangenrine")}>
+          Tangenrine
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("tangenrine-dark")}>
+          Tangenrine Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("twitter")}>
+          Twitter
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("twitter-dark")}>
+          Twitter Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("supabase")}>
+          Supabase
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("supabase-dark")}>
+          Supabase Dark
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

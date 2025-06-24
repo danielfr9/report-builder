@@ -369,340 +369,335 @@ export default function DailyReportScreen({
   }, [reportData.completedTasks]);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8 relative">
-          <div className="absolute top-0 right-0">
-            <ThemeToggle />
-          </div>
-          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Generador de reportes diarios
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Crea reportes profesionales de programación con Story Points
-          </p>
-        </div>
+    <div className="max-w-6xl mx-auto">
+      <div className="text-center mb-8 relative">
+        <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
+          Generador de reportes diarios
+        </h1>
+        <p className="text-muted-foreground">
+          Crea reportes profesionales de programación con Story Points
+        </p>
+      </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 sticky top-0 z-40">
-            <TabsTrigger value="builder" className="flex items-center gap-2">
-              <PlusIcon className="w-4 h-4" />
-              Constructor
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2">
-              <EyeIcon className="w-4 h-4" />
-              Vista Previa
-            </TabsTrigger>
-          </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6 sticky top-0 z-40">
+          <TabsTrigger value="builder" className="flex items-center gap-2">
+            <PlusIcon className="w-4 h-4" />
+            Constructor
+          </TabsTrigger>
+          <TabsTrigger value="preview" className="flex items-center gap-2">
+            <EyeIcon className="w-4 h-4" />
+            Vista Previa
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="builder" className="space-y-6">
-            {/* Header Information */}
-            <ReportHeaderForm
-              header={reportData.header}
-              onHeaderChange={(header) =>
-                setReportData((prev) => ({ ...prev, header }))
-              }
-              onClearData={clearSavedInfo}
-            />
+        <TabsContent value="builder" className="space-y-6">
+          {/* Header Information */}
+          <ReportHeaderForm
+            header={reportData.header}
+            onHeaderChange={(header) =>
+              setReportData((prev) => ({ ...prev, header }))
+            }
+            onClearData={clearSavedInfo}
+          />
 
-            {/* Completed Tasks */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Actividades realizadas</CardTitle>
-                <CardDescription>
-                  Tareas completadas y en progreso • Arrastra para reordenar
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Always visible add task form */}
-                <AddTaskForm
-                  onAdd={(taskData) => {
-                    const newTask: DailyTask = {
-                      ...taskData,
-                      id: Date.now().toString(),
-                    };
-                    setReportData((prev) => ({
-                      ...prev,
-                      completedTasks: [...prev.completedTasks, newTask],
-                    }));
-                  }}
-                />
+          {/* Completed Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Actividades realizadas</CardTitle>
+              <CardDescription>
+                Tareas completadas y en progreso • Arrastra para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Always visible add task form */}
+              <AddTaskForm
+                onAdd={(taskData) => {
+                  const newTask: DailyTask = {
+                    ...taskData,
+                    id: Date.now().toString(),
+                  };
+                  setReportData((prev) => ({
+                    ...prev,
+                    completedTasks: [...prev.completedTasks, newTask],
+                  }));
+                }}
+              />
 
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleCompletedTasksDragEnd}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleCompletedTasksDragEnd}
+              >
+                <SortableContext
+                  items={reportData.completedTasks.map((task) => task.id)}
+                  strategy={verticalListSortingStrategy}
                 >
-                  <SortableContext
-                    items={reportData.completedTasks.map((task) => task.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {reportData.completedTasks.map((task) => (
-                      <SortableTaskItem
-                        key={task.id}
-                        task={task}
-                        updateTask={updateCompletedTask}
-                        removeTask={removeCompletedTask}
-                      />
-                    ))}
-                  </SortableContext>
-                </DndContext>
-                {reportData.completedTasks.length === 0 && (
-                  <div className="text-center py-4 text-gray-500 text-sm">
-                    No hay tareas agregadas aún.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Pending Tasks */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Pendientes por Continuar</CardTitle>
-                <CardDescription>
-                  Tareas que continuarás mañana • Arrastra para reordenar
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Always visible add pending task form */}
-                <AddPendingTaskForm
-                  onAdd={(taskData) => {
-                    const newTask: DailyPendingTask = {
-                      ...taskData,
-                      id: Date.now().toString(),
-                    };
-                    setReportData((prev) => ({
-                      ...prev,
-                      pendingTasks: [...prev.pendingTasks, newTask],
-                    }));
-                  }}
-                />
-
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handlePendingTasksDragEnd}
-                >
-                  <SortableContext
-                    items={reportData.pendingTasks.map((task) => task.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {reportData.pendingTasks.map((task) => (
-                      <SortablePendingTaskItem
-                        key={task.id}
-                        task={task}
-                        updateTask={updatePendingTask}
-                        removeTask={removePendingTask}
-                      />
-                    ))}
-                  </SortableContext>
-                </DndContext>
-                {reportData.pendingTasks.length === 0 && (
-                  <div className="text-center py-4 text-gray-500 text-sm">
-                    No hay tareas pendientes aún.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Additional Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información Adicional</CardTitle>
-                <CardDescription>
-                  Bloqueos, observaciones y horas trabajadas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
-                  <div className="space-y-4 mt-2">
-                    {/* Always visible add block form */}
-                    <AddBlockForm
-                      onAdd={(blockData) => {
-                        const newBlock: DailyBlock = {
-                          ...blockData,
-                          id: Date.now().toString(),
-                        };
-                        setReportData((prev) => ({
-                          ...prev,
-                          blocks: [...prev.blocks, newBlock],
-                        }));
-                      }}
+                  {reportData.completedTasks.map((task) => (
+                    <SortableTaskItem
+                      key={task.id}
+                      task={task}
+                      updateTask={updateCompletedTask}
+                      removeTask={removeCompletedTask}
                     />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              {reportData.completedTasks.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No hay tareas agregadas aún.
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={handleBlocksDragEnd}
+          {/* Pending Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Pendientes por Continuar</CardTitle>
+              <CardDescription>
+                Tareas que continuarás mañana • Arrastra para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Always visible add pending task form */}
+              <AddPendingTaskForm
+                onAdd={(taskData) => {
+                  const newTask: DailyPendingTask = {
+                    ...taskData,
+                    id: Date.now().toString(),
+                  };
+                  setReportData((prev) => ({
+                    ...prev,
+                    pendingTasks: [...prev.pendingTasks, newTask],
+                  }));
+                }}
+              />
+
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handlePendingTasksDragEnd}
+              >
+                <SortableContext
+                  items={reportData.pendingTasks.map((task) => task.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {reportData.pendingTasks.map((task) => (
+                    <SortablePendingTaskItem
+                      key={task.id}
+                      task={task}
+                      updateTask={updatePendingTask}
+                      removeTask={removePendingTask}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              {reportData.pendingTasks.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No hay tareas pendientes aún.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Additional Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Información Adicional</CardTitle>
+              <CardDescription>
+                Bloqueos, observaciones y horas trabajadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                <div className="space-y-4 mt-2">
+                  {/* Always visible add block form */}
+                  <AddBlockForm
+                    onAdd={(blockData) => {
+                      const newBlock: DailyBlock = {
+                        ...blockData,
+                        id: Date.now().toString(),
+                      };
+                      setReportData((prev) => ({
+                        ...prev,
+                        blocks: [...prev.blocks, newBlock],
+                      }));
+                    }}
+                  />
+
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleBlocksDragEnd}
+                  >
+                    <SortableContext
+                      items={reportData.blocks
+                        .filter(Boolean)
+                        .map((block) => block.id)}
+                      strategy={verticalListSortingStrategy}
                     >
-                      <SortableContext
-                        items={reportData.blocks
+                      <div className="space-y-2">
+                        {reportData.blocks.filter(Boolean).map((block) => (
+                          <SortableBlockItem
+                            key={block.id}
+                            block={block}
+                            updateBlock={updateBlock}
+                            removeBlock={removeBlock}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                  {reportData.blocks.length === 0 && (
+                    <div className="text-center py-4 text-muted-foreground text-sm">
+                      No hay bloqueos/dificultades aún.
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="observations">
+                  Observaciones / Sugerencias
+                </Label>
+                <div className="space-y-4 mt-2">
+                  {/* Always visible add observation form */}
+                  <AddObservationForm
+                    onAdd={(observationData) => {
+                      const newObservation: DailyObservation = {
+                        ...observationData,
+                        id: Date.now().toString(),
+                      };
+                      setReportData((prev) => ({
+                        ...prev,
+                        observations: [...prev.observations, newObservation],
+                      }));
+                    }}
+                  />
+
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleObservationsDragEnd}
+                  >
+                    <SortableContext
+                      items={reportData.observations
+                        .filter(Boolean)
+                        .map((observation) => observation.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-2">
+                        {reportData.observations
                           .filter(Boolean)
-                          .map((block) => block.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <div className="space-y-2">
-                          {reportData.blocks.filter(Boolean).map((block) => (
-                            <SortableBlockItem
-                              key={block.id}
-                              block={block}
-                              updateBlock={updateBlock}
-                              removeBlock={removeBlock}
+                          .map((observation) => (
+                            <SortableObservationItem
+                              key={observation.id}
+                              observation={observation}
+                              updateObservation={updateObservation}
+                              removeObservation={removeObservation}
                             />
                           ))}
-                        </div>
-                      </SortableContext>
-                    </DndContext>
-                    {reportData.blocks.length === 0 && (
-                      <div className="text-center py-4 text-gray-500 text-sm">
-                        No hay bloqueos/dificultades aún.
                       </div>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="observations">
-                    Observaciones / Sugerencias
-                  </Label>
-                  <div className="space-y-4 mt-2">
-                    {/* Always visible add observation form */}
-                    <AddObservationForm
-                      onAdd={(observationData) => {
-                        const newObservation: DailyObservation = {
-                          ...observationData,
-                          id: Date.now().toString(),
-                        };
-                        setReportData((prev) => ({
-                          ...prev,
-                          observations: [...prev.observations, newObservation],
-                        }));
-                      }}
-                    />
-
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={handleObservationsDragEnd}
-                    >
-                      <SortableContext
-                        items={reportData.observations
-                          .filter(Boolean)
-                          .map((observation) => observation.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <div className="space-y-2">
-                          {reportData.observations
-                            .filter(Boolean)
-                            .map((observation) => (
-                              <SortableObservationItem
-                                key={observation.id}
-                                observation={observation}
-                                updateObservation={updateObservation}
-                                removeObservation={removeObservation}
-                              />
-                            ))}
-                        </div>
-                      </SortableContext>
-                    </DndContext>
-                    {reportData.observations.length === 0 && (
-                      <div className="text-center py-4 text-gray-500 text-sm">
-                        No hay observaciones/sugerencias aún.
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="hours">Horas Trabajadas</Label>
-                  <Input
-                    id="hours"
-                    type="number"
-                    className="max-w-32"
-                    min="1"
-                    max="24"
-                    value={reportData.hoursWorked}
-                    onChange={(e) =>
-                      setReportData((prev) => ({
-                        ...prev,
-                        hoursWorked: Number.parseInt(e.target.value) || 8,
-                      }))
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="notes">Notas Adicionales (Opcional)</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Cualquier información adicional que consideres relevante"
-                    value={reportData.additionalNotes}
-                    onChange={(e) =>
-                      setReportData((prev) => ({
-                        ...prev,
-                        additionalNotes: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumen del día</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {totalCompletedPoints}
+                    </SortableContext>
+                  </DndContext>
+                  {reportData.observations.length === 0 && (
+                    <div className="text-center py-4 text-muted-foreground text-sm">
+                      No hay observaciones/sugerencias aún.
                     </div>
-                    <div className="text-sm text-gray-600">
-                      Story Points completados
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-600">
-                      {totalInProgressPoints}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Story Points en progreso
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {reportData.hoursWorked}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Horas trabajadas
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="preview">
-            <div className="space-y-4">
-              <Button
-                onClick={generatePDF}
-                disabled={isGenerating}
-                className="flex items-center gap-2 ml-auto w-fit"
-              >
-                <>
-                  {isGenerating ? (
-                    <Loader2Icon className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <DownloadIcon className="w-4 h-4" />
                   )}
-                  <span className="hidden md:block">Descargar PDF</span>
-                </>
-              </Button>
-              <DailyReportPreview data={reportData} />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="hours">Horas Trabajadas</Label>
+                <Input
+                  id="hours"
+                  type="number"
+                  className="max-w-32"
+                  min="1"
+                  max="24"
+                  value={reportData.hoursWorked}
+                  onChange={(e) =>
+                    setReportData((prev) => ({
+                      ...prev,
+                      hoursWorked: Number.parseInt(e.target.value) || 8,
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="notes">Notas Adicionales (Opcional)</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Cualquier información adicional que consideres relevante"
+                  value={reportData.additionalNotes}
+                  onChange={(e) =>
+                    setReportData((prev) => ({
+                      ...prev,
+                      additionalNotes: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Resumen del día</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {totalCompletedPoints}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Story Points completados
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {totalInProgressPoints}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Story Points en progreso
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {reportData.hoursWorked}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Horas trabajadas
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="preview">
+          <div className="space-y-4">
+            <Button
+              onClick={generatePDF}
+              disabled={isGenerating}
+              className="flex items-center gap-2 ml-auto w-fit"
+            >
+              <>
+                {isGenerating ? (
+                  <Loader2Icon className="w-4 h-4 animate-spin" />
+                ) : (
+                  <DownloadIcon className="w-4 h-4" />
+                )}
+                <span className="hidden md:block">Descargar PDF</span>
+              </>
+            </Button>
+            <DailyReportPreview data={reportData} />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

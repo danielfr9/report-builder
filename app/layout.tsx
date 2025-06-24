@@ -4,9 +4,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.dev",
+  title: "Reporte de Programación",
+  description: "Generador de reportes de programación",
+  generator: "Reporte de Programación",
 };
 
 export default function RootLayout({
@@ -20,6 +20,18 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
+          value={{
+            light: "light",
+            dark: "dark",
+            caffeine: "caffeine",
+            "caffeine-dark": "caffeine-dark",
+            tangenrine: "tangenrine",
+            "tangenrine-dark": "tangenrine-dark",
+            twitter: "twitter",
+            "twitter-dark": "twitter-dark",
+            supabase: "supabase",
+            "supabase-dark": "supabase-dark",
+          }}
           enableSystem
           disableTransitionOnChange
         >

@@ -37,20 +37,20 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
         <CardContent className="p-8 print:p-0" id="report-preview">
           <div className="space-y-6">
             {/* Header */}
-            <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-              <h1 className="text-center text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <div className="border-b border-foreground/10 pb-6">
+              <h1 className="text-center text-2xl font-bold text-foreground mb-2">
                 Reporte diario de programador
               </h1>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm print:text-xs print:grid-cols-4">
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Nombre:</span>{" "}
-                  <span className="text-gray-700 dark:text-gray-300">
+                  <span className="text-muted-foreground">
                     {data.header.name}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Fecha:</span>{" "}
-                  <span className="text-gray-700 dark:text-gray-300">
+                  <span className="text-muted-foreground">
                     {data.header.date
                       ? format(data.header.date, "dd/MM/yyyy")
                       : "No hay fecha"}
@@ -58,13 +58,13 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Proyecto:</span>{" "}
-                  <span className="text-gray-700 dark:text-gray-300">
+                  <span className="text-muted-foreground">
                     {data.header.project}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Sprint:</span>{" "}
-                  <span className="text-gray-700 dark:text-gray-300">
+                  <span className="text-muted-foreground">
                     {data.header.sprint.from
                       ? format(data.header.sprint.from, "dd/MM/yyyy")
                       : "No hay fecha"}
@@ -84,39 +84,39 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               </h2>
               {data.completedTasks.length > 0 ? (
                 <div className="overflow-x-auto text-xs">
-                  <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                  <table className="w-full border-collapse border border-foreground/10">
                     <thead>
-                      <tr className="bg-gray-50 dark:bg-gray-800">
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">
+                      <tr className="bg-background">
+                        <th className="border border-foreground/10 px-4 py-2 text-left">
                           Tarea
                         </th>
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                        <th className="border border-foreground/10 px-4 py-2 text-center">
                           Story Points
                         </th>
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                        <th className="border border-foreground/10 px-4 py-2 text-center">
                           Estado
                         </th>
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">
+                        <th className="border border-foreground/10 px-4 py-2 text-left">
                           Comentarios / PR
                         </th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="bg-background/50">
                       {data.completedTasks.map((task) => (
                         <tr key={task.id}>
-                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                          <td className="border border-foreground/10 px-4 py-2">
                             {task.name}
                           </td>
-                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center font-semibold">
+                          <td className="border border-foreground/10 px-4 py-2 text-center font-semibold">
                             {task.storyPoints} pts
                           </td>
-                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                          <td className="border border-foreground/10 px-4 py-2 text-center">
                             <div className="flex items-center justify-center gap-2">
                               {getStatusIcon(task.status)}
                               {task.status}
                             </div>
                           </td>
-                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                          <td className="border border-foreground/10 px-4 py-2">
                             {task.comments}
                           </td>
                         </tr>
@@ -125,7 +125,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                   </table>
                 </div>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 italic text-sm">
+                <p className="text-muted-foreground italic text-sm">
                   No hay actividades realizadas.
                 </p>
               )}
@@ -138,30 +138,30 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               </h2>
               {data.pendingTasks.length > 0 ? (
                 <div className="overflow-x-auto text-xs">
-                  <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                  <table className="w-full border-collapse border border-foreground/10">
                     <thead>
-                      <tr className="bg-gray-50 dark:bg-gray-800">
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">
+                      <tr className="bg-background">
+                        <th className="border border-foreground/10 px-4 py-2 text-left">
                           Tarea
                         </th>
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center">
+                        <th className="border border-foreground/10 px-4 py-2 text-center">
                           Story Points
                         </th>
-                        <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">
+                        <th className="border border-foreground/10 px-4 py-2 text-left">
                           Plan de acción
                         </th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="bg-background/50">
                       {data.pendingTasks.map((task) => (
                         <tr key={task.id}>
-                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                          <td className="border border-foreground/10 px-4 py-2">
                             {task.name}
                           </td>
-                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center font-semibold">
+                          <td className="border border-foreground/10 px-4 py-2 text-center font-semibold">
                             {task.storyPoints} pts
                           </td>
-                          <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                          <td className="border border-foreground/10 px-4 py-2">
                             {task.actionPlan}
                           </td>
                         </tr>
@@ -170,7 +170,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                   </table>
                 </div>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 italic text-sm">
+                <p className="text-muted-foreground italic text-sm">
                   No hay tareas pendientes.
                 </p>
               )}
@@ -182,18 +182,18 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                 3. Bloqueos / Dificultades
               </h2>
               {data.blocks.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-1 text-xs">
+                <ul className="list-disc pl-5 space-y-1 text-sm">
                   {data.blocks.map((block, index) => (
                     <li
                       key={`block-${index}`}
-                      className="text-gray-700 dark:text-gray-300"
+                      className="text-muted-foreground"
                     >
                       {block.name}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 italic text-sm">
+                <p className="text-muted-foreground italic text-sm">
                   No hay bloqueos o dificultades.
                 </p>
               )}
@@ -205,18 +205,18 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                 4. Observaciones / Sugerencias
               </h2>
               {data.observations.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-1 text-xs">
+                <ul className="list-disc pl-5 space-y-1 text-sm">
                   {data.observations.map((observation, index) => (
                     <li
                       key={`observation-${index}`}
-                      className="text-gray-700 dark:text-gray-300"
+                      className="text-muted-foreground"
                     >
                       {observation.name}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 italic text-sm">
+                <p className="text-muted-foreground italic text-sm">
                   No hay observaciones o sugerencias.
                 </p>
               )}
@@ -227,7 +227,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               <h2 className="text-lg print:text-base font-semibold mb-2">
                 5. Horas trabajadas
               </h2>
-              <p className="text-gray-700 dark:text-gray-300 text-sm">
+              <p className="text-muted-foreground text-sm">
                 {data.hoursWorked} horas
               </p>
             </div>
@@ -237,14 +237,14 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               <h2 className="text-lg print:text-base font-semibold mb-2">
                 6. Total Story Points del día
               </h2>
-              <div className="space-y-1 text-xs">
-                <p className="text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <div className="space-y-1 text-sm">
+                <p className="text-muted-foreground flex items-center gap-2">
                   <span>Completados:</span>
                   <span className="font-semibold">
                     {totalCompletedPoints} pts
                   </span>
                 </p>
-                <p className="text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <p className="text-muted-foreground flex items-center gap-2">
                   <span>En progreso:</span>
                   <span className="font-semibold">
                     {totalInProgressPoints} pts
@@ -259,8 +259,8 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                 <h2 className="text-lg print:text-base font-semibold mb-2">
                   Notas adicionales (opcional)
                 </h2>
-                <div className="border-t border-gray-300 dark:border-gray-600 pt-2">
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-xs">
+                <div className="border-t border-foreground/10 pt-2">
+                  <p className="text-muted-foreground whitespace-pre-wrap text-sm">
                     {data.additionalNotes}
                   </p>
                 </div>

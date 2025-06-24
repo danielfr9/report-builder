@@ -374,343 +374,335 @@ export default function WeeklyReportScreen({
   }, [reportData.completedTasks]);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8 relative">
-          <div className="absolute top-0 right-0">
-            <ThemeToggle />
-          </div>
-          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Generador de reportes semanales
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Crea reportes profesionales de programación con Story Points
-          </p>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 sticky top-0 z-40 ">
-            <TabsTrigger value="builder" className="flex items-center gap-2">
-              <PlusIcon className="w-4 h-4" />
-              Constructor
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2">
-              <EyeIcon className="w-4 h-4" />
-              Vista Previa
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="builder" className="space-y-6">
-            {/* Header Information */}
-            <ReportHeaderForm
-              header={reportData.header}
-              onHeaderChange={(header) =>
-                setReportData((prev) => ({ ...prev, header }))
-              }
-              onClearData={clearSavedInfo}
-            />
-
-            {/* Completed Tasks */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Tareas completadas esta semana</CardTitle>
-                <CardDescription>
-                  Tareas completadas durante la semana • Arrastra para reordenar
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Always visible add task form */}
-                <AddTaskForm
-                  onAdd={(taskData) => {
-                    const newTask: WeeklyTask = {
-                      ...taskData,
-                      id: Date.now().toString(),
-                    };
-                    setReportData((prev) => ({
-                      ...prev,
-                      completedTasks: [...prev.completedTasks, newTask],
-                    }));
-                  }}
-                />
-
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleCompletedTasksDragEnd}
-                >
-                  <SortableContext
-                    items={reportData.completedTasks.map((task) => task.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {reportData.completedTasks.map((task) => (
-                      <SortableTaskItem
-                        key={task.id}
-                        task={task}
-                        updateTask={updateCompletedTask}
-                        removeTask={removeCompletedTask}
-                      />
-                    ))}
-                  </SortableContext>
-                </DndContext>
-                {reportData.completedTasks.length === 0 && (
-                  <div className="text-center py-4 text-gray-500 text-sm">
-                    No hay tareas completadas aún.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Pending Tasks */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Tareas en progreso</CardTitle>
-                <CardDescription>
-                  Tareas que continúan la próxima semana • Arrastra para
-                  reordenar
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Always visible add pending task form */}
-                <AddPendingTaskForm
-                  onAdd={(taskData) => {
-                    const newTask: WeeklyPendingTask = {
-                      ...taskData,
-                      id: Date.now().toString(),
-                    };
-                    setReportData((prev) => ({
-                      ...prev,
-                      pendingTasks: [...prev.pendingTasks, newTask],
-                    }));
-                  }}
-                />
-
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handlePendingTasksDragEnd}
-                >
-                  <SortableContext
-                    items={reportData.pendingTasks.map((task) => task.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {reportData.pendingTasks.map((task) => (
-                      <SortablePendingTaskItem
-                        key={task.id}
-                        task={task}
-                        updateTask={updatePendingTask}
-                        removeTask={removePendingTask}
-                      />
-                    ))}
-                  </SortableContext>
-                </DndContext>
-                {reportData.pendingTasks.length === 0 && (
-                  <div className="text-center py-4 text-gray-500 text-sm">
-                    No hay tareas en progreso aún.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Additional Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información adicional</CardTitle>
-                <CardDescription>
-                  Bloqueos, logros y mejoras, horas trabajadas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
-                  <div className="space-y-4 mt-2">
-                    {/* Always visible add block form */}
-                    <AddBlockForm
-                      onAdd={(blockData) => {
-                        setReportData((prev) => ({
-                          ...prev,
-                          blocks: [...prev.blocks, blockData],
-                        }));
-                      }}
-                    />
-
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={handleBlocksDragEnd}
-                    >
-                      <SortableContext
-                        items={reportData.blocks.map((block) => block.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <div className="space-y-2">
-                          {reportData.blocks.map((block, index) => (
-                            <SortableBlockItem
-                              key={block.id}
-                              block={block}
-                              updateBlock={updateBlock}
-                              removeBlock={removeBlock}
-                            />
-                          ))}
-                        </div>
-                      </SortableContext>
-                    </DndContext>
-                    {reportData.blocks.length === 0 && (
-                      <div className="text-center py-4 text-gray-500 text-sm">
-                        No hay bloqueos/dificultades aún.
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="observations">Logros y Mejoras</Label>
-                  <div className="space-y-4 mt-2">
-                    {/* Always visible add observation form */}
-                    <AddObservationForm
-                      onAdd={(observationData) => {
-                        setReportData((prev) => ({
-                          ...prev,
-                          observations: [...prev.observations, observationData],
-                        }));
-                      }}
-                    />
-
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={handleObservationsDragEnd}
-                    >
-                      <SortableContext
-                        items={reportData.observations.map(
-                          (observation) => observation.id
-                        )}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <div className="space-y-2">
-                          {reportData.observations.map((observation) => (
-                            <SortableObservationItem
-                              key={observation.id}
-                              observation={observation}
-                              updateObservation={updateObservation}
-                              removeObservation={removeObservation}
-                            />
-                          ))}
-                        </div>
-                      </SortableContext>
-                    </DndContext>
-                    {reportData.observations.length === 0 && (
-                      <div className="text-center py-4 text-gray-500 text-sm">
-                        No hay logros/mejoras aún.
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="hours">Horas Trabajadas Esta Semana</Label>
-                  <Input
-                    id="hours"
-                    type="number"
-                    className="max-w-32"
-                    min="1"
-                    max="168"
-                    value={reportData.hoursWorked}
-                    onChange={(e) =>
-                      setReportData((prev) => ({
-                        ...prev,
-                        hoursWorked: Number.parseInt(e.target.value) || 40,
-                      }))
-                    }
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumen de la semana</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {totalCompletedPoints}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Story Points completados
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-600">
-                      {totalInProgressPoints}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Story Points en progreso
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {reportData.hoursWorked}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Horas trabajadas
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Plan for Next Week */}
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Plan para la próxima semana</CardTitle>
-                    <CardDescription>
-                      Tareas planificadas para la siguiente semana
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <Label htmlFor="notes">Plan de Trabajo (Opcional)</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Describe las tareas o objetivos planificados para la próxima semana..."
-                    value={reportData.additionalNotes}
-                    onChange={(e) =>
-                      setReportData((prev) => ({
-                        ...prev,
-                        additionalNotes: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="preview">
-            <div className="space-y-4">
-              <Button
-                onClick={generatePDF}
-                disabled={isGenerating}
-                className="flex items-center gap-2 ml-auto w-fit"
-              >
-                <>
-                  {isGenerating ? (
-                    <Loader2Icon className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <DownloadIcon className="w-4 h-4" />
-                  )}
-                  <span className="hidden md:block">Descargar PDF</span>
-                </>
-              </Button>
-              <WeeklyReportPreview data={reportData} />
-            </div>
-          </TabsContent>
-        </Tabs>
+    <div className="max-w-6xl mx-auto">
+      <div className="text-center mb-8 relative">
+        <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
+          Generador de reportes semanales
+        </h1>
+        <p className="text-muted-foreground">
+          Crea reportes profesionales de programación con Story Points
+        </p>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6 sticky top-0 z-40 ">
+          <TabsTrigger value="builder" className="flex items-center gap-2">
+            <PlusIcon className="w-4 h-4" />
+            Constructor
+          </TabsTrigger>
+          <TabsTrigger value="preview" className="flex items-center gap-2">
+            <EyeIcon className="w-4 h-4" />
+            Vista Previa
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="builder" className="space-y-6">
+          {/* Header Information */}
+          <ReportHeaderForm
+            header={reportData.header}
+            onHeaderChange={(header) =>
+              setReportData((prev) => ({ ...prev, header }))
+            }
+            onClearData={clearSavedInfo}
+          />
+
+          {/* Completed Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tareas completadas esta semana</CardTitle>
+              <CardDescription>
+                Tareas completadas durante la semana • Arrastra para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Always visible add task form */}
+              <AddTaskForm
+                onAdd={(taskData) => {
+                  const newTask: WeeklyTask = {
+                    ...taskData,
+                    id: Date.now().toString(),
+                  };
+                  setReportData((prev) => ({
+                    ...prev,
+                    completedTasks: [...prev.completedTasks, newTask],
+                  }));
+                }}
+              />
+
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleCompletedTasksDragEnd}
+              >
+                <SortableContext
+                  items={reportData.completedTasks.map((task) => task.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {reportData.completedTasks.map((task) => (
+                    <SortableTaskItem
+                      key={task.id}
+                      task={task}
+                      updateTask={updateCompletedTask}
+                      removeTask={removeCompletedTask}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              {reportData.completedTasks.length === 0 && (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  No hay tareas completadas aún.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Pending Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tareas en progreso</CardTitle>
+              <CardDescription>
+                Tareas que continúan la próxima semana • Arrastra para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Always visible add pending task form */}
+              <AddPendingTaskForm
+                onAdd={(taskData) => {
+                  const newTask: WeeklyPendingTask = {
+                    ...taskData,
+                    id: Date.now().toString(),
+                  };
+                  setReportData((prev) => ({
+                    ...prev,
+                    pendingTasks: [...prev.pendingTasks, newTask],
+                  }));
+                }}
+              />
+
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handlePendingTasksDragEnd}
+              >
+                <SortableContext
+                  items={reportData.pendingTasks.map((task) => task.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {reportData.pendingTasks.map((task) => (
+                    <SortablePendingTaskItem
+                      key={task.id}
+                      task={task}
+                      updateTask={updatePendingTask}
+                      removeTask={removePendingTask}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              {reportData.pendingTasks.length === 0 && (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  No hay tareas en progreso aún.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Additional Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Información adicional</CardTitle>
+              <CardDescription>
+                Bloqueos, logros y mejoras, horas trabajadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                <div className="space-y-4 mt-2">
+                  {/* Always visible add block form */}
+                  <AddBlockForm
+                    onAdd={(blockData) => {
+                      setReportData((prev) => ({
+                        ...prev,
+                        blocks: [...prev.blocks, blockData],
+                      }));
+                    }}
+                  />
+
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleBlocksDragEnd}
+                  >
+                    <SortableContext
+                      items={reportData.blocks.map((block) => block.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-2">
+                        {reportData.blocks.map((block, index) => (
+                          <SortableBlockItem
+                            key={block.id}
+                            block={block}
+                            updateBlock={updateBlock}
+                            removeBlock={removeBlock}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                  {reportData.blocks.length === 0 && (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                      No hay bloqueos/dificultades aún.
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="observations">Logros y Mejoras</Label>
+                <div className="space-y-4 mt-2">
+                  {/* Always visible add observation form */}
+                  <AddObservationForm
+                    onAdd={(observationData) => {
+                      setReportData((prev) => ({
+                        ...prev,
+                        observations: [...prev.observations, observationData],
+                      }));
+                    }}
+                  />
+
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleObservationsDragEnd}
+                  >
+                    <SortableContext
+                      items={reportData.observations.map(
+                        (observation) => observation.id
+                      )}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-2">
+                        {reportData.observations.map((observation) => (
+                          <SortableObservationItem
+                            key={observation.id}
+                            observation={observation}
+                            updateObservation={updateObservation}
+                            removeObservation={removeObservation}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                  {reportData.observations.length === 0 && (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                      No hay logros/mejoras aún.
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="hours">Horas Trabajadas Esta Semana</Label>
+                <Input
+                  id="hours"
+                  type="number"
+                  className="max-w-32"
+                  min="1"
+                  max="168"
+                  value={reportData.hoursWorked}
+                  onChange={(e) =>
+                    setReportData((prev) => ({
+                      ...prev,
+                      hoursWorked: Number.parseInt(e.target.value) || 40,
+                    }))
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Resumen de la semana</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {totalCompletedPoints}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Story Points completados
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {totalInProgressPoints}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Story Points en progreso
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {reportData.hoursWorked}
+                  </div>
+                  <div className="text-sm text-gray-600">Horas trabajadas</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Plan for Next Week */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Plan para la próxima semana</CardTitle>
+                  <CardDescription>
+                    Tareas planificadas para la siguiente semana
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <Label htmlFor="notes">Plan de Trabajo (Opcional)</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Describe las tareas o objetivos planificados para la próxima semana..."
+                  value={reportData.additionalNotes}
+                  onChange={(e) =>
+                    setReportData((prev) => ({
+                      ...prev,
+                      additionalNotes: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="preview">
+          <div className="space-y-4">
+            <Button
+              onClick={generatePDF}
+              disabled={isGenerating}
+              className="flex items-center gap-2 ml-auto w-fit"
+            >
+              <>
+                {isGenerating ? (
+                  <Loader2Icon className="w-4 h-4 animate-spin" />
+                ) : (
+                  <DownloadIcon className="w-4 h-4" />
+                )}
+                <span className="hidden md:block">Descargar PDF</span>
+              </>
+            </Button>
+            <WeeklyReportPreview data={reportData} />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
