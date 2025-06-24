@@ -125,7 +125,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                   </table>
                 </div>
               ) : (
-                <p className="text-muted-foreground italic text-sm">
+                <p className="text-muted-foreground italic text-xs">
                   No hay actividades realizadas.
                 </p>
               )}
@@ -170,7 +170,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                   </table>
                 </div>
               ) : (
-                <p className="text-muted-foreground italic text-sm">
+                <p className="text-muted-foreground italic text-xs">
                   No hay tareas pendientes.
                 </p>
               )}
@@ -182,7 +182,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                 3. Bloqueos / Dificultades
               </h2>
               {data.blocks.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-1 text-sm">
+                <ul className="list-disc pl-5 space-y-1 text-xs">
                   {data.blocks.map((block, index) => (
                     <li
                       key={`block-${index}`}
@@ -193,7 +193,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-muted-foreground italic text-sm">
+                <p className="text-muted-foreground italic text-xs">
                   No hay bloqueos o dificultades.
                 </p>
               )}
@@ -205,7 +205,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                 4. Observaciones / Sugerencias
               </h2>
               {data.observations.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-1 text-sm">
+                <ul className="list-disc pl-5 space-y-1 text-xs">
                   {data.observations.map((observation, index) => (
                     <li
                       key={`observation-${index}`}
@@ -216,7 +216,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-muted-foreground italic text-sm">
+                <p className="text-muted-foreground italic text-xs">
                   No hay observaciones o sugerencias.
                 </p>
               )}
@@ -227,7 +227,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               <h2 className="text-lg print:text-base font-semibold mb-2">
                 5. Horas trabajadas
               </h2>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs">
                 {data.hoursWorked} horas
               </p>
             </div>
@@ -237,7 +237,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               <h2 className="text-lg print:text-base font-semibold mb-2">
                 6. Total Story Points del día
               </h2>
-              <div className="space-y-1 text-sm">
+              <div className="space-y-1 text-xs">
                 <p className="text-muted-foreground flex items-center gap-2">
                   <span>Completados:</span>
                   <span className="font-semibold">

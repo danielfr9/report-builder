@@ -190,7 +190,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
               3. Bloqueos / Dificultades
             </h2>
             {data.blocks.length > 0 ? (
-              <ul className="space-y-1 text-sm">
+              <ul className="space-y-1 text-xs">
                 {data.blocks.map((block, index) => (
                   <li
                     key={`block-${index}`}
@@ -202,7 +202,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                 ))}
               </ul>
             ) : (
-              <p className="text-muted-foreground italic text-sm">
+              <p className="text-muted-foreground italic text-xs">
                 No hay bloqueos / dificultades.
               </p>
             )}
@@ -214,7 +214,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
               4. Logros y mejoras
             </h2>
             {data.observations.length > 0 ? (
-              <ul className="space-y-1 text-sm">
+              <ul className="space-y-1 text-xs">
                 {data.observations.map((observation, index) => (
                   <li
                     key={`observation-${index}`}
@@ -226,7 +226,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                 ))}
               </ul>
             ) : (
-              <p className="text-muted-foreground italic text-sm">
+              <p className="text-muted-foreground italic text-xs">
                 No hay logros y mejoras.
               </p>
             )}
@@ -237,7 +237,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
             <h2 className="text-lg print:text-base font-semibold mb-2">
               5. Horas trabajadas esta semana
             </h2>
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-xs">
               <p className="text-muted-foreground">{data.hoursWorked} horas</p>
             </div>
           </div>
@@ -247,7 +247,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
             <h2 className="text-lg print:text-base font-semibold mb-2 ">
               6. Story points totales de la semana
             </h2>
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-xs">
               <p className="text-muted-foreground flex items-center gap-2">
                 <span>Completados:</span>
                 <span className="font-semibold">

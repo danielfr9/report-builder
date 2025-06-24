@@ -127,8 +127,6 @@ export default function ReportBuilder() {
         sprint: { from: null, to: null },
       };
 
-    console.log("headerData", headerData);
-
     return {
       date: headerData.date ? parseISO(headerData.date) : null,
       name: headerData.name || "",
@@ -159,7 +157,6 @@ export default function ReportBuilder() {
   const loadSharedHeader = (): ReportHeader => {
     try {
       const savedHeader = localStorage.getItem(V2_SHARED_HEADER_KEY);
-      console.log("savedHeaderRAW", savedHeader);
       if (savedHeader) {
         return parseHeaderData(JSON.parse(savedHeader));
       }
