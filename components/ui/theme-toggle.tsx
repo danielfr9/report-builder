@@ -12,58 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-
-type ThemeOption = {
-  name: string;
-  value: string;
-};
-
-const themes: ThemeOption[] = [
-  {
-    name: "System",
-    value: "system",
-  },
-  {
-    name: "Light",
-    value: "light",
-  },
-  {
-    name: "Dark",
-    value: "dark",
-  },
-  {
-    name: "Caffeine",
-    value: "caffeine",
-  },
-  {
-    name: "Caffeine Dark",
-    value: "caffeine-dark",
-  },
-  {
-    name: "Tangenrine",
-    value: "tangenrine",
-  },
-  {
-    name: "Tangenrine Dark",
-    value: "tangenrine-dark",
-  },
-  {
-    name: "Twitter",
-    value: "twitter",
-  },
-  {
-    name: "Twitter Dark",
-    value: "twitter-dark",
-  },
-  {
-    name: "Supabase",
-    value: "supabase",
-  },
-  {
-    name: "Supabase Dark",
-    value: "supabase-dark",
-  },
-];
+import { themeOptions } from "@/lib/themes/theme-options";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -89,7 +38,7 @@ export function ThemeToggle() {
         align="end"
         className="max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-auto"
       >
-        {themes.map((option) => (
+        {themeOptions.map((option) => (
           <DropdownMenuItem
             key={option.value}
             className={cn(
