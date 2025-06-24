@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-import { themeMap } from "@/lib/themes/theme-options";
 
 export const metadata: Metadata = {
   title: "Reporte de Programación",
@@ -21,7 +20,22 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
-          value={themeMap}
+          value={{
+            light: "light",
+            dark: "dark",
+            caffeine: "caffeine",
+            "caffeine-dark": "caffeine-dark",
+            tangenrine: "tangenrine",
+            "tangenrine-dark": "tangenrine-dark",
+            twitter: "twitter",
+            "twitter-dark": "twitter-dark",
+            supabase: "supabase",
+            "supabase-dark": "supabase-dark",
+            ayu: "ayu",
+            "ayu-dark": "ayu-dark",
+            "one-dark": "one-dark",
+            dracula: "dracula",
+          }}
           enableSystem
           disableTransitionOnChange
         >

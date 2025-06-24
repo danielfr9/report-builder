@@ -62,11 +62,3 @@ export const themeOptions: ThemeOption[] = [
     value: "dracula",
   },
 ];
-
-export const themeMap: Record<string, string> = themeOptions.reduce(
-  (acc, option) => {
-    acc[option.value] = option.value;
-    return acc;
-  },
-  {} as Record<string, string>
-);
