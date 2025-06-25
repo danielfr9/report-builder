@@ -46,43 +46,13 @@ export default function ReportHeaderForm({
   onClearData,
 }: ReportHeaderFormProps) {
   return (
-    <Card>
+    <Card className="h-fit w-full">
       <CardHeader>
-        <div className="flex flex-col md:flex-row gap-2 justify-between items-center">
-          <div>
-            <CardTitle>Información general</CardTitle>
-            <CardDescription>Datos básicos del reporte</CardDescription>
-          </div>
-          <AlertDialog>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta acción no se puede deshacer.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={onClearData}>
-                  Continuar
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs max-md:ml-auto"
-              >
-                <Trash2Icon className="mr-2 h-4 w-4 opacity-50" />
-                Limpiar Datos
-              </Button>
-            </AlertDialogTrigger>
-          </AlertDialog>
-        </div>
+        <CardTitle>Información general</CardTitle>
+        <CardDescription>Datos básicos del reporte</CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
+      <CardContent className="flex flex-col gap-4">
+        <div className="">
           <Label htmlFor="date">Fecha</Label>
           <Popover>
             <PopoverTrigger asChild>
@@ -191,6 +161,32 @@ export default function ReportHeaderForm({
           *Todos los datos del reporte se guardan automáticamente en tu
           navegador.
         </small>
+        <AlertDialog>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={onClearData}>
+                Continuar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs ml-auto w-full"
+            >
+              <Trash2Icon className="mr-2 h-4 w-4 opacity-50" />
+              Limpiar Datos
+            </Button>
+          </AlertDialogTrigger>
+        </AlertDialog>
       </CardContent>
     </Card>
   );

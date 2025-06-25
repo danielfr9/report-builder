@@ -71,49 +71,51 @@ const SortableTaskItem = ({
             </Button>
           </div>
           <div className="flex-1 space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              <div className="col-span-3">
+            <div className="flex flex-col gap-3">
+              <div>
                 <Label>Tarea</Label>
-                <Input
+                <Textarea
                   placeholder="Descripción de la tarea"
                   value={task.name}
                   onChange={(e) => updateTask(task.id, "name", e.target.value)}
                 />
               </div>
-              <div>
-                <Label>Story Points</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={task.storyPoints}
-                  onChange={(e) =>
-                    updateTask(
-                      task.id,
-                      "storyPoints",
-                      Number.parseInt(e.target.value) || 1
-                    )
-                  }
-                />
-              </div>
-              <div>
-                <Label>Estado</Label>
-                <Select
-                  value={task.status}
-                  onValueChange={(
-                    value: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
-                  ) => updateTask(task.id, "status", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(TASK_STATUS).map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label>Story Points</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={task.storyPoints}
+                    onChange={(e) =>
+                      updateTask(
+                        task.id,
+                        "storyPoints",
+                        Number.parseInt(e.target.value) || 1
+                      )
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Estado</Label>
+                  <Select
+                    value={task.status}
+                    onValueChange={(
+                      value: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
+                    ) => updateTask(task.id, "status", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(TASK_STATUS).map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <div>

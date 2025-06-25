@@ -44,10 +44,10 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
         <h3 className="font-medium">Agregar Nueva Tarea</h3>
       </div>
       <div className="space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <div className="md:col-span-3">
+        <div className="flex flex-col gap-3">
+          <div className="">
             <Label>Tarea</Label>
-            <Input
+            <Textarea
               placeholder="Descripción de la tarea"
               value={formData.name}
               onChange={(e) =>
@@ -55,39 +55,41 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
               }
             />
           </div>
-          <div>
-            <Label>Story Points</Label>
-            <Input
-              type="number"
-              min="1"
-              value={formData.storyPoints}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  storyPoints: Number.parseInt(e.target.value) || 1,
-                }))
-              }
-            />
-          </div>
-          <div>
-            <Label>Estado</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(
-                value: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
-              ) => setFormData((prev) => ({ ...prev, status: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(TASK_STATUS).map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <Label>Story Points</Label>
+              <Input
+                type="number"
+                min="1"
+                value={formData.storyPoints}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    storyPoints: Number.parseInt(e.target.value) || 1,
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <Label>Estado</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(
+                  value: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
+                ) => setFormData((prev) => ({ ...prev, status: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(TASK_STATUS).map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
         <div>
