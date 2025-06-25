@@ -19,9 +19,20 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { es } from "date-fns/locale";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Trash2Icon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { ReportHeader } from "@/lib/interfaces/report-data.interface";
+import {
+  AlertDialog,
+  AlertDialogHeader,
+  AlertDialogDescription,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogCancel,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "../ui/alert-dialog";
 
 interface ReportHeaderFormProps {
   header: ReportHeader;
@@ -42,14 +53,32 @@ export default function ReportHeaderForm({
             <CardTitle>Información general</CardTitle>
             <CardDescription>Datos básicos del reporte</CardDescription>
           </div>
-          <Button
-            onClick={onClearData}
-            variant="outline"
-            size="sm"
-            className="text-xs max-md:ml-auto"
-          >
-            Limpiar Datos
-          </Button>
+          <AlertDialog>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={onClearData}>
+                  Continuar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs max-md:ml-auto"
+              >
+                <Trash2Icon className="mr-2 h-4 w-4 opacity-50" />
+                Limpiar Datos
+              </Button>
+            </AlertDialogTrigger>
+          </AlertDialog>
         </div>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
