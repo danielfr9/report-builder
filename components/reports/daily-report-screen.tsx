@@ -366,7 +366,7 @@ export default function DailyReportScreen({
       (sum, task) => sum + task.storyPoints,
       0
     );
-  }, [reportData.completedTasks]);
+  }, [reportData.pendingTasks]);
 
   return (
     <div className="max-w-6xl mx-auto">
