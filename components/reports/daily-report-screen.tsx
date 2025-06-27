@@ -24,18 +24,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { PlusIcon, EyeIcon, Loader2Icon, DownloadIcon } from "lucide-react";
 import { DailyReportPreview } from "@/components/reports/daily-report-preview";
 import { toast } from "sonner";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { debounce, toSentenceCase } from "@/lib/utils";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
-import {
-  DailyPendingTask,
-  DailyReportData,
-  DailyTask,
-  DailyReportLocalStorageData,
-  DailyBlock,
-  DailyObservation,
-} from "@/lib/interfaces/report-data.interface";
+import { DailyObservation } from "@/lib/interfaces/report-data.interface";
 import {
   DndContext,
   closestCenter,
@@ -53,7 +45,6 @@ import {
 } from "@dnd-kit/sortable";
 
 import AddTaskForm from "./daily/add-task-form";
-import AddPendingTaskForm from "./daily/add-pending-task-form";
 import AddBlockForm from "./daily/add-block-form";
 import AddObservationForm from "./daily/add-observation-form";
 import SortableTaskItem from "./daily/sortable-task-item";
@@ -113,24 +104,7 @@ export default function DailyReportScreen({
   );
 
   // Handle drag end for completed tasks
-  const handleCompletedTasksDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (active.id !== over?.id) {
-      setReportData((prev) => {
-        const oldIndex = prev.tasks.findIndex((task) => task.id === active.id);
-        const newIndex = prev.tasks.findIndex((task) => task.id === over?.id);
-
-        return {
-          ...prev,
-          tasks: arrayMove(prev.tasks, oldIndex, newIndex),
-        };
-      });
-    }
-  };
-
-  // Handle drag end for pending tasks
-  const handlePendingTasksDragEnd = (event: DragEndEvent) => {
+  const handleTasksDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
@@ -233,7 +207,7 @@ export default function DailyReportScreen({
     toast.success("Datos borrados del navegador");
   };
 
-  const updateCompletedTask = (id: string, field: keyof Task, value: any) => {
+  const updateTask = (id: string, field: keyof Task, value: any) => {
     setReportData((prev) => ({
       ...prev,
       tasks: prev.tasks.map((task) =>
@@ -242,27 +216,7 @@ export default function DailyReportScreen({
     }));
   };
 
-  const removeCompletedTask = (id: string) => {
-    setReportData((prev) => ({
-      ...prev,
-      tasks: prev.tasks.filter((task) => task.id !== id),
-    }));
-  };
-
-  const updatePendingTask = (
-    id: string,
-    field: keyof DailyPendingTask,
-    value: any
-  ) => {
-    setReportData((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((task) =>
-        task.id === id ? { ...task, [field]: value } : task
-      ),
-    }));
-  };
-
-  const removePendingTask = (id: string) => {
+  const removeTask = (id: string) => {
     setReportData((prev) => ({
       ...prev,
       tasks: prev.tasks.filter((task) => task.id !== id),
@@ -346,9 +300,21 @@ export default function DailyReportScreen({
     );
   }, [reportData.tasks]);
 
+  const inProgressTasks = useMemo(() => {
+    return reportData.tasks.filter(
+      (task) => task.status === TASK_STATUS.IN_PROGRESS
+    );
+  }, [reportData.tasks]);
+
   const pendingTasks = useMemo(() => {
     return reportData.tasks.filter(
       (task) => task.status === TASK_STATUS.PENDING
+    );
+  }, [reportData.tasks]);
+
+  const blockedTasks = useMemo(() => {
+    return reportData.tasks.filter(
+      (task) => task.status === TASK_STATUS.BLOCKED
     );
   }, [reportData.tasks]);
 
@@ -400,9 +366,10 @@ export default function DailyReportScreen({
           {/* Completed Tasks */}
           <Card>
             <CardHeader>
-              <CardTitle>Actividades realizadas</CardTitle>
+              <CardTitle>Agregar Tareas</CardTitle>
               <CardDescription>
-                Tareas completadas y en progreso • Arrastra para reordenar
+                Registra las tareas relacionadas al sprint actual o proyectos en
+                curso.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -419,11 +386,21 @@ export default function DailyReportScreen({
                   }));
                 }}
               />
+            </CardContent>
+          </Card>
 
+          <Card>
+            <CardHeader>
+              <CardTitle>Actividades realizadas</CardTitle>
+              <CardDescription>
+                Tareas completadas y en progreso • Arrastra para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
-                onDragEnd={handleCompletedTasksDragEnd}
+                onDragEnd={handleTasksDragEnd}
               >
                 <SortableContext
                   items={reportData.tasks.map((task) => task.id)}
@@ -433,8 +410,8 @@ export default function DailyReportScreen({
                     <SortableTaskItem
                       key={task.id}
                       task={task}
-                      updateTask={updateCompletedTask}
-                      removeTask={removeCompletedTask}
+                      updateTask={updateTask}
+                      removeTask={removeTask}
                     />
                   ))}
                 </SortableContext>
@@ -442,6 +419,42 @@ export default function DailyReportScreen({
               {completedTasks.length === 0 && (
                 <div className="text-center py-4 text-muted-foreground text-sm">
                   No hay tareas agregadas aún.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Tareas en progreso</CardTitle>
+              <CardDescription>
+                Tareas que estás trabajando actualmente • Arrastra para
+                reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleTasksDragEnd}
+              >
+                <SortableContext
+                  items={reportData.tasks.map((task) => task.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {inProgressTasks.map((task) => (
+                    <SortableTaskItem
+                      key={task.id}
+                      task={task}
+                      updateTask={updateTask}
+                      removeTask={removeTask}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              {inProgressTasks.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No hay tareas en progreso aún.
                 </div>
               )}
             </CardContent>
@@ -456,24 +469,10 @@ export default function DailyReportScreen({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Always visible add pending task form */}
-              <AddPendingTaskForm
-                onAdd={(taskData) => {
-                  const newTask: Task = {
-                    ...taskData,
-                    id: Date.now().toString(),
-                  };
-                  setReportData((prev) => ({
-                    ...prev,
-                    tasks: [...prev.tasks, newTask],
-                  }));
-                }}
-              />
-
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
-                onDragEnd={handlePendingTasksDragEnd}
+                onDragEnd={handleTasksDragEnd}
               >
                 <SortableContext
                   items={reportData.tasks.map((task) => task.id)}
@@ -483,8 +482,8 @@ export default function DailyReportScreen({
                     <SortablePendingTaskItem
                       key={task.id}
                       task={task}
-                      updateTask={updatePendingTask}
-                      removeTask={removePendingTask}
+                      updateTask={updateTask}
+                      removeTask={removeTask}
                     />
                   ))}
                 </SortableContext>
@@ -492,6 +491,42 @@ export default function DailyReportScreen({
               {pendingTasks.length === 0 && (
                 <div className="text-center py-4 text-muted-foreground text-sm">
                   No hay tareas pendientes aún.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Tareas bloqueadas</CardTitle>
+              <CardDescription>
+                Tareas que no puedes continuar debido a un bloqueo o dificultad
+                • Arrastra para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleTasksDragEnd}
+              >
+                <SortableContext
+                  items={reportData.tasks.map((task) => task.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {blockedTasks.map((task) => (
+                    <SortableTaskItem
+                      key={task.id}
+                      task={task}
+                      updateTask={updateTask}
+                      removeTask={removeTask}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              {blockedTasks.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No hay tareas bloqueadas aún.
                 </div>
               )}
             </CardContent>
