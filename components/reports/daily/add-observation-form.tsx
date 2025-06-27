@@ -1,25 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { DailyObservation } from "@/lib/interfaces/report-data.interface";
+import { Observation } from "@/lib/interfaces/observation.interface";
 import { useState } from "react";
 
 // Add Observation Form Component
 interface AddObservationFormProps {
-  onAdd: (observation: DailyObservation) => void;
+  onAdd: (observation: Omit<Observation, "id">) => void;
 }
 
 const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {
-  const [formData, setFormData] = useState<DailyObservation>({
-    id: "",
+  const [formData, setFormData] = useState<Omit<Observation, "id">>({
     name: "",
   });
 
   const handleSubmit = () => {
     if (formData.name.trim()) {
-      onAdd(formData);
+      onAdd({
+        name: formData.name,
+      });
       setFormData({
-        id: "",
         name: "",
       });
     }

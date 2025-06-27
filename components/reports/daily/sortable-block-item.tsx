@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { DailyBlock } from "@/lib/interfaces/report-data.interface";
+import { Block } from "@/lib/interfaces/block.interface";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -13,8 +13,8 @@ import { useState } from "react";
 
 // Sortable Block Item Component
 interface SortableBlockItemProps {
-  block: DailyBlock;
-  updateBlock: (id: string, value: DailyBlock) => void;
+  block: Block;
+  updateBlock: (id: string, value: Block) => void;
   removeBlock: (id: string) => void;
 }
 

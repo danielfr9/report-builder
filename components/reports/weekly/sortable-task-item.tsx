@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { WeeklyTask } from "@/lib/interfaces/report-data.interface";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -30,11 +29,12 @@ import {
 import { useState } from "react";
 import { PencilIcon } from "lucide-react";
 import { TASK_STATUS } from "@/lib/constants/task-status";
+import { Task } from "@/lib/interfaces/task.inteface";
 
 // Sortable Task Item Component (moved outside main component)
 interface SortableTaskItemProps {
-  task: WeeklyTask;
-  updateTask: (id: string, field: keyof WeeklyTask, value: any) => void;
+  task: Task;
+  updateTask: (id: string, field: keyof Task, value: any) => void;
   removeTask: (id: string) => void;
 }
 

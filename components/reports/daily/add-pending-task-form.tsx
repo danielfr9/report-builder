@@ -1,24 +1,24 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { DailyPendingTask } from "@/lib/interfaces/report-data.interface";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Task } from "@/lib/interfaces/task.inteface";
+import { TASK_STATUS } from "@/lib/constants/task-status";
 
 // Add Pending Task Form Component
 interface AddPendingTaskFormProps {
-  onAdd: (task: Omit<DailyPendingTask, "id">) => void;
+  onAdd: (task: Omit<Task, "id">) => void;
 }
 
 const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
-  const [formData, setFormData] = useState<{
-    name: string;
-    storyPoints: number;
-    actionPlan: string;
-  }>({
+  const [formData, setFormData] = useState<Omit<Task, "id">>({
     name: "",
     storyPoints: 1,
     actionPlan: "",
+    status: TASK_STATUS.PENDING,
+    comments: "",
+    finishDate: null,
   });
 
   const handleSubmit = () => {
@@ -27,11 +27,17 @@ const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
         name: formData.name,
         storyPoints: formData.storyPoints,
         actionPlan: formData.actionPlan,
+        status: TASK_STATUS.PENDING,
+        comments: formData.comments,
+        finishDate: formData.finishDate,
       });
       setFormData({
         name: "",
         storyPoints: 1,
         actionPlan: "",
+        status: TASK_STATUS.PENDING,
+        comments: "",
+        finishDate: null,
       });
     }
   };

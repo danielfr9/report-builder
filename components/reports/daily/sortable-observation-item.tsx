@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { DailyObservation } from "@/lib/interfaces/report-data.interface";
+import { Observation } from "@/lib/interfaces/observation.interface";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -13,8 +13,8 @@ import { useState } from "react";
 
 // Sortable Observation Item Component
 interface SortableObservationItemProps {
-  observation: DailyObservation;
-  updateObservation: (id: string, value: DailyObservation) => void;
+  observation: Observation;
+  updateObservation: (id: string, value: Observation) => void;
   removeObservation: (id: string) => void;
 }
 

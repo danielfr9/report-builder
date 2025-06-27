@@ -2,20 +2,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { WeeklyReportData } from "@/lib/interfaces/report-data.interface";
+import { TASK_STATUS } from "@/lib/constants/task-status";
+import { WeeklyReport } from "@/lib/interfaces/weekly.interface";
 
 interface WeeklyReportPreviewProps {
-  data: WeeklyReportData;
+  data: WeeklyReport;
 }
 
 export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
-  const totalCompletedPoints = data.completedTasks.reduce(
-    (sum, task) => sum + task.storyPoints,
-    0
-  );
+  const totalCompletedPoints = data.tasks
+    .filter((task) => task.status === TASK_STATUS.COMPLETED)
+    .reduce((sum, task) => sum + task.storyPoints, 0);
 
-  const totalInProgressPoints = data.pendingTasks.reduce(
-    (sum, task) => sum + task.storyPoints,
-    0
+  const totalInProgressPoints = data.tasks
+    .filter((task) => task.status === TASK_STATUS.IN_PROGRESS)
+    .reduce((sum, task) => sum + task.storyPoints, 0);
+
+  const completedTasks = data.tasks.filter(
+    (task) => task.status === TASK_STATUS.COMPLETED
+  );
+  const pendingTasks = data.tasks.filter(
+    (task) => task.status === TASK_STATUS.IN_PROGRESS
   );
 
   const getStatusIcon = (status: string) => {
@@ -81,8 +88,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
             <h2 className="text-lg print:text-base font-semibold mb-4">
               1. Tareas completadas esta semana
             </h2>
-            {data.completedTasks.filter((task) => task.status === "Completado")
-              .length > 0 ? (
+            {completedTasks.length > 0 ? (
               <div className="overflow-x-auto text-xs">
                 <table className="w-full border-collapse border border-foreground/10">
                   <thead>
@@ -102,26 +108,24 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                     </tr>
                   </thead>
                   <tbody className="bg-background/50">
-                    {data.completedTasks
-                      .filter((task) => task.status === "Completado")
-                      .map((task, index) => (
-                        <tr key={task.id}>
-                          <td className="border border-foreground/10 px-4 py-2">
-                            {task.name}
-                          </td>
-                          <td className="border border-foreground/10 px-4 py-2 text-center font-semibold">
-                            {task.storyPoints} pts
-                          </td>
-                          <td className="border border-foreground/10 px-4 py-2 text-center">
-                            {task.finishDate
-                              ? format(task.finishDate, "dd/MM/yyyy")
-                              : "No especificada"}
-                          </td>
-                          <td className="border border-foreground/10 px-4 py-2">
-                            {task.comments}
-                          </td>
-                        </tr>
-                      ))}
+                    {completedTasks.map((task, index) => (
+                      <tr key={task.id}>
+                        <td className="border border-foreground/10 px-4 py-2">
+                          {task.name}
+                        </td>
+                        <td className="border border-foreground/10 px-4 py-2 text-center font-semibold">
+                          {task.storyPoints} pts
+                        </td>
+                        <td className="border border-foreground/10 px-4 py-2 text-center">
+                          {task.finishDate
+                            ? format(task.finishDate, "dd/MM/yyyy")
+                            : "No especificada"}
+                        </td>
+                        <td className="border border-foreground/10 px-4 py-2">
+                          {task.comments}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -137,7 +141,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
             <h2 className="text-lg print:text-base font-semibold mb-4">
               2. Tareas en progreso
             </h2>
-            {data.pendingTasks.length > 0 ? (
+            {pendingTasks.length > 0 ? (
               <div className="overflow-x-auto text-xs">
                 <table className="w-full border-collapse border border-foreground/10">
                   <thead>
@@ -157,7 +161,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                     </tr>
                   </thead>
                   <tbody className="bg-background/50">
-                    {data.pendingTasks.map((task) => (
+                    {pendingTasks.map((task) => (
                       <tr key={task.id}>
                         <td className="border border-foreground/10 px-4 py-2">
                           {task.name}

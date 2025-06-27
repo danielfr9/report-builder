@@ -1,25 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { DailyBlock } from "@/lib/interfaces/report-data.interface";
+import { Block } from "@/lib/interfaces/block.interface";
 import { useState } from "react";
 
 // Add Block Form Component
 interface AddBlockFormProps {
-  onAdd: (block: DailyBlock) => void;
+  onAdd: (block: Omit<Block, "id">) => void;
 }
 
 const AddBlockForm = ({ onAdd }: AddBlockFormProps) => {
-  const [formData, setFormData] = useState<DailyBlock>({
-    id: "",
+  const [formData, setFormData] = useState<Omit<Block, "id">>({
     name: "",
   });
 
   const handleSubmit = () => {
     if (formData.name.trim()) {
-      onAdd(formData);
+      onAdd({
+        name: formData.name,
+      });
       setFormData({
-        id: "",
         name: "",
       });
     }

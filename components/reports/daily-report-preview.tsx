@@ -1,21 +1,27 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { DailyReportData } from "@/lib/interfaces/report-data.interface";
+import { DailyReport } from "@/lib/interfaces/daily.interface";
+import { TASK_STATUS } from "@/lib/constants/task-status";
 
 interface DailyReportPreviewProps {
-  data: DailyReportData;
+  data: DailyReport;
 }
 
 export function DailyReportPreview({ data }: DailyReportPreviewProps) {
-  const totalCompletedPoints = data.completedTasks.reduce(
-    (sum, task) => sum + task.storyPoints,
-    0
-  );
+  const totalCompletedPoints = data.tasks
+    .filter((task) => task.status === TASK_STATUS.COMPLETED)
+    .reduce((sum, task) => sum + task.storyPoints, 0);
 
-  const totalInProgressPoints = data.pendingTasks.reduce(
-    (sum, task) => sum + task.storyPoints,
-    0
+  const totalInProgressPoints = data.tasks
+    .filter((task) => task.status === TASK_STATUS.IN_PROGRESS)
+    .reduce((sum, task) => sum + task.storyPoints, 0);
+
+  const completedTasks = data.tasks.filter(
+    (task) => task.status === TASK_STATUS.COMPLETED
+  );
+  const pendingTasks = data.tasks.filter(
+    (task) => task.status === TASK_STATUS.PENDING
   );
 
   const getStatusIcon = (status: string) => {
@@ -82,7 +88,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               <h2 className="text-lg print:text-base font-semibold mb-4">
                 1. Actividades realizadas (Hoy)
               </h2>
-              {data.completedTasks.length > 0 ? (
+              {completedTasks.length > 0 ? (
                 <div className="overflow-x-auto text-xs">
                   <table className="w-full border-collapse border border-foreground/10">
                     <thead>
@@ -102,7 +108,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                       </tr>
                     </thead>
                     <tbody className="bg-background/50">
-                      {data.completedTasks.map((task) => (
+                      {completedTasks.map((task) => (
                         <tr key={task.id}>
                           <td className="border border-foreground/10 px-4 py-2">
                             {task.name}
@@ -136,7 +142,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               <h2 className="text-lg print:text-base font-semibold mb-4">
                 2. Pendientes por continuar
               </h2>
-              {data.pendingTasks.length > 0 ? (
+              {pendingTasks.length > 0 ? (
                 <div className="overflow-x-auto text-xs">
                   <table className="w-full border-collapse border border-foreground/10">
                     <thead>
@@ -153,7 +159,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                       </tr>
                     </thead>
                     <tbody className="bg-background/50">
-                      {data.pendingTasks.map((task) => (
+                      {pendingTasks.map((task) => (
                         <tr key={task.id}>
                           <td className="border border-foreground/10 px-4 py-2">
                             {task.name}

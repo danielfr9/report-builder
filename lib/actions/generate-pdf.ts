@@ -5,11 +5,9 @@ import puppeteer from "puppeteer";
 import chromium from "@sparticuz/chromium";
 import { DailyReportPreview } from "../../components/reports/daily-report-preview";
 import React from "react";
-import {
-  DailyReportData,
-  WeeklyReportData,
-} from "@/lib/interfaces/report-data.interface";
 import { WeeklyReportPreview } from "@/components/reports/weekly-report-preview";
+import { DailyReport } from "../interfaces/daily.interface";
+import { WeeklyReport } from "../interfaces/weekly.interface";
 
 async function getBrowser() {
   if (process.env.VERCEL_ENV === "production") {
@@ -28,7 +26,7 @@ async function getBrowser() {
 }
 
 export async function generateDailyReportPDFAction(
-  reportData: DailyReportData
+  reportData: DailyReport
 ): Promise<Buffer> {
   const { renderToString } = await import("react-dom/server");
 
@@ -81,9 +79,7 @@ export async function generateDailyReportPDFAction(
   }
 }
 
-export async function generateWeeklyReportPDFAction(
-  reportData: WeeklyReportData
-) {
+export async function generateWeeklyReportPDFAction(reportData: WeeklyReport) {
   const { renderToString } = await import("react-dom/server");
 
   // const cssDir = path.resolve(process.cwd(), ".next/static/css/");

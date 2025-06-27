@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { WeeklyTask } from "@/lib/interfaces/report-data.interface";
+import { Task } from "@/lib/interfaces/task.inteface";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -25,16 +25,17 @@ import { useState } from "react";
 
 // Add Task Form Component
 interface AddTaskFormProps {
-  onAdd: (task: Omit<WeeklyTask, "id">) => void;
+  onAdd: (task: Omit<Task, "id">) => void;
 }
 
 const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
-  const [formData, setFormData] = useState<Omit<WeeklyTask, "id">>({
+  const [formData, setFormData] = useState<Omit<Task, "id">>({
     name: "",
     storyPoints: 1,
     status: TASK_STATUS.COMPLETED,
     comments: "",
     finishDate: null,
+    actionPlan: "",
   });
 
   const handleSubmit = () => {
@@ -46,6 +47,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
         storyPoints: 1,
         status: TASK_STATUS.COMPLETED,
         comments: "",
+        actionPlan: "",
       }));
     }
   };
@@ -143,6 +145,57 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
               setFormData((prev) => ({ ...prev, comments: e.target.value }))
             }
           />
+        </div>
+        <div>
+          <Label>Plan de acción</Label>
+          <Textarea
+            placeholder="Plan de acción"
+            value={formData.actionPlan}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, actionPlan: e.target.value }))
+            }
+          />
+        </div>
+        <div>
+          <Label htmlFor="date">Fecha Finalizacion</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "h-10 w-full justify-start pr-10 text-left font-normal",
+                  !formData.finishDate && "text-muted-foreground"
+                )}
+                id="calendar-input"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                {formData.finishDate
+                  ? format(formData.finishDate, "dd/MM/yyyy")
+                  : "Selecciona una fecha"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-[--radix-popover-trigger-width] p-0"
+              align="start"
+            >
+              <Calendar
+                className="!w-[var(--radix-popover-trigger-width)]"
+                mode="single"
+                selected={
+                  formData.finishDate
+                    ? new Date(formData.finishDate)
+                    : undefined
+                }
+                locale={es}
+                onSelect={(selectedDate) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    finishDate: selectedDate || null,
+                  }));
+                }}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleSubmit} disabled={!formData.name.trim()}>

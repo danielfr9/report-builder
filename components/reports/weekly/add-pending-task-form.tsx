@@ -5,23 +5,21 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TASK_STATUS } from "@/lib/constants/task-status";
+import { Task } from "@/lib/interfaces/task.inteface";
 
 // Add Pending Task Form Component
 interface AddPendingTaskFormProps {
-  onAdd: (task: Omit<WeeklyPendingTask, "id">) => void;
+  onAdd: (task: Omit<Task, "id">) => void;
 }
 
 const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
-  const [formData, setFormData] = useState<{
-    name: string;
-    storyPoints: number;
-    currentStatus: string;
-    nextStep: string;
-  }>({
+  const [formData, setFormData] = useState<Omit<Task, "id">>({
     name: "",
     storyPoints: 1,
-    currentStatus: TASK_STATUS.IN_PROGRESS,
-    nextStep: "",
+    status: TASK_STATUS.IN_PROGRESS,
+    actionPlan: "",
+    comments: "",
+    finishDate: null,
   });
 
   const handleSubmit = () => {
@@ -29,13 +27,18 @@ const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
       onAdd({
         name: formData.name,
         storyPoints: formData.storyPoints,
-        actionPlan: `${formData.currentStatus}|${formData.nextStep}`,
+        status: TASK_STATUS.IN_PROGRESS,
+        actionPlan: formData.actionPlan,
+        comments: formData.comments,
+        finishDate: formData.finishDate,
       });
       setFormData({
         name: "",
         storyPoints: 1,
-        currentStatus: TASK_STATUS.IN_PROGRESS,
-        nextStep: "",
+        status: TASK_STATUS.IN_PROGRESS,
+        actionPlan: "",
+        comments: "",
+        finishDate: null,
       });
     }
   };
@@ -71,27 +74,14 @@ const AddPendingTaskForm = ({ onAdd }: AddPendingTaskFormProps) => {
               }
             />
           </div>
-          <div>
-            <Label>Estado Actual</Label>
-            <Input
-              placeholder="En desarrollo, bloqueado, etc."
-              value={formData.currentStatus}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  currentStatus: e.target.value,
-                }))
-              }
-            />
-          </div>
         </div>
         <div>
-          <Label>Próximo Paso</Label>
+          <Label>Plan de Acción</Label>
           <Textarea
-            placeholder="¿Cuál es el siguiente paso para completar esta tarea?"
-            value={formData.nextStep}
+            placeholder="¿Qué harás para completar esta tarea?"
+            value={formData.actionPlan}
             onChange={(e) =>
-              setFormData((prev) => ({ ...prev, nextStep: e.target.value }))
+              setFormData((prev) => ({ ...prev, actionPlan: e.target.value }))
             }
           />
         </div>

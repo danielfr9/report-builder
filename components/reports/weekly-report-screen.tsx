@@ -23,18 +23,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { PlusIcon, EyeIcon, Loader2Icon, DownloadIcon } from "lucide-react";
 import { WeeklyReportPreview } from "@/components/reports/weekly-report-preview";
 import { toast } from "sonner";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { debounce, toSentenceCase } from "@/lib/utils";
 import { format } from "date-fns";
 import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf";
-import {
-  WeeklyPendingTask,
-  WeeklyReportData,
-  WeeklyTask,
-  WeeklyReportLocalStorageData,
-  WeeklyBlock,
-  WeeklyObservation,
-} from "@/lib/interfaces/report-data.interface";
+
 import {
   DndContext,
   closestCenter,
@@ -60,17 +52,22 @@ import SortableBlockItem from "./weekly/sortable-block-item";
 import AddObservationForm from "./weekly/add-observation-form";
 import SortableObservationItem from "./weekly/sortable-observation-item";
 import ReportHeaderForm from "./report-header-form";
+import { WeeklyReport } from "@/lib/interfaces/weekly.interface";
+import { TASK_STATUS } from "@/lib/constants/task-status";
+import { Task } from "@/lib/interfaces/task.inteface";
+import { Block } from "@/lib/interfaces/block.interface";
+import { Observation } from "@/lib/interfaces/observation.interface";
 
 interface WeeklyReportScreenProps {
-  initialData: WeeklyReportData;
-  onDataChange: (data: WeeklyReportData) => void;
+  initialData: WeeklyReport;
+  onDataChange: (data: WeeklyReport) => void;
 }
 
 export default function WeeklyReportScreen({
   initialData,
   onDataChange,
 }: WeeklyReportScreenProps) {
-  const [reportData, setReportData] = useState<WeeklyReportData>({
+  const [reportData, setReportData] = useState<WeeklyReport>({
     header: {
       date: initialData.header?.date || new Date(),
       name: initialData.header?.name || "",
@@ -80,8 +77,7 @@ export default function WeeklyReportScreen({
         to: initialData.header?.sprint?.to ?? null,
       },
     },
-    completedTasks: initialData.completedTasks || [],
-    pendingTasks: initialData.pendingTasks || [],
+    tasks: initialData.tasks || [],
     blocks: initialData.blocks || [],
     observations: initialData.observations || [],
     hoursWorked: initialData.hoursWorked || 40,
@@ -112,16 +108,12 @@ export default function WeeklyReportScreen({
 
     if (active.id !== over?.id) {
       setReportData((prev) => {
-        const oldIndex = prev.completedTasks.findIndex(
-          (task) => task.id === active.id
-        );
-        const newIndex = prev.completedTasks.findIndex(
-          (task) => task.id === over?.id
-        );
+        const oldIndex = prev.tasks.findIndex((task) => task.id === active.id);
+        const newIndex = prev.tasks.findIndex((task) => task.id === over?.id);
 
         return {
           ...prev,
-          completedTasks: arrayMove(prev.completedTasks, oldIndex, newIndex),
+          tasks: arrayMove(prev.tasks, oldIndex, newIndex),
         };
       });
     }
@@ -133,16 +125,12 @@ export default function WeeklyReportScreen({
 
     if (active.id !== over?.id) {
       setReportData((prev) => {
-        const oldIndex = prev.pendingTasks.findIndex(
-          (task) => task.id === active.id
-        );
-        const newIndex = prev.pendingTasks.findIndex(
-          (task) => task.id === over?.id
-        );
+        const oldIndex = prev.tasks.findIndex((task) => task.id === active.id);
+        const newIndex = prev.tasks.findIndex((task) => task.id === over?.id);
 
         return {
           ...prev,
-          pendingTasks: arrayMove(prev.pendingTasks, oldIndex, newIndex),
+          tasks: arrayMove(prev.tasks, oldIndex, newIndex),
         };
       });
     }
@@ -207,8 +195,7 @@ export default function WeeklyReportScreen({
     reportData.header.name,
     reportData.header.project,
     reportData.header.sprint,
-    reportData.completedTasks,
-    reportData.pendingTasks,
+    reportData.tasks,
     reportData.blocks,
     reportData.observations,
     reportData.hoursWorked,
@@ -227,8 +214,7 @@ export default function WeeklyReportScreen({
           to: null,
         },
       },
-      completedTasks: [],
-      pendingTasks: [],
+      tasks: [],
       blocks: [],
       observations: [],
       hoursWorked: 40,
@@ -240,14 +226,10 @@ export default function WeeklyReportScreen({
     toast.success("Datos borrados del navegador");
   };
 
-  const updateCompletedTask = (
-    id: string,
-    field: keyof WeeklyTask,
-    value: any
-  ) => {
+  const updateCompletedTask = (id: string, field: keyof Task, value: any) => {
     setReportData((prev) => ({
       ...prev,
-      completedTasks: prev.completedTasks.map((task) =>
+      tasks: prev.tasks.map((task) =>
         task.id === id ? { ...task, [field]: value } : task
       ),
     }));
@@ -256,18 +238,14 @@ export default function WeeklyReportScreen({
   const removeCompletedTask = (id: string) => {
     setReportData((prev) => ({
       ...prev,
-      completedTasks: prev.completedTasks.filter((task) => task.id !== id),
+      tasks: prev.tasks.filter((task) => task.id !== id),
     }));
   };
 
-  const updatePendingTask = (
-    id: string,
-    field: keyof WeeklyPendingTask,
-    value: any
-  ) => {
+  const updatePendingTask = (id: string, field: keyof Task, value: any) => {
     setReportData((prev) => ({
       ...prev,
-      pendingTasks: prev.pendingTasks.map((task) =>
+      tasks: prev.tasks.map((task) =>
         task.id === id ? { ...task, [field]: value } : task
       ),
     }));
@@ -276,11 +254,11 @@ export default function WeeklyReportScreen({
   const removePendingTask = (id: string) => {
     setReportData((prev) => ({
       ...prev,
-      pendingTasks: prev.pendingTasks.filter((task) => task.id !== id),
+      tasks: prev.tasks.filter((task) => task.id !== id),
     }));
   };
 
-  const updateBlock = (id: string, value: WeeklyBlock) => {
+  const updateBlock = (id: string, value: Block) => {
     setReportData((prev) => ({
       ...prev,
       blocks: prev.blocks.map((block) => (block.id === id ? value : block)),
@@ -294,7 +272,7 @@ export default function WeeklyReportScreen({
     }));
   };
 
-  const updateObservation = (id: string, value: WeeklyObservation) => {
+  const updateObservation = (id: string, value: Observation) => {
     setReportData((prev) => ({
       ...prev,
       observations: prev.observations.map((observation) =>
@@ -360,18 +338,28 @@ export default function WeeklyReportScreen({
   };
 
   const totalCompletedPoints = useMemo(() => {
-    return reportData.completedTasks.reduce(
-      (sum, task) => sum + task.storyPoints,
-      0
-    );
-  }, [reportData.completedTasks]);
+    return reportData.tasks
+      .filter((task) => task.status === TASK_STATUS.COMPLETED)
+      .reduce((sum, task) => sum + task.storyPoints, 0);
+  }, [reportData.tasks]);
 
   const totalInProgressPoints = useMemo(() => {
-    return reportData.pendingTasks.reduce(
-      (sum, task) => sum + task.storyPoints,
-      0
+    return reportData.tasks
+      .filter((task) => task.status === TASK_STATUS.IN_PROGRESS)
+      .reduce((sum, task) => sum + task.storyPoints, 0);
+  }, [reportData.tasks]);
+
+  const completedTasks = useMemo(() => {
+    return reportData.tasks.filter(
+      (task) => task.status === TASK_STATUS.COMPLETED
     );
-  }, [reportData.pendingTasks]);
+  }, [reportData.tasks]);
+
+  const pendingTasks = useMemo(() => {
+    return reportData.tasks.filter(
+      (task) => task.status === TASK_STATUS.PENDING
+    );
+  }, [reportData.tasks]);
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -418,13 +406,13 @@ export default function WeeklyReportScreen({
               {/* Always visible add task form */}
               <AddTaskForm
                 onAdd={(taskData) => {
-                  const newTask: WeeklyTask = {
+                  const newTask: Task = {
                     ...taskData,
                     id: Date.now().toString(),
                   };
                   setReportData((prev) => ({
                     ...prev,
-                    completedTasks: [...prev.completedTasks, newTask],
+                    tasks: [...prev.tasks, newTask],
                   }));
                 }}
               />
@@ -435,10 +423,10 @@ export default function WeeklyReportScreen({
                 onDragEnd={handleCompletedTasksDragEnd}
               >
                 <SortableContext
-                  items={reportData.completedTasks.map((task) => task.id)}
+                  items={completedTasks.map((task) => task.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {reportData.completedTasks.map((task) => (
+                  {completedTasks.map((task) => (
                     <SortableTaskItem
                       key={task.id}
                       task={task}
@@ -448,7 +436,7 @@ export default function WeeklyReportScreen({
                   ))}
                 </SortableContext>
               </DndContext>
-              {reportData.completedTasks.length === 0 && (
+              {completedTasks.length === 0 && (
                 <div className="text-center py-4 text-gray-500 text-sm">
                   No hay tareas completadas aún.
                 </div>
@@ -468,13 +456,13 @@ export default function WeeklyReportScreen({
               {/* Always visible add pending task form */}
               <AddPendingTaskForm
                 onAdd={(taskData) => {
-                  const newTask: WeeklyPendingTask = {
+                  const newTask: Task = {
                     ...taskData,
                     id: Date.now().toString(),
                   };
                   setReportData((prev) => ({
                     ...prev,
-                    pendingTasks: [...prev.pendingTasks, newTask],
+                    tasks: [...prev.tasks, newTask],
                   }));
                 }}
               />
@@ -485,10 +473,10 @@ export default function WeeklyReportScreen({
                 onDragEnd={handlePendingTasksDragEnd}
               >
                 <SortableContext
-                  items={reportData.pendingTasks.map((task) => task.id)}
+                  items={pendingTasks.map((task) => task.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {reportData.pendingTasks.map((task) => (
+                  {pendingTasks.map((task) => (
                     <SortablePendingTaskItem
                       key={task.id}
                       task={task}
@@ -498,7 +486,7 @@ export default function WeeklyReportScreen({
                   ))}
                 </SortableContext>
               </DndContext>
-              {reportData.pendingTasks.length === 0 && (
+              {pendingTasks.length === 0 && (
                 <div className="text-center py-4 text-gray-500 text-sm">
                   No hay tareas en progreso aún.
                 </div>
@@ -523,7 +511,10 @@ export default function WeeklyReportScreen({
                     onAdd={(blockData) => {
                       setReportData((prev) => ({
                         ...prev,
-                        blocks: [...prev.blocks, blockData],
+                        blocks: [
+                          ...prev.blocks,
+                          { ...blockData, id: Date.now().toString() },
+                        ],
                       }));
                     }}
                   />
@@ -564,7 +555,10 @@ export default function WeeklyReportScreen({
                     onAdd={(observationData) => {
                       setReportData((prev) => ({
                         ...prev,
-                        observations: [...prev.observations, observationData],
+                        observations: [
+                          ...prev.observations,
+                          { ...observationData, id: Date.now().toString() },
+                        ],
                       }));
                     }}
                   />

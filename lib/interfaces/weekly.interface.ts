@@ -1,3 +1,4 @@
+import { Block } from "./block.interface";
 import { Observation } from "./observation.interface";
 import {
   ReportHeader,
@@ -9,17 +10,19 @@ type WeeklyTaskLocalStorage = Omit<Task, "finishDate"> & {
   finishDate: string | null;
 };
 
-export interface WeeklyReportData {
+export interface WeeklyReport {
   header: ReportHeader;
   tasks: Task[];
+  blocks: Block[];
   observations: Observation[];
   hoursWorked: number;
   additionalNotes: string;
 }
 
-export interface WeeklyReportLocalStorageData {
+export interface WeeklyReportLocalStorage {
   header?: ReportHeaderLocalStorage;
   tasks?: WeeklyTaskLocalStorage[];
+  blocks?: Block[];
   observations?: Observation[];
   hoursWorked?: number;
   additionalNotes?: string;
