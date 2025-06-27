@@ -103,24 +103,7 @@ export default function WeeklyReportScreen({
   );
 
   // Handle drag end for completed tasks
-  const handleCompletedTasksDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (active.id !== over?.id) {
-      setReportData((prev) => {
-        const oldIndex = prev.tasks.findIndex((task) => task.id === active.id);
-        const newIndex = prev.tasks.findIndex((task) => task.id === over?.id);
-
-        return {
-          ...prev,
-          tasks: arrayMove(prev.tasks, oldIndex, newIndex),
-        };
-      });
-    }
-  };
-
-  // Handle drag end for pending tasks
-  const handlePendingTasksDragEnd = (event: DragEndEvent) => {
+  const handleTasksDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
@@ -226,7 +209,7 @@ export default function WeeklyReportScreen({
     toast.success("Datos borrados del navegador");
   };
 
-  const updateCompletedTask = (id: string, field: keyof Task, value: any) => {
+  const updateTask = (id: string, field: keyof Task, value: any) => {
     setReportData((prev) => ({
       ...prev,
       tasks: prev.tasks.map((task) =>
@@ -235,23 +218,7 @@ export default function WeeklyReportScreen({
     }));
   };
 
-  const removeCompletedTask = (id: string) => {
-    setReportData((prev) => ({
-      ...prev,
-      tasks: prev.tasks.filter((task) => task.id !== id),
-    }));
-  };
-
-  const updatePendingTask = (id: string, field: keyof Task, value: any) => {
-    setReportData((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((task) =>
-        task.id === id ? { ...task, [field]: value } : task
-      ),
-    }));
-  };
-
-  const removePendingTask = (id: string) => {
+  const removeTask = (id: string) => {
     setReportData((prev) => ({
       ...prev,
       tasks: prev.tasks.filter((task) => task.id !== id),
@@ -355,9 +322,21 @@ export default function WeeklyReportScreen({
     );
   }, [reportData.tasks]);
 
+  const inProgressTasks = useMemo(() => {
+    return reportData.tasks.filter(
+      (task) => task.status === TASK_STATUS.IN_PROGRESS
+    );
+  }, [reportData.tasks]);
+
   const pendingTasks = useMemo(() => {
     return reportData.tasks.filter(
       (task) => task.status === TASK_STATUS.PENDING
+    );
+  }, [reportData.tasks]);
+
+  const blockedTasks = useMemo(() => {
+    return reportData.tasks.filter(
+      (task) => task.status === TASK_STATUS.BLOCKED
     );
   }, [reportData.tasks]);
 
@@ -416,11 +395,21 @@ export default function WeeklyReportScreen({
                   }));
                 }}
               />
+            </CardContent>
+          </Card>
 
+          <Card>
+            <CardHeader>
+              <CardTitle>Tareas completadas</CardTitle>
+              <CardDescription>
+                Tareas completadas durante la semana • Arrastra para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
-                onDragEnd={handleCompletedTasksDragEnd}
+                onDragEnd={handleTasksDragEnd}
               >
                 <SortableContext
                   items={completedTasks.map((task) => task.id)}
@@ -430,8 +419,8 @@ export default function WeeklyReportScreen({
                     <SortableTaskItem
                       key={task.id}
                       task={task}
-                      updateTask={updateCompletedTask}
-                      removeTask={removeCompletedTask}
+                      updateTask={updateTask}
+                      removeTask={removeTask}
                     />
                   ))}
                 </SortableContext>
@@ -444,7 +433,6 @@ export default function WeeklyReportScreen({
             </CardContent>
           </Card>
 
-          {/* Pending Tasks */}
           <Card>
             <CardHeader>
               <CardTitle>Tareas en progreso</CardTitle>
@@ -453,24 +441,46 @@ export default function WeeklyReportScreen({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Always visible add pending task form */}
-              <AddPendingTaskForm
-                onAdd={(taskData) => {
-                  const newTask: Task = {
-                    ...taskData,
-                    id: Date.now().toString(),
-                  };
-                  setReportData((prev) => ({
-                    ...prev,
-                    tasks: [...prev.tasks, newTask],
-                  }));
-                }}
-              />
-
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
-                onDragEnd={handlePendingTasksDragEnd}
+                onDragEnd={handleTasksDragEnd}
+              >
+                <SortableContext
+                  items={inProgressTasks.map((task) => task.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {inProgressTasks.map((task) => (
+                    <SortableTaskItem
+                      key={task.id}
+                      task={task}
+                      updateTask={updateTask}
+                      removeTask={removeTask}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              {inProgressTasks.length === 0 && (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  No hay tareas en progreso aún.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Pending Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tareas pendientes</CardTitle>
+              <CardDescription>
+                Tareas que no se han iniciado • Arrastra para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleTasksDragEnd}
               >
                 <SortableContext
                   items={pendingTasks.map((task) => task.id)}
@@ -480,15 +490,51 @@ export default function WeeklyReportScreen({
                     <SortablePendingTaskItem
                       key={task.id}
                       task={task}
-                      updateTask={updatePendingTask}
-                      removeTask={removePendingTask}
+                      updateTask={updateTask}
+                      removeTask={removeTask}
                     />
                   ))}
                 </SortableContext>
               </DndContext>
               {pendingTasks.length === 0 && (
                 <div className="text-center py-4 text-gray-500 text-sm">
-                  No hay tareas en progreso aún.
+                  No hay tareas pendientes aún.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Tareas bloqueadas</CardTitle>
+              <CardDescription>
+                Tareas que no puedes continuar debido a un bloqueo o dificultad
+                • Arrastra para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleTasksDragEnd}
+              >
+                <SortableContext
+                  items={blockedTasks.map((task) => task.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {blockedTasks.map((task) => (
+                    <SortableTaskItem
+                      key={task.id}
+                      task={task}
+                      updateTask={updateTask}
+                      removeTask={removeTask}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+              {blockedTasks.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No hay tareas bloqueadas aún.
                 </div>
               )}
             </CardContent>
