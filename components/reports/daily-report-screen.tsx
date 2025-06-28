@@ -25,7 +25,7 @@ import { PlusIcon, EyeIcon, Loader2Icon, DownloadIcon } from "lucide-react";
 import { DailyReportPreview } from "@/components/reports/daily-report-preview";
 import { toast } from "sonner";
 import { debounce, toSentenceCase } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, isSaturday } from "date-fns";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
 import { DailyObservation } from "@/lib/interfaces/report-data.interface";
 import {
@@ -79,7 +79,7 @@ export default function DailyReportScreen({
     tasks: initialData.tasks || [],
     blocks: initialData.blocks || [],
     observations: initialData.observations || [],
-    hoursWorked: initialData.hoursWorked || 8,
+    hoursWorked: isSaturday(new Date()) ? 4 : initialData.hoursWorked ?? 8,
     additionalNotes: initialData.additionalNotes || "",
   });
 
@@ -198,7 +198,7 @@ export default function DailyReportScreen({
       tasks: [],
       blocks: [],
       observations: [],
-      hoursWorked: 8,
+      hoursWorked: isSaturday(new Date()) ? 4 : 8,
       additionalNotes: "",
     };
 

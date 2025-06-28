@@ -80,7 +80,7 @@ export default function WeeklyReportScreen({
     tasks: initialData.tasks || [],
     blocks: initialData.blocks || [],
     observations: initialData.observations || [],
-    hoursWorked: initialData.hoursWorked || 40,
+    hoursWorked: initialData.hoursWorked || 44,
     additionalNotes: initialData.additionalNotes || "",
   });
 
