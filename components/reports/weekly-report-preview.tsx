@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { WeeklyReportData } from "@/lib/interfaces/report-data.interface";
 import { TASK_STATUS } from "@/lib/constants/task-status";
 import { WeeklyReport } from "@/lib/interfaces/weekly.interface";
 
@@ -10,6 +9,7 @@ interface WeeklyReportPreviewProps {
 }
 
 export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
+  // WARNING: Can't use useMemo here because it doesn't work with Puppeteer
   const totalCompletedPoints = data.tasks
     .filter((task) => task.status === TASK_STATUS.COMPLETED)
     .reduce((sum, task) => sum + task.storyPoints, 0);
@@ -18,21 +18,44 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
     .filter((task) => task.status === TASK_STATUS.IN_PROGRESS)
     .reduce((sum, task) => sum + task.storyPoints, 0);
 
+  const totalPendingPoints = data.tasks
+    .filter((task) => task.status === TASK_STATUS.PENDING)
+    .reduce((sum, task) => sum + task.storyPoints, 0);
+
+  const totalBlockedPoints = data.tasks
+    .filter((task) => task.status === TASK_STATUS.BLOCKED)
+    .reduce((sum, task) => sum + task.storyPoints, 0);
+
   const completedTasks = data.tasks.filter(
     (task) => task.status === TASK_STATUS.COMPLETED
   );
-  const pendingTasks = data.tasks.filter(
+
+  const inProgressTasks = data.tasks.filter(
     (task) => task.status === TASK_STATUS.IN_PROGRESS
   );
 
-  const getStatusIcon = (status: string) => {
+  const pendingTasks = data.tasks.filter(
+    (task) => task.status === TASK_STATUS.PENDING
+  );
+
+  const blockedTasks = data.tasks.filter(
+    (task) => task.status === TASK_STATUS.BLOCKED
+  );
+
+  const notDoneTasks = [...inProgressTasks, ...pendingTasks, ...blockedTasks];
+
+  const getStatusIcon = (
+    status: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
+  ) => {
     switch (status) {
-      case "Completado":
+      case TASK_STATUS.COMPLETED:
         return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case "En Proceso":
+      case TASK_STATUS.IN_PROGRESS:
         return <Clock className="w-4 h-4 text-yellow-600" />;
-      case "Pendiente":
+      case TASK_STATUS.BLOCKED:
         return <AlertCircle className="w-4 h-4 text-red-600" />;
+      case TASK_STATUS.PENDING:
+        return <Clock className="w-4 h-4 text-blue-600" />;
       default:
         return null;
     }
@@ -86,7 +109,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
           {/* Completed Tasks */}
           <div>
             <h2 className="text-lg print:text-base font-semibold mb-4">
-              1. Tareas completadas esta semana
+              1. Tareas completadas
             </h2>
             {completedTasks.length > 0 ? (
               <div className="overflow-x-auto text-xs">
@@ -139,9 +162,9 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
           {/* Tasks in Progress */}
           <div>
             <h2 className="text-lg print:text-base font-semibold mb-4">
-              2. Tareas en progreso
+              2. Tareas no completadas
             </h2>
-            {pendingTasks.length > 0 ? (
+            {notDoneTasks.length > 0 ? (
               <div className="overflow-x-auto text-xs">
                 <table className="w-full border-collapse border border-foreground/10">
                   <thead>
@@ -153,7 +176,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                         Story Points
                       </th>
                       <th className="border border-foreground/10 px-4 py-2 text-center">
-                        Estado actual
+                        Estado
                       </th>
                       <th className="border border-foreground/10 px-4 py-2 text-left">
                         Próximo paso
@@ -161,7 +184,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                     </tr>
                   </thead>
                   <tbody className="bg-background/50">
-                    {pendingTasks.map((task) => (
+                    {notDoneTasks.map((task) => (
                       <tr key={task.id}>
                         <td className="border border-foreground/10 px-4 py-2">
                           {task.name}
@@ -170,7 +193,10 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                           {task.storyPoints} pts
                         </td>
                         <td className="border border-foreground/10 px-4 py-2 text-center">
-                          {task.actionPlan?.split("|")[0] || "En desarrollo"}
+                          <div className="flex items-center justify-center gap-2">
+                            {getStatusIcon(task.status)}
+                            {task.status}
+                          </div>
                         </td>
                         <td className="border border-foreground/10 px-4 py-2">
                           {task.actionPlan?.split("|")[1] ||
@@ -263,6 +289,14 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                 <span className="font-semibold">
                   {totalInProgressPoints} pts
                 </span>
+              </p>
+              <p className="text-muted-foreground flex items-center gap-2">
+                <span>Pendientes:</span>
+                <span className="font-semibold">{totalPendingPoints} pts</span>
+              </p>
+              <p className="text-muted-foreground flex items-center gap-2">
+                <span>Bloqueados:</span>
+                <span className="font-semibold">{totalBlockedPoints} pts</span>
               </p>
             </div>
           </div>

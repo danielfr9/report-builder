@@ -9,6 +9,7 @@ interface DailyReportPreviewProps {
 }
 
 export function DailyReportPreview({ data }: DailyReportPreviewProps) {
+  // WARNING: Can't use useMemo here because it doesn't work with Puppeteer
   const totalCompletedPoints = data.tasks
     .filter((task) => task.status === TASK_STATUS.COMPLETED)
     .reduce((sum, task) => sum + task.storyPoints, 0);
@@ -17,21 +18,45 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
     .filter((task) => task.status === TASK_STATUS.IN_PROGRESS)
     .reduce((sum, task) => sum + task.storyPoints, 0);
 
+  const totalPendingPoints = data.tasks
+    .filter((task) => task.status === TASK_STATUS.PENDING)
+    .reduce((sum, task) => sum + task.storyPoints, 0);
+
+  const totalBlockedPoints = data.tasks
+    .filter((task) => task.status === TASK_STATUS.BLOCKED)
+    .reduce((sum, task) => sum + task.storyPoints, 0);
+
   const completedTasks = data.tasks.filter(
     (task) => task.status === TASK_STATUS.COMPLETED
   );
+
+  const inProgressTasks = data.tasks.filter(
+    (task) => task.status === TASK_STATUS.IN_PROGRESS
+  );
+
   const pendingTasks = data.tasks.filter(
     (task) => task.status === TASK_STATUS.PENDING
   );
 
-  const getStatusIcon = (status: string) => {
+  const blockedTasks = data.tasks.filter(
+    (task) => task.status === TASK_STATUS.BLOCKED
+  );
+
+  const workedOnTasks = [...completedTasks, ...inProgressTasks];
+  const notDoneTasks = [...pendingTasks, ...blockedTasks];
+
+  const getStatusIcon = (
+    status: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
+  ) => {
     switch (status) {
-      case "Completado":
+      case TASK_STATUS.COMPLETED:
         return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case "En Proceso":
+      case TASK_STATUS.IN_PROGRESS:
         return <Clock className="w-4 h-4 text-yellow-600" />;
-      case "Pendiente":
+      case TASK_STATUS.BLOCKED:
         return <AlertCircle className="w-4 h-4 text-red-600" />;
+      case TASK_STATUS.PENDING:
+        return <Clock className="w-4 h-4 text-blue-600" />;
       default:
         return null;
     }
@@ -86,9 +111,9 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
             {/* Completed Activities */}
             <div>
               <h2 className="text-lg print:text-base font-semibold mb-4">
-                1. Actividades realizadas (Hoy)
+                1. Tareas realizadas o en progreso
               </h2>
-              {completedTasks.length > 0 ? (
+              {workedOnTasks.length > 0 ? (
                 <div className="overflow-x-auto text-xs">
                   <table className="w-full border-collapse border border-foreground/10">
                     <thead>
@@ -108,9 +133,9 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                       </tr>
                     </thead>
                     <tbody className="bg-background/50">
-                      {completedTasks.map((task) => (
+                      {workedOnTasks.map((task) => (
                         <tr key={task.id}>
-                          <td className="border border-foreground/10 px-4 py-2">
+                          <td className="border border-foreground/10 px-4 py-2 break-words">
                             {task.name}
                           </td>
                           <td className="border border-foreground/10 px-4 py-2 text-center font-semibold">
@@ -122,7 +147,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                               {task.status}
                             </div>
                           </td>
-                          <td className="border border-foreground/10 px-4 py-2">
+                          <td className="border border-foreground/10 px-4 py-2 break-words">
                             {task.comments}
                           </td>
                         </tr>
@@ -132,7 +157,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                 </div>
               ) : (
                 <p className="text-muted-foreground italic text-xs">
-                  No hay actividades realizadas.
+                  No hay tareas realizadas.
                 </p>
               )}
             </div>
@@ -140,9 +165,9 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
             {/* Pending Tasks */}
             <div>
               <h2 className="text-lg print:text-base font-semibold mb-4">
-                2. Pendientes por continuar
+                2. Tareas pendientes por completar o con bloqueos
               </h2>
-              {pendingTasks.length > 0 ? (
+              {notDoneTasks.length > 0 ? (
                 <div className="overflow-x-auto text-xs">
                   <table className="w-full border-collapse border border-foreground/10">
                     <thead>
@@ -153,21 +178,36 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                         <th className="border border-foreground/10 px-4 py-2 text-center">
                           Story Points
                         </th>
+                        <th className="border border-foreground/10 px-4 py-2 text-center">
+                          Estado
+                        </th>
+                        <th className="border border-foreground/10 px-4 py-2 text-center">
+                          Comentarios / PR
+                        </th>
                         <th className="border border-foreground/10 px-4 py-2 text-left">
                           Plan de acción
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-background/50">
-                      {pendingTasks.map((task) => (
+                      {notDoneTasks.map((task) => (
                         <tr key={task.id}>
-                          <td className="border border-foreground/10 px-4 py-2">
+                          <td className="border border-foreground/10 px-4 py-2 break-words">
                             {task.name}
                           </td>
                           <td className="border border-foreground/10 px-4 py-2 text-center font-semibold">
                             {task.storyPoints} pts
                           </td>
-                          <td className="border border-foreground/10 px-4 py-2">
+                          <td className="border border-foreground/10 px-4 py-2 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {getStatusIcon(task.status)}
+                              {task.status}
+                            </div>
+                          </td>
+                          <td className="border border-foreground/10 px-4 py-2 break-words">
+                            {task.comments}
+                          </td>
+                          <td className="border border-foreground/10 px-4 py-2 break-words">
                             {task.actionPlan}
                           </td>
                         </tr>
@@ -177,7 +217,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                 </div>
               ) : (
                 <p className="text-muted-foreground italic text-xs">
-                  No hay tareas pendientes.
+                  No hay tareas pendientes por completar o con bloqueos.
                 </p>
               )}
             </div>
@@ -241,7 +281,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
             {/* Story Points Summary */}
             <div>
               <h2 className="text-lg print:text-base font-semibold mb-2">
-                6. Total Story Points del día
+                6. Story points del día
               </h2>
               <div className="space-y-1 text-xs">
                 <p className="text-muted-foreground flex items-center gap-2">
@@ -256,6 +296,18 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                     {totalInProgressPoints} pts
                   </span>
                 </p>
+                <p className="text-muted-foreground flex items-center gap-2">
+                  <span>Pendientes:</span>
+                  <span className="font-semibold">
+                    {totalPendingPoints} pts
+                  </span>
+                </p>
+                <p className="text-muted-foreground flex items-center gap-2">
+                  <span>Bloqueados:</span>
+                  <span className="font-semibold">
+                    {totalBlockedPoints} pts
+                  </span>
+                </p>
               </div>
             </div>
 
@@ -266,7 +318,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                   Notas adicionales (opcional)
                 </h2>
                 <div className="border-t border-foreground/10 pt-2">
-                  <p className="text-muted-foreground whitespace-pre-wrap text-sm">
+                  <p className="text-muted-foreground whitespace-pre-wrap text-xs">
                     {data.additionalNotes}
                   </p>
                 </div>

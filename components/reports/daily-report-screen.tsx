@@ -391,10 +391,10 @@ export default function DailyReportScreen({
           <Card>
             <CardHeader>
               <CardTitle className="text-xl md:text-2xl">
-                Actividades realizadas
+                Tareas completadas
               </CardTitle>
               <CardDescription>
-                Tareas completadas y en progreso • Arrastra para reordenar
+                Tareas completadas del día • Arrastra para reordenar
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -431,7 +431,7 @@ export default function DailyReportScreen({
                 Tareas en progreso
               </CardTitle>
               <CardDescription>
-                Tareas que estás trabajando actualmente • Arrastra para
+                Tareas que estás trabajando actualmente del día • Arrastra para
                 reordenar
               </CardDescription>
             </CardHeader>
@@ -467,10 +467,10 @@ export default function DailyReportScreen({
           <Card>
             <CardHeader>
               <CardTitle className="text-xl md:text-2xl">
-                Pendientes por Continuar
+                Tareas pendientes por realizar
               </CardTitle>
               <CardDescription>
-                Tareas que continuarás mañana • Arrastra para reordenar
+                Tareas que no has trabajado en el día • Arrastra para reordenar
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
