@@ -44,13 +44,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import AddTaskForm from "./daily/add-task-form";
-import AddBlockForm from "./daily/add-block-form";
-import AddObservationForm from "./daily/add-observation-form";
-import SortableTaskItem from "./daily/sortable-task-item";
-import SortablePendingTaskItem from "./daily/sortable-pending-task-item";
-import SortableBlockItem from "./daily/sortable-block-item";
-import SortableObservationItem from "./daily/sortable-observation-item";
+import AddTaskForm from "./add-task-form";
+import AddBlockForm from "./add-block-form";
+import AddObservationForm from "./add-observation-form";
+import SortableTaskItem from "./sortable-task-item";
+import SortableBlockItem from "./sortable-block-item";
+import SortableObservationItem from "./sortable-observation-item";
 import ReportHeaderForm from "./report-header-form";
 import { DailyReport } from "@/lib/interfaces/daily.interface";
 import { Task } from "@/lib/interfaces/task.inteface";
@@ -207,12 +206,10 @@ export default function DailyReportScreen({
     toast.success("Datos borrados del navegador");
   };
 
-  const updateTask = (id: string, field: keyof Task, value: any) => {
+  const updateTask = (id: string, value: Task) => {
     setReportData((prev) => ({
       ...prev,
-      tasks: prev.tasks.map((task) =>
-        task.id === id ? { ...task, [field]: value } : task
-      ),
+      tasks: prev.tasks.map((task) => (task.id === id ? value : task)),
     }));
   };
 
@@ -366,7 +363,9 @@ export default function DailyReportScreen({
           {/* Completed Tasks */}
           <Card>
             <CardHeader>
-              <CardTitle>Agregar Tareas</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Registro de Tareas
+              </CardTitle>
               <CardDescription>
                 Registra las tareas relacionadas al sprint actual o proyectos en
                 curso.
@@ -391,7 +390,9 @@ export default function DailyReportScreen({
 
           <Card>
             <CardHeader>
-              <CardTitle>Actividades realizadas</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Actividades realizadas
+              </CardTitle>
               <CardDescription>
                 Tareas completadas y en progreso • Arrastra para reordenar
               </CardDescription>
@@ -426,7 +427,9 @@ export default function DailyReportScreen({
 
           <Card>
             <CardHeader>
-              <CardTitle>Tareas en progreso</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Tareas en progreso
+              </CardTitle>
               <CardDescription>
                 Tareas que estás trabajando actualmente • Arrastra para
                 reordenar
@@ -463,7 +466,9 @@ export default function DailyReportScreen({
           {/* Pending Tasks */}
           <Card>
             <CardHeader>
-              <CardTitle>Pendientes por Continuar</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Pendientes por Continuar
+              </CardTitle>
               <CardDescription>
                 Tareas que continuarás mañana • Arrastra para reordenar
               </CardDescription>
@@ -479,7 +484,7 @@ export default function DailyReportScreen({
                   strategy={verticalListSortingStrategy}
                 >
                   {pendingTasks.map((task) => (
-                    <SortablePendingTaskItem
+                    <SortableTaskItem
                       key={task.id}
                       task={task}
                       updateTask={updateTask}
@@ -498,7 +503,9 @@ export default function DailyReportScreen({
 
           <Card>
             <CardHeader>
-              <CardTitle>Tareas bloqueadas</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Tareas bloqueadas
+              </CardTitle>
               <CardDescription>
                 Tareas que no puedes continuar debido a un bloqueo o dificultad
                 • Arrastra para reordenar
@@ -535,7 +542,9 @@ export default function DailyReportScreen({
           {/* Additional Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Información Adicional</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Información Adicional
+              </CardTitle>
               <CardDescription>
                 Bloqueos, observaciones y horas trabajadas
               </CardDescription>
@@ -640,11 +649,11 @@ export default function DailyReportScreen({
                 </div>
               </div>
               <div>
-                <Label htmlFor="hours">Horas Trabajadas</Label>
+                <Label htmlFor="hours">Horas trabajadas</Label>
                 <Input
                   id="hours"
                   type="number"
-                  className="max-w-32"
+                  className="max-w-full md:max-w-32 text-sm md:text-base"
                   min="1"
                   max="24"
                   value={reportData.hoursWorked}
@@ -676,12 +685,14 @@ export default function DailyReportScreen({
           {/* Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Resumen del día</CardTitle>
+              <CardTitle className="text-xl md:text-2xl max-md:text-center">
+                Resumen del día
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-xl md:text-2xl font-bold text-green-600">
                     {totalCompletedPoints}
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -689,7 +700,7 @@ export default function DailyReportScreen({
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-600">
+                  <div className="text-xl md:text-2xl font-bold text-yellow-600">
                     {totalInProgressPoints}
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -697,7 +708,7 @@ export default function DailyReportScreen({
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-xl md:text-2xl font-bold text-blue-600">
                     {reportData.hoursWorked}
                   </div>
                   <div className="text-sm text-muted-foreground">

@@ -43,20 +43,18 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import AddTaskForm from "./weekly/add-task-form";
-import AddPendingTaskForm from "./weekly/add-pending-task-form";
-import SortableTaskItem from "./weekly/sortable-task-item";
-import SortablePendingTaskItem from "./weekly/sortable-pending-task-item";
-import AddBlockForm from "./weekly/add-block-form";
-import SortableBlockItem from "./weekly/sortable-block-item";
-import AddObservationForm from "./weekly/add-observation-form";
-import SortableObservationItem from "./weekly/sortable-observation-item";
 import ReportHeaderForm from "./report-header-form";
 import { WeeklyReport } from "@/lib/interfaces/weekly.interface";
 import { TASK_STATUS } from "@/lib/constants/task-status";
 import { Task } from "@/lib/interfaces/task.inteface";
 import { Block } from "@/lib/interfaces/block.interface";
 import { Observation } from "@/lib/interfaces/observation.interface";
+import SortableTaskItem from "./sortable-task-item";
+import AddTaskForm from "./add-task-form";
+import AddBlockForm from "./add-block-form";
+import SortableBlockItem from "./sortable-block-item";
+import AddObservationForm from "./add-observation-form";
+import SortableObservationItem from "./sortable-observation-item";
 
 interface WeeklyReportScreenProps {
   initialData: WeeklyReport;
@@ -209,12 +207,10 @@ export default function WeeklyReportScreen({
     toast.success("Datos borrados del navegador");
   };
 
-  const updateTask = (id: string, field: keyof Task, value: any) => {
+  const updateTask = (id: string, value: Task) => {
     setReportData((prev) => ({
       ...prev,
-      tasks: prev.tasks.map((task) =>
-        task.id === id ? { ...task, [field]: value } : task
-      ),
+      tasks: prev.tasks.map((task) => (task.id === id ? value : task)),
     }));
   };
 
@@ -342,14 +338,14 @@ export default function WeeklyReportScreen({
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="text-center mb-8 relative">
+      {/* <div className="text-center mb-8 relative">
         <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
           Generador de reportes semanales
         </h1>
         <p className="text-muted-foreground">
           Crea reportes profesionales de programación con Story Points
         </p>
-      </div>
+      </div> */}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6 sticky top-0 z-40 ">
@@ -376,9 +372,12 @@ export default function WeeklyReportScreen({
           {/* Completed Tasks */}
           <Card>
             <CardHeader>
-              <CardTitle>Tareas completadas esta semana</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Registro de Tareas
+              </CardTitle>
               <CardDescription>
-                Tareas completadas durante la semana • Arrastra para reordenar
+                Registra las tareas relacionadas al sprint actual o proyectos en
+                curso.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -400,7 +399,9 @@ export default function WeeklyReportScreen({
 
           <Card>
             <CardHeader>
-              <CardTitle>Tareas completadas</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Tareas completadas
+              </CardTitle>
               <CardDescription>
                 Tareas completadas durante la semana • Arrastra para reordenar
               </CardDescription>
@@ -426,7 +427,7 @@ export default function WeeklyReportScreen({
                 </SortableContext>
               </DndContext>
               {completedTasks.length === 0 && (
-                <div className="text-center py-4 text-gray-500 text-sm">
+                <div className="text-center py-4 text-muted-foreground text-sm">
                   No hay tareas completadas aún.
                 </div>
               )}
@@ -435,7 +436,9 @@ export default function WeeklyReportScreen({
 
           <Card>
             <CardHeader>
-              <CardTitle>Tareas en progreso</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Tareas en progreso
+              </CardTitle>
               <CardDescription>
                 Tareas que continúan la próxima semana • Arrastra para reordenar
               </CardDescription>
@@ -461,7 +464,7 @@ export default function WeeklyReportScreen({
                 </SortableContext>
               </DndContext>
               {inProgressTasks.length === 0 && (
-                <div className="text-center py-4 text-gray-500 text-sm">
+                <div className="text-center py-4 text-muted-foreground text-sm">
                   No hay tareas en progreso aún.
                 </div>
               )}
@@ -471,7 +474,9 @@ export default function WeeklyReportScreen({
           {/* Pending Tasks */}
           <Card>
             <CardHeader>
-              <CardTitle>Tareas pendientes</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Tareas pendientes
+              </CardTitle>
               <CardDescription>
                 Tareas que no se han iniciado • Arrastra para reordenar
               </CardDescription>
@@ -487,7 +492,7 @@ export default function WeeklyReportScreen({
                   strategy={verticalListSortingStrategy}
                 >
                   {pendingTasks.map((task) => (
-                    <SortablePendingTaskItem
+                    <SortableTaskItem
                       key={task.id}
                       task={task}
                       updateTask={updateTask}
@@ -497,7 +502,7 @@ export default function WeeklyReportScreen({
                 </SortableContext>
               </DndContext>
               {pendingTasks.length === 0 && (
-                <div className="text-center py-4 text-gray-500 text-sm">
+                <div className="text-center py-4 text-muted-foreground text-sm">
                   No hay tareas pendientes aún.
                 </div>
               )}
@@ -506,7 +511,9 @@ export default function WeeklyReportScreen({
 
           <Card>
             <CardHeader>
-              <CardTitle>Tareas bloqueadas</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Tareas bloqueadas
+              </CardTitle>
               <CardDescription>
                 Tareas que no puedes continuar debido a un bloqueo o dificultad
                 • Arrastra para reordenar
@@ -543,7 +550,9 @@ export default function WeeklyReportScreen({
           {/* Additional Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Información adicional</CardTitle>
+              <CardTitle className="text-xl md:text-2xl">
+                Información adicional
+              </CardTitle>
               <CardDescription>
                 Bloqueos, logros y mejoras, horas trabajadas
               </CardDescription>
@@ -587,7 +596,7 @@ export default function WeeklyReportScreen({
                     </SortableContext>
                   </DndContext>
                   {reportData.blocks.length === 0 && (
-                    <div className="text-center py-4 text-gray-500 text-sm">
+                    <div className="text-center py-4 text-muted-foreground text-sm">
                       No hay bloqueos/dificultades aún.
                     </div>
                   )}
@@ -633,18 +642,18 @@ export default function WeeklyReportScreen({
                     </SortableContext>
                   </DndContext>
                   {reportData.observations.length === 0 && (
-                    <div className="text-center py-4 text-gray-500 text-sm">
+                    <div className="text-center py-4 text-muted-foreground text-sm">
                       No hay logros/mejoras aún.
                     </div>
                   )}
                 </div>
               </div>
               <div>
-                <Label htmlFor="hours">Horas Trabajadas Esta Semana</Label>
+                <Label htmlFor="hours">Horas trabajadas esta semana</Label>
                 <Input
                   id="hours"
                   type="number"
-                  className="max-w-32"
+                  className="max-w-full md:max-w-32 text-sm md:text-base"
                   min="1"
                   max="168"
                   value={reportData.hoursWorked}
@@ -662,12 +671,14 @@ export default function WeeklyReportScreen({
           {/* Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Resumen de la semana</CardTitle>
+              <CardTitle className="text-xl md:text-2xl max-md:text-center">
+                Resumen de la semana
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-xl md:text-2xl font-bold text-green-600">
                     {totalCompletedPoints}
                   </div>
                   <div className="text-sm text-gray-600">
@@ -675,7 +686,7 @@ export default function WeeklyReportScreen({
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-600">
+                  <div className="text-xl md:text-2xl font-bold text-yellow-600">
                     {totalInProgressPoints}
                   </div>
                   <div className="text-sm text-gray-600">
@@ -683,7 +694,7 @@ export default function WeeklyReportScreen({
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-xl md:text-2xl font-bold text-blue-600">
                     {reportData.hoursWorked}
                   </div>
                   <div className="text-sm text-gray-600">Horas trabajadas</div>
@@ -695,20 +706,24 @@ export default function WeeklyReportScreen({
           {/* Plan for Next Week */}
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Plan para la próxima semana</CardTitle>
-                  <CardDescription>
-                    Tareas planificadas para la siguiente semana
-                  </CardDescription>
-                </div>
-              </div>
+              <CardTitle className="text-xl md:text-2xl">
+                Plan para la próxima semana
+              </CardTitle>
+              <CardDescription>
+                Tareas planificadas para la siguiente semana
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div>
-                <Label htmlFor="notes">Plan de Trabajo (Opcional)</Label>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="notes">
+                  Plan de trabajo{" "}
+                  <span className="text-xs text-muted-foreground">
+                    &#40;Opcional&#41;
+                  </span>
+                </Label>
                 <Textarea
                   id="notes"
+                  className="text-sm md:text-base"
                   placeholder="Describe las tareas o objetivos planificados para la próxima semana..."
                   value={reportData.additionalNotes}
                   onChange={(e) =>

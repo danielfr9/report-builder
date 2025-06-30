@@ -49,9 +49,11 @@ export default function ReportHeaderForm({
     <Card>
       <CardHeader>
         <div className="flex flex-col md:flex-row gap-2 justify-between items-center">
-          <div>
+          <div className="mb-4">
             <CardTitle>Información general</CardTitle>
-            <CardDescription>Datos básicos del reporte</CardDescription>
+            <CardDescription className="max-md:text-center">
+              Datos básicos del reporte
+            </CardDescription>
           </div>
           <AlertDialog>
             <AlertDialogContent>
@@ -89,7 +91,7 @@ export default function ReportHeaderForm({
               <Button
                 variant="outline"
                 className={cn(
-                  "h-10 w-full justify-start pr-10 text-left font-normal",
+                  "h-10 w-full justify-start pr-10 text-left font-normal text-sm md:text-base",
                   !header.date && "text-muted-foreground"
                 )}
                 id="calendar-input"
@@ -120,7 +122,8 @@ export default function ReportHeaderForm({
           <Label htmlFor="name">Nombre</Label>
           <Input
             id="name"
-            placeholder="Tu nombre completo"
+            className="text-sm md:text-base"
+            placeholder="Tu nombre"
             value={header.name}
             onChange={(e) =>
               onHeaderChange({ ...header, name: e.target.value })
@@ -131,6 +134,7 @@ export default function ReportHeaderForm({
           <Label htmlFor="project">Proyecto</Label>
           <Input
             id="project"
+            className="text-sm md:text-base"
             placeholder="Nombre del proyecto"
             value={header.project}
             onChange={(e) =>
@@ -146,7 +150,7 @@ export default function ReportHeaderForm({
                 id="sprint-input"
                 variant="outline"
                 className={cn(
-                  "h-10 w-full justify-start pr-10 text-left font-normal",
+                  "h-10 w-full justify-start pr-10 text-left font-normal text-sm md:text-base",
                   !header.sprint.from && "text-muted-foreground"
                 )}
               >
