@@ -3,6 +3,7 @@
 import DailyReportScreen from "@/components/reports/daily-report-screen";
 import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   V3_DAILY_REPORT_STORAGE_KEY,
@@ -259,7 +260,9 @@ export default function ReportBuilder() {
           tasks:
             dailyDataParsed.tasks?.map((task) => ({
               ...task,
-              finishDate: task.finishDate ? parseISO(task.finishDate) : null,
+              finishDate: task.finishDate
+                ? parseISO(task.finishDate)
+                : new Date(),
             })) || [],
           blocks: dailyDataParsed.blocks || [],
           observations: dailyDataParsed.observations || [],
@@ -289,7 +292,9 @@ export default function ReportBuilder() {
           tasks:
             weeklyDataParsed.tasks?.map((task) => ({
               ...task,
-              finishDate: task.finishDate ? parseISO(task.finishDate) : null,
+              finishDate: task.finishDate
+                ? parseISO(task.finishDate)
+                : new Date(),
             })) || [],
           blocks: weeklyDataParsed.blocks || [],
           observations: weeklyDataParsed.observations || [],
@@ -376,7 +381,7 @@ export default function ReportBuilder() {
 
   return (
     <div className="relative p-4 pb-24 min-h-screen bg-background">
-      <div className="fixed top-4 right-4 z-10">
+      <div className="fixed top-4 right-4 z-10 max-md:hidden">
         <ThemeToggle />
       </div>
       <div className={`${reportType === "daily" ? "block" : "hidden"}`}>
@@ -411,6 +416,10 @@ export default function ReportBuilder() {
             <CalendarIcon className="w-4 h-4 md:mr-2" />
             <span className="hidden md:block">Reporte Semanal</span>
           </Button>
+          <Separator orientation="vertical" className="h-10" />
+          <div className="md:hidden">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </div>
