@@ -381,9 +381,6 @@ export default function ReportBuilder() {
 
   return (
     <div className="relative p-4 pb-24 min-h-screen bg-background">
-      <div className="fixed top-4 right-4 z-10 max-md:hidden">
-        <ThemeToggle />
-      </div>
       <div className={`${reportType === "daily" ? "block" : "hidden"}`}>
         <DailyReportScreen
           initialData={dailyData}
@@ -417,9 +414,7 @@ export default function ReportBuilder() {
             <span className="hidden md:block">Reporte Semanal</span>
           </Button>
           <Separator orientation="vertical" className="h-10" />
-          <div className="md:hidden">
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
         </div>
       </div>
     </div>

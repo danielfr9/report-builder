@@ -116,7 +116,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                 <table className="w-full border-collapse border border-foreground/10">
                   <thead>
                     <tr className="bg-background">
-                      <th className="border border-foreground/10 px-4 py-2 text-left">
+                      <th className="border border-foreground/10 px-4 py-2 text-left min-w-[200px]">
                         Tarea
                       </th>
                       <th className="border border-foreground/10 px-4 py-2 text-center">
@@ -125,7 +125,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                       <th className="border border-foreground/10 px-4 py-2 text-center">
                         Fecha de finalización
                       </th>
-                      <th className="border border-foreground/10 px-4 py-2 text-left">
+                      <th className="border border-foreground/10 px-4 py-2 text-left min-w-[200px]">
                         Comentarios / PR
                       </th>
                     </tr>
@@ -169,7 +169,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                 <table className="w-full border-collapse border border-foreground/10">
                   <thead>
                     <tr className="bg-background">
-                      <th className="border border-foreground/10 px-4 py-2 text-left">
+                      <th className="border border-foreground/10 px-4 py-2 text-left min-w-[200px]">
                         Tarea
                       </th>
                       <th className="border border-foreground/10 px-4 py-2 text-center">
@@ -178,7 +178,7 @@ export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {
                       <th className="border border-foreground/10 px-4 py-2 text-center">
                         Estado
                       </th>
-                      <th className="border border-foreground/10 px-4 py-2 text-left">
+                      <th className="border border-foreground/10 px-4 py-2 text-left min-w-[200px]">
                         Próximo paso
                       </th>
                     </tr>

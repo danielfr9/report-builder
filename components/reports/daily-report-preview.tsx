@@ -118,7 +118,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                   <table className="w-full border-collapse border border-foreground/10">
                     <thead>
                       <tr className="bg-background">
-                        <th className="border border-foreground/10 px-4 py-2 text-left">
+                        <th className="border border-foreground/10 px-4 py-2 text-left min-w-[200px]">
                           Tarea
                         </th>
                         <th className="border border-foreground/10 px-4 py-2 text-center">
@@ -127,7 +127,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                         <th className="border border-foreground/10 px-4 py-2 text-center">
                           Estado
                         </th>
-                        <th className="border border-foreground/10 px-4 py-2 text-left">
+                        <th className="border border-foreground/10 px-4 py-2 text-left min-w-[200px]">
                           Comentarios / PR
                         </th>
                       </tr>
@@ -172,7 +172,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                   <table className="w-full border-collapse border border-foreground/10">
                     <thead>
                       <tr className="bg-background">
-                        <th className="border border-foreground/10 px-4 py-2 text-left">
+                        <th className="border border-foreground/10 px-4 py-2 text-left min-w-[200px]">
                           Tarea
                         </th>
                         <th className="border border-foreground/10 px-4 py-2 text-center">
@@ -181,10 +181,10 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                         <th className="border border-foreground/10 px-4 py-2 text-center">
                           Estado
                         </th>
-                        <th className="border border-foreground/10 px-4 py-2 text-center">
+                        <th className="border border-foreground/10 px-4 py-2 text-center min-w-[200px]">
                           Comentarios / PR
                         </th>
-                        <th className="border border-foreground/10 px-4 py-2 text-left">
+                        <th className="border border-foreground/10 px-4 py-2 text-left min-w-[200px]">
                           Plan de acción
                         </th>
                       </tr>

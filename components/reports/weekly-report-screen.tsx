@@ -739,7 +739,7 @@ export default function WeeklyReportScreen({
         </TabsContent>
 
         <TabsContent value="preview">
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-4xl w-full mx-auto">
             <Button
               onClick={generatePDF}
               disabled={isGenerating}
