@@ -338,14 +338,14 @@ export default function WeeklyReportScreen({
 
   return (
     <div className="max-w-6xl mx-auto">
-      {/* <div className="text-center mb-8 relative">
-        <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
+      <div className="text-center mb-8 relative">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 uppercase">
           Generador de reportes semanales
         </h1>
         <p className="text-muted-foreground">
           Crea reportes profesionales de programación con Story Points
         </p>
-      </div> */}
+      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6 sticky top-0 z-40 ">

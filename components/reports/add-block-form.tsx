@@ -31,6 +31,7 @@ const AddBlockForm = ({ onAdd }: AddBlockFormProps) => {
         <div>
           <Label>Descripción</Label>
           <Textarea
+            className="text-sm md:text-base"
             placeholder="Describe un bloqueo o dificultad encontrada"
             value={formData.name}
             onChange={(e) =>

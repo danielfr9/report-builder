@@ -330,7 +330,7 @@ export default function DailyReportScreen({
   return (
     <div className="max-w-6xl mx-auto">
       <div className="text-center mb-8 relative">
-        <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 uppercase">
           Generador de reportes diarios
         </h1>
         <p className="text-muted-foreground">
@@ -669,6 +669,7 @@ export default function DailyReportScreen({
                 <Label htmlFor="notes">Notas Adicionales (Opcional)</Label>
                 <Textarea
                   id="notes"
+                  className="text-sm md:text-base"
                   placeholder="Cualquier información adicional que consideres relevante"
                   value={reportData.additionalNotes}
                   onChange={(e) =>
