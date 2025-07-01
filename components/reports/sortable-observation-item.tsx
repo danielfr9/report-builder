@@ -169,7 +169,7 @@ const SortableObservationItem = ({
         </div>
         <div className="flex-1">
           <Label className="text-xs text-muted-foreground">Descripción</Label>
-          <p className="text-sm font-medium break-all line-clamp-2 overflow-hidden text-ellipsis">
+          <p className="text-sm font-medium break-words line-clamp-2 overflow-hidden text-ellipsis">
             {observation.name || "Sin descripción"}
           </p>
         </div>

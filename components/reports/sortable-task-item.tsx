@@ -330,7 +330,7 @@ const SortableTaskItem = ({
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
             <div className="md:col-span-3">
               <Label className="text-xs text-muted-foreground">Tarea</Label>
-              <p className="text-sm font-medium break-all line-clamp-2 overflow-hidden text-ellipsis">
+              <p className="text-sm font-medium break-words line-clamp-2 overflow-hidden text-ellipsis">
                 {task.name || "Sin descripción"}
               </p>
             </div>
