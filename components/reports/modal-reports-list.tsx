@@ -132,7 +132,7 @@ const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
                     </TableHeader>
                     <TableBody>
                       {reports.map((item) => (
-                        <TableRow key={item.id} className="hover:bg-secondary">
+                        <TableRow key={item.id} className="bg-transparent">
                           <TableCell>
                             <Button
                               variant="ghost"
@@ -165,8 +165,8 @@ const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
                         </TableRow>
                       ))}
                     </TableBody>
-                    <TableFooter className="bg-transparent">
-                      <TableRow className="bg-secondary">
+                    <TableFooter>
+                      <TableRow className="bg-transparent">
                         <TableCell></TableCell>
                         <TableCell>Total</TableCell>
                         <TableCell className="text-right">
