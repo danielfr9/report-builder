@@ -130,7 +130,9 @@ export default function ReportHeaderForm({
                       ¿Estás seguro de querer limpiar los datos?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Los datos del reporte se perderán.
+                      Si el reporte ha sido completado, lo mejor es archivarlo
+                      en vez de limpiar los datos. Si no, los datos se perderán
+                      y no podrás recuperarlos.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
