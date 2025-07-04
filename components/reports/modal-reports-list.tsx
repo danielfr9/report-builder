@@ -157,6 +157,7 @@ const ModalReportsList = ({
                     <ReportsTable
                       reports={reports}
                       onDelete={handleDeleteReports}
+                      onView={handleLoadReport}
                     />
                   )}
                 </div>

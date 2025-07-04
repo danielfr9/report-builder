@@ -28,6 +28,7 @@ import {
   CircleXIcon,
   Columns3Icon,
   EllipsisIcon,
+  EyeIcon,
   FilterIcon,
   ListFilterIcon,
   PlusIcon,
@@ -113,7 +114,11 @@ const statusFilterFn: FilterFn<Report> = (
   return filterValue.includes(status);
 };
 
-const columns: ColumnDef<Report>[] = [
+const getColumns = ({
+  onView = () => {},
+}: {
+  onView?: (report: Report) => void;
+}): ColumnDef<Report>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -135,6 +140,21 @@ const columns: ColumnDef<Report>[] = [
     ),
     size: 28,
     enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    id: "view",
+    header: () => <div className="sr-only">Ver</div>,
+    cell: ({ row }) => (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onView?.(row.original)}
+      >
+        <EyeIcon className="w-4 h-4" />
+      </Button>
+    ),
+    size: 48,
     enableHiding: false,
   },
   {
@@ -213,9 +233,11 @@ const columns: ColumnDef<Report>[] = [
 export default function ReportsTable({
   reports,
   onDelete,
+  onView,
 }: {
   reports: Report[];
   onDelete: (report: Report[]) => void;
+  onView?: (report: Report) => void;
 }) {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -244,6 +266,14 @@ export default function ReportsTable({
     table.resetRowSelection();
     onDelete(selectedRows.map((row) => row.original));
   };
+
+  const columns = useMemo(
+    () =>
+      getColumns({
+        onView: onView,
+      }),
+    [onView]
+  );
 
   const table = useReactTable({
     data,
