@@ -281,11 +281,13 @@ export default function ReportHeaderForm({
                     <ModalCreateSprint onSprintCreated={handleSprintCreated} />
                   </CommandEmpty>
                   <CommandGroup>
-                    <div className="py-3">
-                      <ModalCreateSprint
-                        onSprintCreated={handleSprintCreated}
-                      />
-                    </div>
+                    {sprints.length === 0 && (
+                      <div className="py-3">
+                        <ModalCreateSprint
+                          onSprintCreated={handleSprintCreated}
+                        />
+                      </div>
+                    )}
                     {sprints.map((sprint) => (
                       <CommandItem
                         key={sprint.id}
