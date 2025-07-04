@@ -126,15 +126,17 @@ export default function ReportHeaderForm({
               <AlertDialog>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      ¿Estás seguro de querer limpiar los datos?
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Esta acción no se puede deshacer.
+                      Los datos del reporte se perderán.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction onClick={onClearData}>
-                      Continuar
+                      Limpiar
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
