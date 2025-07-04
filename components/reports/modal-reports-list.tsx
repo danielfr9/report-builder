@@ -1,7 +1,7 @@
 "use client";
 
 import { deleteReports, getReports } from "@/lib/dexie/dao/reports";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableHeader,
@@ -52,6 +52,7 @@ const ModalReportsList = ({
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLoadReport = (report: Report) => {
     setSelectedReport(null);
@@ -68,15 +69,18 @@ const ModalReportsList = ({
     toast.success(`${reports.length} reportes eliminados correctamente`);
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      const fetchReports = async () => {
-        const reports = await getReports();
-        setReports(reports);
-      };
-      fetchReports();
+  const handleOpenModal = async () => {
+    setIsLoading(true);
+    try {
+      const fetchedReports = await getReports();
+      setReports(fetchedReports);
+      setIsOpen(true);
+    } catch (error) {
+      toast.error("Error al cargar los reportes");
+    } finally {
+      setIsLoading(false);
     }
-  }, [isOpen]);
+  };
 
   return (
     <>
@@ -122,7 +126,12 @@ const ModalReportsList = ({
       )}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={handleOpenModal}
+            disabled={isLoading}
+          >
             <ListIcon className="w-4 h-4" />
             <span className="hidden md:block">Reportes</span>
           </Button>
@@ -135,10 +144,21 @@ const ModalReportsList = ({
             <div className="overflow-y-auto">
               <DialogDescription asChild>
                 <div className="px-6 py-4">
-                  <ReportsTable
-                    reports={reports}
-                    onDelete={handleDeleteReports}
-                  />
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p className="text-muted-foreground">
+                          Cargando reportes...
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <ReportsTable
+                      reports={reports}
+                      onDelete={handleDeleteReports}
+                    />
+                  )}
                 </div>
               </DialogDescription>
               <DialogFooter className="px-6 pb-6 sm:justify-start">

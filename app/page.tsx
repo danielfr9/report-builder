@@ -36,6 +36,7 @@ export default function ReportBuilder() {
   const [reportType, setReportType] = useState<"daily" | "weekly">("daily");
   const [dailyData, setDailyData] = useState<DailyReport | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeeklyReport | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -82,6 +83,7 @@ export default function ReportBuilder() {
   };
 
   const loadData = async () => {
+    setIsLoading(true);
     // Get the current draft report
     const currentReport = localStorage.getItem(CURRENT_DAILY_REPORT_KEY);
     if (currentReport) {
@@ -109,6 +111,7 @@ export default function ReportBuilder() {
         });
       }
     }
+    setIsLoading(false);
   };
 
   const handleReportClick = (report: Report) => {
@@ -149,16 +152,16 @@ export default function ReportBuilder() {
   }, []);
 
   // Show loading state while data is being loaded
-  // if (!dailyData || !weeklyData) {
-  //   return (
-  //     <div className="min-h-screen bg-background flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-  //         <p className="text-muted-foreground">Cargando datos...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando datos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative p-4 pb-24 min-h-screen bg-background">
