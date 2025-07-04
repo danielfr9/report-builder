@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { Task } from "@/lib/interfaces/task.inteface";
+import { Task } from "@/lib/schemas/tasks.schema";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -32,10 +32,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { createTaskSchema } from "@/lib/schemas/tasks.schema";
+import { createTask } from "@/lib/dexie/dao/tasks";
+import { toast } from "sonner";
 
 // Add Task Form Component
 interface AddTaskFormProps {
-  onAdd: (task: Omit<Task, "id">) => void;
+  onAdd: (task: Task) => void;
 }
 
 const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
@@ -51,16 +53,14 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof createTaskSchema>) => {
-    onAdd({
-      name: data.name,
-      storyPoints: data.storyPoints,
-      status: data.status,
-      comments: data.comments || "",
-      actionPlan: data.actionPlan || "",
-      finishDate: data.finishDate,
-    });
-    form.reset();
+  const handleSubmit = async (data: z.infer<typeof createTaskSchema>) => {
+    const newTask = await createTask(data);
+    if (newTask) {
+      onAdd(newTask);
+      form.reset();
+    } else {
+      toast.error("Error al crear la tarea");
+    }
   };
 
   return (

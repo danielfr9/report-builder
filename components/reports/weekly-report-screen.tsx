@@ -20,12 +20,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusIcon, EyeIcon, Loader2Icon, DownloadIcon } from "lucide-react";
+import { Loader2Icon, DownloadIcon, PlusIcon, EyeIcon } from "lucide-react";
 import { WeeklyReportPreview } from "@/components/reports/weekly-report-preview";
 import { toast } from "sonner";
-import { debounce, toSentenceCase } from "@/lib/utils";
-import { format } from "date-fns";
-import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf";
+import { debounce } from "@/lib/utils";
 
 import {
   DndContext,
@@ -44,43 +42,48 @@ import {
 } from "@dnd-kit/sortable";
 
 import ReportHeaderForm from "./report-header-form";
-import { WeeklyReport } from "@/lib/interfaces/weekly.interface";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { Task } from "@/lib/interfaces/task.inteface";
-import { Block } from "@/lib/interfaces/block.interface";
-import { Observation } from "@/lib/interfaces/observation.interface";
+import { Task } from "@/lib/schemas/tasks.schema";
+import { Block } from "@/lib/schemas/block.schema";
+import { Observation } from "@/lib/schemas/observation.schema";
 import SortableTaskItem from "./sortable-task-item";
 import AddTaskForm from "./add-task-form";
 import AddBlockForm from "./add-block-form";
 import SortableBlockItem from "./sortable-block-item";
 import AddObservationForm from "./add-observation-form";
 import SortableObservationItem from "./sortable-observation-item";
+import { DraftWeeklyReport } from "@/lib/schemas/report.schema";
+import { REPORT_TYPE } from "@/lib/constants/report-type";
+import { REPORT_STATUS } from "@/lib/constants/report-status";
 
 interface WeeklyReportScreenProps {
-  initialData: WeeklyReport;
-  onDataChange: (data: WeeklyReport) => void;
+  initialData: DraftWeeklyReport | null;
+  onDataChange: (data: DraftWeeklyReport) => void;
 }
+
+const defaultReport: DraftWeeklyReport = {
+  type: REPORT_TYPE.WEEKLY,
+  tasks: [],
+  blocks: [],
+  observations: [],
+  hoursWorked: 44,
+  additionalNotes: "",
+  sprint: null,
+  date: new Date(),
+  owner: "",
+  name: "",
+  status: REPORT_STATUS.DRAFT,
+};
 
 export default function WeeklyReportScreen({
   initialData,
   onDataChange,
 }: WeeklyReportScreenProps) {
-  const [reportData, setReportData] = useState<WeeklyReport>({
-    header: {
-      date: initialData.header?.date || new Date(),
-      name: initialData.header?.name || "",
-      project: initialData.header?.project || "",
-      sprint: {
-        from: initialData.header?.sprint?.from ?? null,
-        to: initialData.header?.sprint?.to ?? null,
-      },
-    },
-    tasks: initialData.tasks || [],
-    blocks: initialData.blocks || [],
-    observations: initialData.observations || [],
-    hoursWorked: initialData.hoursWorked || 44,
-    additionalNotes: initialData.additionalNotes || "",
-  });
+  const [reportData, setReportData] = useState<DraftWeeklyReport>(
+    initialData || {
+      ...defaultReport,
+    }
+  );
 
   const [isGenerating, startGenerating] = useTransition();
   const [activeTab, setActiveTab] = useState("builder");
@@ -172,10 +175,10 @@ export default function WeeklyReportScreen({
 
     debouncedOnChange(reportData); // Wait 1000ms after the last change before notifying parent
   }, [
-    reportData.header.date,
-    reportData.header.name,
-    reportData.header.project,
-    reportData.header.sprint,
+    reportData.date,
+    reportData.name,
+    reportData.owner,
+    reportData.sprint,
     reportData.tasks,
     reportData.blocks,
     reportData.observations,
@@ -184,27 +187,11 @@ export default function WeeklyReportScreen({
   ]);
 
   // Clear saved data
-  const clearSavedInfo = () => {
-    const clearedData = {
-      header: {
-        date: new Date(),
-        name: "",
-        project: "",
-        sprint: {
-          from: null,
-          to: null,
-        },
-      },
-      tasks: [],
-      blocks: [],
-      observations: [],
-      hoursWorked: 40,
-      additionalNotes: "",
-    };
-
-    setReportData(clearedData);
-    onDataChange(clearedData);
-    toast.success("Datos borrados del navegador");
+  const archiveReport = () => {
+    alert("Not implemented");
+    // setReportData(defaultReport);
+    // onDataChange(defaultReport);
+    // toast.success("Datos borrados del navegador");
   };
 
   const updateTask = (id: string, value: Task) => {
@@ -254,50 +241,51 @@ export default function WeeklyReportScreen({
   };
 
   const generatePDF = () => {
-    startGenerating(async () => {
-      const toastId = toast.loading("Generando PDF...");
-      try {
-        const currentDate = new Date();
+    alert("Not implemented");
+    // startGenerating(async () => {
+    //   const toastId = toast.loading("Generando PDF...");
+    //   try {
+    //     const currentDate = new Date();
 
-        const name =
-          reportData.header.name !== ""
-            ? toSentenceCase(reportData.header.name.trim())
-            : "";
+    //     const name =
+    //       reportData.header.name !== ""
+    //         ? toSentenceCase(reportData.header.name.trim())
+    //         : "";
 
-        const fechaInicioSprint = reportData?.header.sprint.from
-          ? format(reportData.header.sprint.from, "yyyy-MM-dd")
-          : "";
-        const fechaFinSprint = reportData?.header.sprint.to
-          ? format(reportData.header.sprint.to, "yyyy-MM-dd")
-          : format(currentDate, "yyyy-MM-dd");
+    //     const fechaInicioSprint = reportData?.header.sprint.from
+    //       ? format(reportData.header.sprint.from, "yyyy-MM-dd")
+    //       : "";
+    //     const fechaFinSprint = reportData?.header.sprint.to
+    //       ? format(reportData.header.sprint.to, "yyyy-MM-dd")
+    //       : format(currentDate, "yyyy-MM-dd");
 
-        const res = await generateWeeklyReportPDFAction({
-          ...reportData,
-          header: reportData.header,
-        });
+    //     const res = await generateWeeklyReportPDFAction({
+    //       ...reportData,
+    //       header: reportData.header,
+    //     });
 
-        const blob = new Blob([res], { type: "application/pdf" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = ` Reporte Semanal ${name} ${
-          fechaInicioSprint ? `- ${fechaInicioSprint}` : ""
-        } ${fechaFinSprint ? `al ${fechaFinSprint}` : ""}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.dismiss(toastId);
-        toast.success("PDF generado correctamente", {
-          duration: 2000,
-        });
-      } catch (error) {
-        toast.dismiss(toastId);
-        toast.error("Error al generar el PDF", {
-          description: "Por favor, inténtalo de nuevo.",
-        });
-      }
-    });
+    //     const blob = new Blob([res], { type: "application/pdf" });
+    //     const url = URL.createObjectURL(blob);
+    //     const a = document.createElement("a");
+    //     a.href = url;
+    //     a.download = ` Reporte Semanal ${name} ${
+    //       fechaInicioSprint ? `- ${fechaInicioSprint}` : ""
+    //     } ${fechaFinSprint ? `al ${fechaFinSprint}` : ""}.pdf`;
+    //     document.body.appendChild(a);
+    //     a.click();
+    //     document.body.removeChild(a);
+    //     URL.revokeObjectURL(url);
+    //     toast.dismiss(toastId);
+    //     toast.success("PDF generado correctamente", {
+    //       duration: 2000,
+    //     });
+    //   } catch (error) {
+    //     toast.dismiss(toastId);
+    //     toast.error("Error al generar el PDF", {
+    //       description: "Por favor, inténtalo de nuevo.",
+    //     });
+    //   }
+    // });
   };
 
   const totalCompletedPoints = useMemo(() => {
@@ -362,11 +350,25 @@ export default function WeeklyReportScreen({
         <TabsContent value="builder" className="space-y-6">
           {/* Header Information */}
           <ReportHeaderForm
-            header={reportData.header}
+            header={{
+              date: reportData.date,
+              name: reportData.name,
+              owner: reportData.owner,
+              sprint: reportData.sprint,
+              status: reportData.status,
+            }}
             onHeaderChange={(header) =>
-              setReportData((prev) => ({ ...prev, header }))
+              setReportData((prev) => ({ ...prev, ...header }))
             }
-            onClearData={clearSavedInfo}
+            onClearData={() => {
+              setReportData(defaultReport);
+              onDataChange(defaultReport);
+            }}
+            onArchiveReport={archiveReport}
+            onNewReport={() => {
+              setReportData(defaultReport);
+              onDataChange(defaultReport);
+            }}
           />
 
           {/* Completed Tasks */}
@@ -566,10 +568,7 @@ export default function WeeklyReportScreen({
                     onAdd={(blockData) => {
                       setReportData((prev) => ({
                         ...prev,
-                        blocks: [
-                          ...prev.blocks,
-                          { ...blockData, id: Date.now().toString() },
-                        ],
+                        blocks: [...prev.blocks, blockData],
                       }));
                     }}
                   />
@@ -584,7 +583,7 @@ export default function WeeklyReportScreen({
                       strategy={verticalListSortingStrategy}
                     >
                       <div className="space-y-2">
-                        {reportData.blocks.map((block, index) => (
+                        {reportData.blocks.map((block) => (
                           <SortableBlockItem
                             key={block.id}
                             block={block}
@@ -607,13 +606,10 @@ export default function WeeklyReportScreen({
                 <div className="space-y-4 mt-2">
                   {/* Always visible add observation form */}
                   <AddObservationForm
-                    onAdd={(observationData) => {
+                    onAdd={(observation) => {
                       setReportData((prev) => ({
                         ...prev,
-                        observations: [
-                          ...prev.observations,
-                          { ...observationData, id: Date.now().toString() },
-                        ],
+                        observations: [...prev.observations, observation],
                       }));
                     }}
                   />

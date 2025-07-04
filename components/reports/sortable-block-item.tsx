@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Block } from "@/lib/interfaces/block.interface";
-import { createBlockSchema } from "@/lib/schemas/block,schema";
+import { Block, createBlockSchema } from "@/lib/schemas/block.schema";
 import { z } from "zod";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -25,7 +24,6 @@ import {
 } from "../ui/form";
 import { Label } from "../ui/label";
 
-// Sortable Block Item Component
 interface SortableBlockItemProps {
   block: Block;
   updateBlock: (id: string, value: Block) => void;
@@ -40,7 +38,7 @@ const SortableBlockItem = ({
   const form = useForm<z.infer<typeof createBlockSchema>>({
     resolver: zodResolver(createBlockSchema),
     defaultValues: {
-      description: block.name,
+      description: block.description,
     },
   });
 
@@ -61,17 +59,17 @@ const SortableBlockItem = ({
   };
 
   const handleSubmit = (data: z.infer<typeof createBlockSchema>) => {
-    updateBlock(block.id, { ...block, name: data.description });
+    updateBlock(block.id, { ...block, description: data.description });
     setIsEditing(false);
     form.reset({
-      description: block.name || "",
+      description: block.description || "",
     });
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     form.reset({
-      description: block.name || "",
+      description: block.description || "",
     });
   };
 
@@ -163,7 +161,7 @@ const SortableBlockItem = ({
         <div className="flex-1">
           <Label className="text-xs text-muted-foreground">Descripción</Label>
           <p className="text-sm font-medium break-words line-clamp-2 overflow-hidden text-ellipsis">
-            {block.name || "Sin descripción"}
+            {block.description || "Sin descripción"}
           </p>
         </div>
         <div className="flex flex-row gap-2 max-md:w-full md:flex-col max-md:justify-end">

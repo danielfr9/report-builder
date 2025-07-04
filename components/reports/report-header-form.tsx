@@ -19,9 +19,14 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { es } from "date-fns/locale";
 import { format } from "date-fns";
-import { CalendarIcon, Trash2Icon } from "lucide-react";
-import { DateRange } from "react-day-picker";
-import { ReportHeader } from "@/lib/interfaces/report-data.interface";
+import {
+  ArchiveIcon,
+  CalendarIcon,
+  CheckIcon,
+  ChevronsUpDown,
+  PlusIcon,
+  Trash2Icon,
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogHeader,
@@ -33,18 +38,61 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from "../ui/alert-dialog";
+import { Sprint } from "@/lib/schemas/sprint.schema";
+import { useEffect, useState } from "react";
+import { getSprints } from "@/lib/dexie/dao/sprint";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "../ui/command";
+import { REPORT_STATUS } from "@/lib/constants/report-status";
+
+interface Header {
+  date: Date;
+  owner: string;
+  name: string;
+  sprint?: Sprint | null;
+  status: (typeof REPORT_STATUS)[keyof typeof REPORT_STATUS];
+}
 
 interface ReportHeaderFormProps {
-  header: ReportHeader;
-  onHeaderChange: (header: ReportHeader) => void;
+  header: Header;
+  onHeaderChange: (header: Header) => void;
+  onArchiveReport: () => void;
   onClearData: () => void;
+  onNewReport: () => void;
 }
 
 export default function ReportHeaderForm({
   header,
   onHeaderChange,
+  onArchiveReport,
   onClearData,
+  onNewReport,
 }: ReportHeaderFormProps) {
+  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchSprints = async () => {
+      const sprints = await getSprints();
+      setSprints(sprints);
+    };
+    fetchSprints();
+  }, []);
+
+  const onSelectSprint = (sprint: Sprint) => {
+    onHeaderChange({ ...header, sprint });
+  };
+
+  const handleNewReport = () => {
+    onNewReport();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -55,32 +103,80 @@ export default function ReportHeaderForm({
               Datos básicos del reporte
             </CardDescription>
           </div>
-          <AlertDialog>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta acción no se puede deshacer.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={onClearData}>
-                  Continuar
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-            <AlertDialogTrigger asChild>
+
+          {header.status === REPORT_STATUS.ARCHIVED && (
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 className="text-xs max-md:ml-auto"
+                onClick={handleNewReport}
               >
-                <Trash2Icon className="mr-2 h-4 w-4 opacity-50" />
-                Limpiar Datos
+                <PlusIcon className="mr-2 h-4 w-4 opacity-50" />
+                Nuevo reporte
               </Button>
-            </AlertDialogTrigger>
-          </AlertDialog>
+            </div>
+          )}
+
+          {header.status === REPORT_STATUS.DRAFT && (
+            <div className="flex gap-2">
+              <AlertDialog>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta acción no se puede deshacer.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={onClearData}>
+                      Continuar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs max-md:ml-auto"
+                  >
+                    <Trash2Icon className="mr-2 h-4 w-4 opacity-50" />
+                    Limpiar Datos
+                  </Button>
+                </AlertDialogTrigger>
+              </AlertDialog>
+              <AlertDialog>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      ¿Estás seguro de querer archivar este reporte?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Los datos del reporte se guardarán en el historial de
+                      reportes.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={onArchiveReport}>
+                      Archivar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs max-md:ml-auto"
+                  >
+                    <ArchiveIcon className="mr-2 h-4 w-4 opacity-50" />
+                    Archivar reporte
+                  </Button>
+                </AlertDialogTrigger>
+              </AlertDialog>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,82 +208,86 @@ export default function ReportHeaderForm({
                 selected={header.date ? new Date(header.date) : undefined}
                 locale={es}
                 onSelect={(selectedDate) => {
-                  onHeaderChange({ ...header, date: selectedDate || null });
+                  onHeaderChange({
+                    ...header,
+                    date: selectedDate || new Date(),
+                  });
                 }}
               />
             </PopoverContent>
           </Popover>
         </div>
         <div>
-          <Label htmlFor="name">Nombre</Label>
+          <Label htmlFor="owner">Nombre</Label>
+          <Input
+            id="owner"
+            className="text-sm md:text-base"
+            placeholder="Tu nombre"
+            value={header.owner}
+            onChange={(e) =>
+              onHeaderChange({ ...header, owner: e.target.value })
+            }
+          />
+        </div>
+        <div>
+          <Label htmlFor="name">Proyecto</Label>
           <Input
             id="name"
             className="text-sm md:text-base"
-            placeholder="Tu nombre"
+            placeholder="Nombre del proyecto"
             value={header.name}
             onChange={(e) =>
               onHeaderChange({ ...header, name: e.target.value })
             }
           />
         </div>
-        <div>
-          <Label htmlFor="project">Proyecto</Label>
-          <Input
-            id="project"
-            className="text-sm md:text-base"
-            placeholder="Nombre del proyecto"
-            value={header.project}
-            onChange={(e) =>
-              onHeaderChange({ ...header, project: e.target.value })
-            }
-          />
-        </div>
-        <div>
+        <div className="flex flex-col gap-2">
           <Label htmlFor="sprint">Sprint</Label>
-          <Popover>
+          <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button
-                id="sprint-input"
                 variant="outline"
-                className={cn(
-                  "h-10 w-full justify-start pr-10 text-left font-normal text-sm md:text-base",
-                  !header.sprint.from && "text-muted-foreground"
-                )}
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between"
               >
-                <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                {header.sprint.from ? (
-                  header.sprint.to ? (
-                    <>
-                      {format(header.sprint.from, "LLL dd, y")} -{" "}
-                      {format(header.sprint.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(header.sprint.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Selecciona un rango de fechas</span>
-                )}
+                {header.sprint ? header.sprint.name : "Selecciona un sprint"}
+                <ChevronsUpDown className="opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                autoFocus
-                mode="range"
-                defaultMonth={header.sprint.from || undefined}
-                selected={header.sprint as DateRange}
-                onSelect={(dateRange: DateRange | undefined) => {
-                  if (dateRange) {
-                    onHeaderChange({
-                      ...header,
-                      sprint: {
-                        from: dateRange.from || null,
-                        to: dateRange.to || null,
-                      },
-                    });
-                  }
-                }}
-                numberOfMonths={2}
-              />
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+              <Command>
+                <CommandInput placeholder="Buscar sprint..." className="h-9" />
+                <CommandList>
+                  <CommandEmpty>No se encontraron sprints.</CommandEmpty>
+                  <CommandGroup>
+                    {sprints.map((sprint) => (
+                      <CommandItem
+                        key={sprint.id}
+                        value={sprint.id}
+                        onSelect={(currentValue) => {
+                          onSelectSprint(
+                            sprints.find(
+                              (sprint) => sprint.id === currentValue
+                            ) as Sprint
+                          );
+                          setOpen(false);
+                        }}
+                      >
+                        {sprint.name}
+                        <CheckIcon
+                          className={cn(
+                            "ml-auto",
+                            header.sprint?.id === sprint.id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
             </PopoverContent>
           </Popover>
         </div>

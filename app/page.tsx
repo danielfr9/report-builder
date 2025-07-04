@@ -1,6 +1,7 @@
 "use client";
 
 import DailyReportScreen from "@/components/reports/daily-report-screen";
+import ModalReportsList from "@/components/reports/modal-reports-list";
 import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -9,389 +10,189 @@ import {
   V3_DAILY_REPORT_STORAGE_KEY,
   V3_WEEKLY_REPORT_STORAGE_KEY,
   V3_SHARED_HEADER_KEY,
-  V2_SHARED_HEADER_KEY,
-  V2_DAILY_REPORT_STORAGE_KEY,
-  V2_WEEKLY_REPORT_STORAGE_KEY,
+  CURRENT_DAILY_REPORT_KEY,
 } from "@/lib/constants/localstorage-keys";
+import { REPORT_STATUS } from "@/lib/constants/report-status";
+import { LocalStorageReport } from "@/lib/interfaces/localstorage.interface";
+import { formatDailyReport } from "@/lib/localstorage/parsers";
 import {
+  DraftDailyReport,
+  Report,
+  ReportSchema,
+  DraftWeeklyReport,
   DailyReport,
-  DailyReportLocalStorage,
-} from "@/lib/interfaces/daily.interface";
-import {
-  ReportHeaderLocalStorage,
-  ReportHeader,
-} from "@/lib/interfaces/report-data.interface";
-import {
   WeeklyReport,
-  WeeklyReportLocalStorage,
-} from "@/lib/interfaces/weekly.interface";
-import { isToday, parseISO } from "date-fns";
+} from "@/lib/schemas/report.schema";
+
+import { parseISO } from "date-fns";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
-// interface PreviousDailyReportLocalStorageData
-//   extends Omit<DailyReportLocalStorageData, "blocks" | "observations"> {
-//   blocks: string[];
-//   observations: string[];
-// }
-
-// interface PreviousWeeklyReportLocalStorageData
-//   extends Omit<WeeklyReportLocalStorageData, "blocks" | "observations"> {
-//   blocks: string[];
-//   observations: string[];
-// }
-
-// const migrateLocalStorageData = () => {
-//   const v2DailyData = localStorage.getItem(V3_DAILY_REPORT_STORAGE_KEY);
-//   const v2WeeklyData = localStorage.getItem(V3_WEEKLY_REPORT_STORAGE_KEY);
-
-//   const dailyData = localStorage.getItem(V1_DAILY_REPORT_STORAGE_KEY);
-//   if (dailyData && !v2DailyData) {
-//     const dailyDataObject: PreviousDailyReportLocalStorageData =
-//       JSON.parse(dailyData);
-
-//     // Blocks and observations are now arrays of objects
-//     // We need to convert them to the new format
-//     const blocks = dailyDataObject.blocks || [];
-//     const observations = dailyDataObject.observations || [];
-
-//     // We need to convert them to the new format
-//     let timestamp = Date.now();
-//     const newDailyData: DailyReportLocalStorageData = {
-//       ...dailyDataObject,
-//       blocks: blocks.map((block) => {
-//         return {
-//           id: (timestamp++).toString(),
-//           name: block,
-//         };
-//       }),
-//       observations: observations.map((observation) => ({
-//         id: (timestamp++).toString(),
-//         name: observation,
-//       })),
-//     };
-
-//     try {
-//       localStorage.setItem(
-//         V3_DAILY_REPORT_STORAGE_KEY,
-//         JSON.stringify(newDailyData)
-//       );
-//     } catch (error) {
-//       console.error("Error saving daily data:", error);
-//     }
-//   }
-
-//   const weeklyData = localStorage.getItem(V1_WEEKLY_REPORT_STORAGE_KEY);
-//   if (weeklyData && !v2WeeklyData) {
-//     const weeklyDataObject: PreviousWeeklyReportLocalStorageData =
-//       JSON.parse(weeklyData);
-
-//     const blocks = weeklyDataObject.blocks || [];
-//     const observations = weeklyDataObject.observations || [];
-
-//     let timestamp = Date.now();
-//     const newWeeklyData: WeeklyReportLocalStorageData = {
-//       ...weeklyDataObject,
-//       blocks: blocks.map((block) => {
-//         return {
-//           id: (timestamp++).toString(),
-//           name: block,
-//         };
-//       }),
-//       observations: observations.map((observation) => ({
-//         id: (timestamp++).toString(),
-//         name: observation,
-//       })),
-//     };
-
-//     try {
-//       localStorage.setItem(
-//         V3_WEEKLY_REPORT_STORAGE_KEY,
-//         JSON.stringify(newWeeklyData)
-//       );
-//     } catch (error) {
-//       console.error("Error saving weekly data:", error);
-//     }
-//   }
-// };
 
 export default function ReportBuilder() {
   const [reportType, setReportType] = useState<"daily" | "weekly">("daily");
   const [dailyData, setDailyData] = useState<DailyReport | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeeklyReport | null>(null);
 
-  // Helper function to parse header data with proper date conversion
-  const parseHeaderData = (
-    headerData: ReportHeaderLocalStorage | null | undefined
-  ): ReportHeader => {
-    if (!headerData)
-      return {
-        date: null,
-        name: "",
-        project: "",
-        sprint: { from: null, to: null },
-      };
+  // // Helper function to parse header data with proper date conversion
+  // const parseHeaderData = (
+  //   headerData: ReportHeaderLocalStorage | null | undefined
+  // ): ReportHeader => {
+  //   if (!headerData)
+  //     return {
+  //       date: null,
+  //       name: "",
+  //       project: "",
+  //       sprint: { from: null, to: null },
+  //     };
 
-    return {
-      date: headerData.date ? parseISO(headerData.date) : null,
-      name: headerData.name || "",
-      project: headerData.project || "",
-      sprint: {
-        from: headerData.sprint?.from ? parseISO(headerData.sprint.from) : null,
-        to: headerData.sprint?.to ? parseISO(headerData.sprint.to) : null,
-      },
-    };
-  };
+  //   return {
+  //     date: headerData.date ? parseISO(headerData.date) : null,
+  //     name: headerData.name || "",
+  //     project: headerData.project || "",
+  //     sprint: {
+  //       from: headerData.sprint?.from ? parseISO(headerData.sprint.from) : null,
+  //       to: headerData.sprint?.to ? parseISO(headerData.sprint.to) : null,
+  //     },
+  //   };
+  // };
 
-  // Format header data to be saved to localStorage
-  const formatHeaderData = (
-    headerData: ReportHeader
-  ): ReportHeaderLocalStorage => {
-    return {
-      date: headerData.date?.toISOString() ?? null,
-      name: headerData.name,
-      project: headerData.project,
-      sprint: {
-        from: headerData.sprint?.from?.toISOString() ?? null,
-        to: headerData.sprint?.to?.toISOString() ?? null,
-      },
-    };
-  };
+  // // Format header data to be saved to localStorage
+  // const formatHeaderData = (
+  //   headerData: ReportHeader
+  // ): ReportHeaderLocalStorage => {
+  //   return {
+  //     date: headerData.date?.toISOString() ?? null,
+  //     name: headerData.name,
+  //     project: headerData.project,
+  //     sprint: {
+  //       from: headerData.sprint?.from?.toISOString() ?? null,
+  //       to: headerData.sprint?.to?.toISOString() ?? null,
+  //     },
+  //   };
+  // };
 
-  // Load shared header data from localStorage
-  const loadSharedHeader = (): ReportHeader => {
-    try {
-      const savedHeader = localStorage.getItem(V3_SHARED_HEADER_KEY);
-      if (savedHeader) {
-        return parseHeaderData(JSON.parse(savedHeader));
-      }
-    } catch (error) {
-      console.error("Error loading shared header from localStorage:", error);
-    }
-    return {
-      date: new Date(),
-      name: "",
-      project: "",
-      sprint: { from: null, to: null },
-    };
-  };
+  // // Load shared header data from localStorage
+  // const loadSharedHeader = (): ReportHeader => {
+  //   try {
+  //     const savedHeader = localStorage.getItem(V3_SHARED_HEADER_KEY);
+  //     if (savedHeader) {
+  //       return parseHeaderData(JSON.parse(savedHeader));
+  //     }
+  //   } catch (error) {
+  //     console.error("Error loading shared header from localStorage:", error);
+  //   }
+  //   return {
+  //     date: new Date(),
+  //     name: "",
+  //     project: "",
+  //     sprint: { from: null, to: null },
+  //   };
+  // };
 
-  // Save shared header data to localStorage
-  const saveSharedHeader = (header: ReportHeader) => {
-    try {
-      const sharedHeader = formatHeaderData(header);
-      localStorage.setItem(V3_SHARED_HEADER_KEY, JSON.stringify(sharedHeader));
-    } catch (error) {
-      console.error("Error saving shared header to localStorage:", error);
-    }
-  };
+  // // Save shared header data to localStorage
+  // const saveSharedHeader = (header: ReportHeader) => {
+  //   try {
+  //     const sharedHeader = formatHeaderData(header);
+  //     localStorage.setItem(V3_SHARED_HEADER_KEY, JSON.stringify(sharedHeader));
+  //   } catch (error) {
+  //     console.error("Error saving shared header to localStorage:", error);
+  //   }
+  // };
 
   // Handle daily data changes
   const handleDailyDataChange = (data: DailyReport) => {
-    const dataToSave: DailyReportLocalStorage = {
-      header: formatHeaderData(data.header),
-      tasks: data.tasks.map((task) => ({
-        ...task,
-        finishDate: task.finishDate?.toISOString() ?? null,
-      })),
-      blocks: data.blocks,
-      observations: data.observations,
-      hoursWorked: data.hoursWorked,
-      additionalNotes: data.additionalNotes,
-    };
+    if (data.status === REPORT_STATUS.ARCHIVED) {
+      return;
+    }
+
+    const dataToSave = formatDailyReport(data as DraftDailyReport);
 
     try {
       localStorage.setItem(
-        V3_DAILY_REPORT_STORAGE_KEY,
+        CURRENT_DAILY_REPORT_KEY,
         JSON.stringify(dataToSave)
       );
-      saveSharedHeader(data.header);
       setDailyData(data);
     } catch (error) {
       console.error("Error saving daily data to localStorage:", error);
     }
   };
 
-  // Handle weekly data changes
-  const handleWeeklyDataChange = (data: WeeklyReport) => {
-    const dataToSave: WeeklyReportLocalStorage = {
-      header: formatHeaderData(data.header),
-      tasks: data.tasks.map((task) => ({
-        ...task,
-        finishDate: task.finishDate?.toISOString() ?? null,
-      })),
-      blocks: data.blocks,
-      observations: data.observations,
-      hoursWorked: data.hoursWorked,
-      additionalNotes: data.additionalNotes,
-    };
+  const loadData = async () => {
+    // Get the current draft report
+    const currentReport = localStorage.getItem(CURRENT_DAILY_REPORT_KEY);
+    if (currentReport) {
+      // Parse the current report to an object
+      const rawReport = JSON.parse(currentReport) as LocalStorageReport;
 
-    try {
-      localStorage.setItem(
-        V3_WEEKLY_REPORT_STORAGE_KEY,
-        JSON.stringify(dataToSave)
-      );
-      saveSharedHeader(data.header);
-      setWeeklyData(data);
-    } catch (error) {
-      console.error("Error saving weekly data to localStorage:", error);
+      // Validate the report
+      const validReport = ReportSchema.omit({
+        id: true,
+        date: true,
+      }).safeParse(rawReport);
+
+      // If the report is valid, load the report
+      if (validReport.success) {
+        const report: Report = {
+          ...validReport.data,
+          date: parseISO(rawReport.date),
+          id: "",
+        };
+
+        // Set the daily data
+        setDailyData({
+          ...report,
+          type: "daily",
+        });
+      }
     }
   };
 
-  // Load data from localStorage
-  const loadData = () => {
-    try {
-      const sharedHeader = loadSharedHeader();
-
-      // Check if saved date is from older than today
-      if (sharedHeader.date && !isToday(sharedHeader.date)) {
-        // If so, set the date to today
-        sharedHeader.date = new Date();
-      }
-
-      // Load daily data
-      const savedDaily = localStorage.getItem(V3_DAILY_REPORT_STORAGE_KEY);
-      if (savedDaily) {
-        const dailyDataParsed: DailyReportLocalStorage = JSON.parse(savedDaily);
-        const parsedHeader = parseHeaderData(dailyDataParsed.header);
-
-        setDailyData({
-          header: sharedHeader ?? parsedHeader,
-          tasks:
-            dailyDataParsed.tasks?.map((task) => ({
-              ...task,
-              finishDate: task.finishDate
-                ? parseISO(task.finishDate)
-                : new Date(),
-            })) || [],
-          blocks: dailyDataParsed.blocks || [],
-          observations: dailyDataParsed.observations || [],
-          hoursWorked: dailyDataParsed.hoursWorked || 8,
-          additionalNotes: dailyDataParsed.additionalNotes || "",
-        });
-      } else {
-        setDailyData({
-          header: sharedHeader,
-          tasks: [],
-          blocks: [],
-          observations: [],
-          hoursWorked: 8,
-          additionalNotes: "",
-        });
-      }
-
-      // Load weekly data
-      const savedWeekly = localStorage.getItem(V3_WEEKLY_REPORT_STORAGE_KEY);
-      if (savedWeekly) {
-        const weeklyDataParsed: WeeklyReportLocalStorage =
-          JSON.parse(savedWeekly);
-        const parsedHeader = parseHeaderData(weeklyDataParsed.header);
-
-        setWeeklyData({
-          header: sharedHeader ?? parsedHeader,
-          tasks:
-            weeklyDataParsed.tasks?.map((task) => ({
-              ...task,
-              finishDate: task.finishDate
-                ? parseISO(task.finishDate)
-                : new Date(),
-            })) || [],
-          blocks: weeklyDataParsed.blocks || [],
-          observations: weeklyDataParsed.observations || [],
-          hoursWorked: weeklyDataParsed.hoursWorked || 40,
-          additionalNotes: weeklyDataParsed.additionalNotes || "",
-        });
-      } else {
-        setWeeklyData({
-          header: sharedHeader,
-          tasks: [],
-          blocks: [],
-          observations: [],
-          hoursWorked: 40,
-          additionalNotes: "",
-        });
-      }
-    } catch (error) {
-      console.error("Error loading from localStorage:", error);
-    }
-  };
-
-  // Clear all data
-  const clearAllData = () => {
-    try {
-      localStorage.removeItem(V3_DAILY_REPORT_STORAGE_KEY);
-      localStorage.removeItem(V3_WEEKLY_REPORT_STORAGE_KEY);
-      localStorage.removeItem(V3_SHARED_HEADER_KEY);
-
-      // Reset state to empty data
-      const emptyDailyData: DailyReport = {
-        header: {
-          date: null,
-          name: "",
-          project: "",
-          sprint: { from: null, to: null },
-        },
-        tasks: [],
-        blocks: [],
-        observations: [],
-        hoursWorked: 8,
-        additionalNotes: "",
-      };
-
-      const emptyWeeklyData: WeeklyReport = {
-        header: {
-          date: null,
-          name: "",
-          project: "",
-          sprint: { from: null, to: null },
-        },
-        tasks: [],
-        blocks: [],
-        observations: [],
-        hoursWorked: 40,
-        additionalNotes: "",
-      };
-
-      setDailyData(emptyDailyData);
-      setWeeklyData(emptyWeeklyData);
-    } catch (error) {
-      console.error("Error clearing localStorage:", error);
+  const handleReportClick = (report: Report) => {
+    console.log("report", report);
+    if (report.type === "daily") {
+      setDailyData({
+        ...report,
+        type: "daily",
+      });
+    } else {
+      setWeeklyData({
+        ...report,
+        type: "weekly",
+      });
     }
   };
 
   useEffect(() => {
-    // migrateLocalStorageData();
-    localStorage.removeItem(V2_SHARED_HEADER_KEY);
-    localStorage.removeItem(V2_DAILY_REPORT_STORAGE_KEY);
-    localStorage.removeItem(V2_WEEKLY_REPORT_STORAGE_KEY);
+    localStorage.removeItem(V3_SHARED_HEADER_KEY);
+    localStorage.removeItem(V3_DAILY_REPORT_STORAGE_KEY);
+    localStorage.removeItem(V3_WEEKLY_REPORT_STORAGE_KEY);
     loadData();
   }, []);
 
   // Show loading state while data is being loaded
-  if (!dailyData || !weeklyData) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando datos...</p>
-        </div>
-      </div>
-    );
-  }
+  // if (!dailyData || !weeklyData) {
+  //   return (
+  //     <div className="min-h-screen bg-background flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+  //         <p className="text-muted-foreground">Cargando datos...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="relative p-4 pb-24 min-h-screen bg-background">
       <div className={`${reportType === "daily" ? "block" : "hidden"}`}>
         <DailyReportScreen
+          key={dailyData?.id ?? "new"}
           initialData={dailyData}
           onDataChange={handleDailyDataChange}
         />
       </div>
       <div className={`${reportType === "weekly" ? "block" : "hidden"}`}>
-        <WeeklyReportScreen
-          initialData={weeklyData}
-          onDataChange={handleWeeklyDataChange}
-        />
+        <WeeklyReportScreen initialData={weeklyData} onDataChange={() => {}} />
       </div>
 
       {/* Pill-like menu/navigation at the bottom of the screen */}
@@ -415,6 +216,7 @@ export default function ReportBuilder() {
           </Button>
           <Separator orientation="vertical" className="h-10" />
           <ThemeToggle />
+          <ModalReportsList onReportClick={handleReportClick} />
         </div>
       </div>
     </div>

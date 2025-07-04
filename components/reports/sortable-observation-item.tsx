@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Observation } from "@/lib/interfaces/observation.interface";
+import { Observation } from "@/lib/schemas/observation.schema";
 import { createObservationSchema } from "@/lib/schemas/observation.schema";
 import { z } from "zod";
 import { useSortable } from "@dnd-kit/sortable";
@@ -25,7 +25,6 @@ import {
 } from "../ui/form";
 import { Label } from "../ui/label";
 
-// Sortable Observation Item Component
 interface SortableObservationItemProps {
   observation: Observation;
   updateObservation: (id: string, value: Observation) => void;
@@ -40,7 +39,7 @@ const SortableObservationItem = ({
   const form = useForm<z.infer<typeof createObservationSchema>>({
     resolver: zodResolver(createObservationSchema),
     defaultValues: {
-      description: observation.name || "",
+      description: observation.description || "",
     },
   });
   const [isEditing, setIsEditing] = useState(false);
@@ -62,18 +61,18 @@ const SortableObservationItem = ({
   const handleSubmit = (data: z.infer<typeof createObservationSchema>) => {
     updateObservation(observation.id, {
       ...observation,
-      name: data.description,
+      description: data.description,
     });
     setIsEditing(false);
     form.reset({
-      description: observation.name || "",
+      description: observation.description || "",
     });
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     form.reset({
-      description: observation.name || "",
+      description: observation.description || "",
     });
   };
 
@@ -170,7 +169,7 @@ const SortableObservationItem = ({
         <div className="flex-1">
           <Label className="text-xs text-muted-foreground">Descripción</Label>
           <p className="text-sm font-medium break-words line-clamp-2 overflow-hidden text-ellipsis">
-            {observation.name || "Sin descripción"}
+            {observation.description || "Sin descripción"}
           </p>
         </div>
         <div className="flex flex-row gap-2 max-md:w-full md:flex-col max-md:justify-end">

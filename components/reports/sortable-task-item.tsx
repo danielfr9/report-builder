@@ -20,7 +20,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { Task } from "@/lib/interfaces/task.inteface";
+import { Task } from "@/lib/schemas/tasks.schema";
 import { updateTaskSchema } from "@/lib/schemas/tasks.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -41,7 +41,6 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar } from "../ui/calendar";
 
-// Sortable Task Item Component (moved outside main component)
 interface SortableTaskItemProps {
   task: Task;
   updateTask: (id: string, value: Task) => void;

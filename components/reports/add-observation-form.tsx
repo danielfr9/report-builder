@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Observation } from "@/lib/interfaces/observation.interface";
+import { Observation } from "@/lib/schemas/observation.schema";
 import { createObservationSchema } from "@/lib/schemas/observation.schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,10 +13,11 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import { createObservation } from "@/lib/dexie/dao/observations";
+import { toast } from "sonner";
 
-// Add Observation Form Component
 interface AddObservationFormProps {
-  onAdd: (observation: Omit<Observation, "id">) => void;
+  onAdd: (observation: Observation) => void;
 }
 
 const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {
@@ -27,13 +28,16 @@ const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof createObservationSchema>) => {
-    onAdd({
-      name: data.description,
-    });
-    form.reset({
-      description: "",
-    });
+  const handleSubmit = async (
+    data: z.infer<typeof createObservationSchema>
+  ) => {
+    const newObservation = await createObservation(data);
+    if (newObservation) {
+      onAdd(newObservation);
+      form.reset();
+    } else {
+      toast.error("Error al crear la observación");
+    }
   };
 
   return (
@@ -50,8 +54,7 @@ const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {
                   <Textarea
                     className="text-sm md:text-base"
                     placeholder="Describe una observación o sugerencia adicional"
-                    value={field.value}
-                    onChange={field.onChange}
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />

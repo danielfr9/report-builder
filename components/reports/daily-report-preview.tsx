@@ -1,11 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { DailyReport } from "@/lib/interfaces/daily.interface";
 import { TASK_STATUS } from "@/lib/constants/task-status";
+import { DraftDailyReport } from "@/lib/schemas/report.schema";
 
 interface DailyReportPreviewProps {
-  data: DailyReport;
+  data: DraftDailyReport;
 }
 
 export function DailyReportPreview({ data }: DailyReportPreviewProps) {
@@ -75,33 +75,29 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm print:text-xs print:grid-cols-4">
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Nombre:</span>{" "}
-                  <span className="text-muted-foreground">
-                    {data.header.name}
-                  </span>
+                  <span className="text-muted-foreground">{data.owner}</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Fecha:</span>{" "}
                   <span className="text-muted-foreground">
-                    {data.header.date
-                      ? format(data.header.date, "dd/MM/yyyy")
+                    {data.date
+                      ? format(data.date, "dd/MM/yyyy")
                       : "No hay fecha"}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Proyecto:</span>{" "}
-                  <span className="text-muted-foreground">
-                    {data.header.project}
-                  </span>
+                  <span className="text-muted-foreground">{data.name}</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">Sprint:</span>{" "}
                   <span className="text-muted-foreground">
-                    {data.header.sprint.from
-                      ? format(data.header.sprint.from, "dd/MM/yyyy")
+                    {data.sprint?.startDate
+                      ? format(data.sprint.startDate, "dd/MM/yyyy")
                       : "No hay fecha"}
                     -{" "}
-                    {data.header.sprint.to
-                      ? format(data.header.sprint.to, "dd/MM/yyyy")
+                    {data.sprint?.endDate
+                      ? format(data.sprint.endDate, "dd/MM/yyyy")
                       : "No hay fecha"}
                   </span>
                 </div>
@@ -234,7 +230,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                       key={`block-${index}`}
                       className="text-muted-foreground"
                     >
-                      {block.name}
+                      {block.description}
                     </li>
                   ))}
                 </ul>
@@ -257,7 +253,7 @@ export function DailyReportPreview({ data }: DailyReportPreviewProps) {
                       key={`observation-${index}`}
                       className="text-muted-foreground"
                     >
-                      {observation.name}
+                      {observation.description}
                     </li>
                   ))}
                 </ul>

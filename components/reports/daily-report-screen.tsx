@@ -21,13 +21,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import { PlusIcon, EyeIcon, Loader2Icon, DownloadIcon } from "lucide-react";
+import { Loader2Icon, DownloadIcon, PlusIcon, EyeIcon } from "lucide-react";
 import { DailyReportPreview } from "@/components/reports/daily-report-preview";
 import { toast } from "sonner";
-import { debounce, toSentenceCase } from "@/lib/utils";
-import { format, isSaturday } from "date-fns";
-import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
-import { DailyObservation } from "@/lib/interfaces/report-data.interface";
+import { debounce } from "@/lib/utils";
+import { isSaturday } from "date-fns";
 import {
   DndContext,
   closestCenter,
@@ -51,36 +49,43 @@ import SortableTaskItem from "./sortable-task-item";
 import SortableBlockItem from "./sortable-block-item";
 import SortableObservationItem from "./sortable-observation-item";
 import ReportHeaderForm from "./report-header-form";
-import { DailyReport } from "@/lib/interfaces/daily.interface";
-import { Task } from "@/lib/interfaces/task.inteface";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { Block } from "@/lib/interfaces/block.interface";
+import { DailyReport, DraftDailyReport } from "@/lib/schemas/report.schema";
+import { Task } from "@/lib/schemas/tasks.schema";
+import { Block } from "@/lib/schemas/block.schema";
+import { Observation } from "@/lib/schemas/observation.schema";
+import { archiveReport } from "@/lib/dexie/dao/reports";
+import { REPORT_STATUS } from "@/lib/constants/report-status";
 
 interface DailyReportScreenProps {
-  initialData: DailyReport;
+  initialData: DailyReport | null;
   onDataChange: (data: DailyReport) => void;
 }
+
+const defaultReport: DailyReport = {
+  id: "",
+  date: new Date(),
+  owner: "",
+  name: "",
+  type: "daily",
+  tasks: [],
+  blocks: [],
+  observations: [],
+  hoursWorked: isSaturday(new Date()) ? 4 : 8,
+  additionalNotes: "",
+  sprint: null,
+  status: REPORT_STATUS.DRAFT,
+};
 
 export default function DailyReportScreen({
   initialData,
   onDataChange,
 }: DailyReportScreenProps) {
-  const [reportData, setReportData] = useState<DailyReport>({
-    header: {
-      date: initialData.header?.date || new Date(),
-      name: initialData.header?.name || "",
-      project: initialData.header?.project || "",
-      sprint: {
-        from: initialData.header?.sprint?.from ?? null,
-        to: initialData.header?.sprint?.to ?? null,
-      },
-    },
-    tasks: initialData.tasks || [],
-    blocks: initialData.blocks || [],
-    observations: initialData.observations || [],
-    hoursWorked: isSaturday(new Date()) ? 4 : initialData.hoursWorked ?? 8,
-    additionalNotes: initialData.additionalNotes || "",
-  });
+  const [reportData, setReportData] = useState<DailyReport>(
+    initialData || {
+      ...defaultReport,
+    }
+  );
 
   const [isGenerating, startGenerating] = useTransition();
   const [activeTab, setActiveTab] = useState("builder");
@@ -172,10 +177,9 @@ export default function DailyReportScreen({
 
     debouncedOnChange(reportData); // Wait 1000ms after the last change before notifying parent
   }, [
-    reportData.header.date,
-    reportData.header.name,
-    reportData.header.project,
-    reportData.header.sprint,
+    reportData.date,
+    reportData.name,
+    reportData.owner,
     reportData.tasks,
     reportData.observations,
     reportData.hoursWorked,
@@ -183,27 +187,32 @@ export default function DailyReportScreen({
   ]);
 
   // Clear saved data
-  const clearSavedInfo = () => {
-    const clearedData = {
-      header: {
-        date: new Date(),
-        name: "",
-        project: "",
-        sprint: {
-          from: null,
-          to: null,
-        },
-      },
-      tasks: [],
-      blocks: [],
-      observations: [],
-      hoursWorked: isSaturday(new Date()) ? 4 : 8,
-      additionalNotes: "",
-    };
+  // const clearSavedInfo = () => {
+  //   const clearedData: DraftDailyReport = {
+  //     ...defaultReport,
+  //   };
 
-    setReportData(clearedData);
-    onDataChange(clearedData);
-    toast.success("Datos borrados del navegador");
+  //   setReportData(clearedData);
+  //   onDataChange(clearedData);
+  //   toast.success("Datos borrados del navegador");
+  // };
+
+  const handleArchiveReport = async () => {
+    if (reportData.status === REPORT_STATUS.ARCHIVED) {
+      toast.error("No se puede archivar un reporte archivado");
+      return;
+    }
+
+    try {
+      await archiveReport(reportData);
+      setReportData(defaultReport);
+      onDataChange(defaultReport);
+
+      toast.success("Reporte archivado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al archivar el reporte");
+    }
   };
 
   const updateTask = (id: string, value: Task) => {
@@ -234,7 +243,7 @@ export default function DailyReportScreen({
     }));
   };
 
-  const updateObservation = (id: string, value: DailyObservation) => {
+  const updateObservation = (id: string, value: Observation) => {
     setReportData((prev) => ({
       ...prev,
       observations: prev.observations.map((observation) =>
@@ -253,42 +262,43 @@ export default function DailyReportScreen({
   };
 
   const generatePDF = () => {
-    startGenerating(async () => {
-      const toastId = toast.loading("Generando PDF...");
-      try {
-        const currentDate = new Date();
-        const name =
-          reportData.header.name !== ""
-            ? toSentenceCase(reportData.header.name.trim())
-            : "reporte-diario";
+    alert("Not implemented");
+    // startGenerating(async () => {
+    //   const toastId = toast.loading("Generando PDF...");
+    //   try {
+    //     const currentDate = new Date();
+    //     const name =
+    //       reportData.header.name !== ""
+    //         ? toSentenceCase(reportData.header.name.trim())
+    //         : "reporte-diario";
 
-        const formattedDate = format(currentDate, "yyyy-MM-dd");
+    //     const formattedDate = format(currentDate, "yyyy-MM-dd");
 
-        const res = await generateDailyReportPDFAction({
-          ...reportData,
-          header: reportData.header,
-        });
+    //     const res = await generateDailyReportPDFAction({
+    //       ...reportData,
+    //       header: reportData.header,
+    //     });
 
-        const blob = new Blob([res], { type: "application/pdf" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${name} ${formattedDate.replace(/\//g, "-")}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.dismiss(toastId);
-        toast.success("PDF generado correctamente", {
-          duration: 2000,
-        });
-      } catch (error) {
-        toast.dismiss(toastId);
-        toast.error("Error al generar el PDF", {
-          description: "Por favor, inténtalo de nuevo.",
-        });
-      }
-    });
+    //     const blob = new Blob([res], { type: "application/pdf" });
+    //     const url = URL.createObjectURL(blob);
+    //     const a = document.createElement("a");
+    //     a.href = url;
+    //     a.download = `${name} ${formattedDate.replace(/\//g, "-")}.pdf`;
+    //     document.body.appendChild(a);
+    //     a.click();
+    //     document.body.removeChild(a);
+    //     URL.revokeObjectURL(url);
+    //     toast.dismiss(toastId);
+    //     toast.success("PDF generado correctamente", {
+    //       duration: 2000,
+    //     });
+    //   } catch (error) {
+    //     toast.dismiss(toastId);
+    //     toast.error("Error al generar el PDF", {
+    //       description: "Por favor, inténtalo de nuevo.",
+    //     });
+    //   }
+    // });
   };
 
   const completedTasks = useMemo(() => {
@@ -353,11 +363,25 @@ export default function DailyReportScreen({
         <TabsContent value="builder" className="space-y-6">
           {/* Header Information */}
           <ReportHeaderForm
-            header={reportData.header}
+            header={{
+              date: reportData.date,
+              owner: reportData.owner,
+              name: reportData.name,
+              sprint: reportData.sprint,
+              status: reportData.status,
+            }}
             onHeaderChange={(header) =>
-              setReportData((prev) => ({ ...prev, header }))
+              setReportData((prev) => ({ ...prev, ...header }))
             }
-            onClearData={clearSavedInfo}
+            onArchiveReport={handleArchiveReport}
+            onClearData={() => {
+              setReportData(defaultReport);
+              onDataChange(defaultReport);
+            }}
+            onNewReport={() => {
+              setReportData(defaultReport);
+              onDataChange(defaultReport);
+            }}
           />
 
           {/* Completed Tasks */}
@@ -374,14 +398,10 @@ export default function DailyReportScreen({
             <CardContent className="space-y-4">
               {/* Always visible add task form */}
               <AddTaskForm
-                onAdd={(taskData) => {
-                  const newTask: Task = {
-                    ...taskData,
-                    id: Date.now().toString(),
-                  };
+                onAdd={(task) => {
                   setReportData((prev) => ({
                     ...prev,
-                    tasks: [...prev.tasks, newTask],
+                    tasks: [...prev.tasks, task],
                   }));
                 }}
               />
@@ -555,14 +575,10 @@ export default function DailyReportScreen({
                 <div className="space-y-4 mt-2">
                   {/* Always visible add block form */}
                   <AddBlockForm
-                    onAdd={(blockData) => {
-                      const newBlock: Block = {
-                        ...blockData,
-                        id: Date.now().toString(),
-                      };
+                    onAdd={(block) => {
                       setReportData((prev) => ({
                         ...prev,
-                        blocks: [...prev.blocks, newBlock],
+                        blocks: [...prev.blocks, block],
                       }));
                     }}
                   />
@@ -604,14 +620,10 @@ export default function DailyReportScreen({
                 <div className="space-y-4 mt-2">
                   {/* Always visible add observation form */}
                   <AddObservationForm
-                    onAdd={(observationData) => {
-                      const newObservation: DailyObservation = {
-                        ...observationData,
-                        id: Date.now().toString(),
-                      };
+                    onAdd={(observation) => {
                       setReportData((prev) => ({
                         ...prev,
-                        observations: [...prev.observations, newObservation],
+                        observations: [...prev.observations, observation],
                       }));
                     }}
                   />
