@@ -6,8 +6,8 @@ import chromium from "@sparticuz/chromium";
 import { DailyReportPreview } from "../../components/reports/daily-report-preview";
 import React from "react";
 import { WeeklyReportPreview } from "@/components/reports/weekly-report-preview";
-import { DailyReport } from "../interfaces/daily.interface";
-import { WeeklyReport } from "../interfaces/weekly.interface";
+import { DailyReport } from "@/lib/schemas/report.schema";
+import { WeeklyReport } from "@/lib/schemas/report.schema";
 
 async function getBrowser() {
   if (process.env.VERCEL_ENV === "production") {

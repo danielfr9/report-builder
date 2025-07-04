@@ -2,10 +2,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { DraftDailyReport } from "@/lib/schemas/report.schema";
+import { DailyReport } from "@/lib/schemas/report.schema";
 
 interface DailyReportPreviewProps {
-  data: DraftDailyReport;
+  data: DailyReport;
 }
 
 export function DailyReportPreview({ data }: DailyReportPreviewProps) {

@@ -2,10 +2,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { DraftWeeklyReport } from "@/lib/schemas/report.schema";
+import { WeeklyReport } from "@/lib/schemas/report.schema";
 
 interface WeeklyReportPreviewProps {
-  data: DraftWeeklyReport;
+  data: WeeklyReport;
 }
 
 export function WeeklyReportPreview({ data }: WeeklyReportPreviewProps) {

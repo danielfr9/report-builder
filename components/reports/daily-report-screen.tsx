@@ -24,8 +24,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2Icon, DownloadIcon, PlusIcon, EyeIcon } from "lucide-react";
 import { DailyReportPreview } from "@/components/reports/daily-report-preview";
 import { toast } from "sonner";
-import { debounce } from "@/lib/utils";
-import { isSaturday } from "date-fns";
+import { debounce, toSentenceCase } from "@/lib/utils";
+import { format, isSaturday } from "date-fns";
 import {
   DndContext,
   closestCenter,
@@ -56,6 +56,7 @@ import { Block } from "@/lib/schemas/block.schema";
 import { Observation } from "@/lib/schemas/observation.schema";
 import { archiveReport } from "@/lib/dexie/dao/reports";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
+import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
 
 interface DailyReportScreenProps {
   initialData: DailyReport | null;
@@ -253,43 +254,39 @@ export default function DailyReportScreen({
   };
 
   const generatePDF = () => {
-    alert("Not implemented");
-    // startGenerating(async () => {
-    //   const toastId = toast.loading("Generando PDF...");
-    //   try {
-    //     const currentDate = new Date();
-    //     const name =
-    //       reportData.header.name !== ""
-    //         ? toSentenceCase(reportData.header.name.trim())
-    //         : "reporte-diario";
+    startGenerating(async () => {
+      const toastId = toast.loading("Generando PDF...");
+      try {
+        const currentDate = new Date();
+        const name =
+          reportData.name !== ""
+            ? toSentenceCase(reportData.name.trim())
+            : "reporte-diario";
 
-    //     const formattedDate = format(currentDate, "yyyy-MM-dd");
+        const formattedDate = format(currentDate, "yyyy-MM-dd");
 
-    //     const res = await generateDailyReportPDFAction({
-    //       ...reportData,
-    //       header: reportData.header,
-    //     });
+        const res = await generateDailyReportPDFAction(reportData);
 
-    //     const blob = new Blob([res], { type: "application/pdf" });
-    //     const url = URL.createObjectURL(blob);
-    //     const a = document.createElement("a");
-    //     a.href = url;
-    //     a.download = `${name} ${formattedDate.replace(/\//g, "-")}.pdf`;
-    //     document.body.appendChild(a);
-    //     a.click();
-    //     document.body.removeChild(a);
-    //     URL.revokeObjectURL(url);
-    //     toast.dismiss(toastId);
-    //     toast.success("PDF generado correctamente", {
-    //       duration: 2000,
-    //     });
-    //   } catch (error) {
-    //     toast.dismiss(toastId);
-    //     toast.error("Error al generar el PDF", {
-    //       description: "Por favor, inténtalo de nuevo.",
-    //     });
-    //   }
-    // });
+        const blob = new Blob([res], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${name} ${formattedDate.replace(/\//g, "-")}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.dismiss(toastId);
+        toast.success("PDF generado correctamente", {
+          duration: 2000,
+        });
+      } catch (error) {
+        toast.dismiss(toastId);
+        toast.error("Error al generar el PDF", {
+          description: "Por favor, inténtalo de nuevo.",
+        });
+      }
+    });
   };
 
   const completedTasks = useMemo(() => {

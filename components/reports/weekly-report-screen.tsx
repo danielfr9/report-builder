@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2Icon, DownloadIcon, PlusIcon, EyeIcon } from "lucide-react";
 import { WeeklyReportPreview } from "@/components/reports/weekly-report-preview";
 import { toast } from "sonner";
-import { debounce } from "@/lib/utils";
+import { debounce, toSentenceCase } from "@/lib/utils";
 
 import {
   DndContext,
@@ -56,6 +56,8 @@ import { DraftWeeklyReport, WeeklyReport } from "@/lib/schemas/report.schema";
 import { REPORT_TYPE } from "@/lib/constants/report-type";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { archiveReport } from "@/lib/dexie/dao/reports";
+import { format } from "date-fns";
+import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf";
 
 interface WeeklyReportScreenProps {
   initialData: WeeklyReport | null;
@@ -255,51 +257,45 @@ export default function WeeklyReportScreen({
   };
 
   const generatePDF = () => {
-    alert("Not implemented");
-    // startGenerating(async () => {
-    //   const toastId = toast.loading("Generando PDF...");
-    //   try {
-    //     const currentDate = new Date();
+    startGenerating(async () => {
+      const toastId = toast.loading("Generando PDF...");
+      try {
+        const currentDate = new Date();
 
-    //     const name =
-    //       reportData.header.name !== ""
-    //         ? toSentenceCase(reportData.header.name.trim())
-    //         : "";
+        const name =
+          reportData.name !== "" ? toSentenceCase(reportData.name.trim()) : "";
 
-    //     const fechaInicioSprint = reportData?.header.sprint.from
-    //       ? format(reportData.header.sprint.from, "yyyy-MM-dd")
-    //       : "";
-    //     const fechaFinSprint = reportData?.header.sprint.to
-    //       ? format(reportData.header.sprint.to, "yyyy-MM-dd")
-    //       : format(currentDate, "yyyy-MM-dd");
+        const fechaInicioSprint = reportData?.sprint?.startDate
+          ? format(reportData.sprint.startDate, "yyyy-MM-dd")
+          : "";
+        const fechaFinSprint = reportData?.sprint?.endDate
+          ? format(reportData.sprint.endDate, "yyyy-MM-dd")
+          : format(currentDate, "yyyy-MM-dd");
 
-    //     const res = await generateWeeklyReportPDFAction({
-    //       ...reportData,
-    //       header: reportData.header,
-    //     });
+        const res = await generateWeeklyReportPDFAction(reportData);
 
-    //     const blob = new Blob([res], { type: "application/pdf" });
-    //     const url = URL.createObjectURL(blob);
-    //     const a = document.createElement("a");
-    //     a.href = url;
-    //     a.download = ` Reporte Semanal ${name} ${
-    //       fechaInicioSprint ? `- ${fechaInicioSprint}` : ""
-    //     } ${fechaFinSprint ? `al ${fechaFinSprint}` : ""}.pdf`;
-    //     document.body.appendChild(a);
-    //     a.click();
-    //     document.body.removeChild(a);
-    //     URL.revokeObjectURL(url);
-    //     toast.dismiss(toastId);
-    //     toast.success("PDF generado correctamente", {
-    //       duration: 2000,
-    //     });
-    //   } catch (error) {
-    //     toast.dismiss(toastId);
-    //     toast.error("Error al generar el PDF", {
-    //       description: "Por favor, inténtalo de nuevo.",
-    //     });
-    //   }
-    // });
+        const blob = new Blob([res], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = ` Reporte Semanal ${name} ${
+          fechaInicioSprint ? `- ${fechaInicioSprint}` : ""
+        } ${fechaFinSprint ? `al ${fechaFinSprint}` : ""}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.dismiss(toastId);
+        toast.success("PDF generado correctamente", {
+          duration: 2000,
+        });
+      } catch (error) {
+        toast.dismiss(toastId);
+        toast.error("Error al generar el PDF", {
+          description: "Por favor, inténtalo de nuevo.",
+        });
+      }
+    });
   };
 
   const totalCompletedPoints = useMemo(() => {
