@@ -30,3 +30,7 @@ export const updateReport = async (report: Report) => {
 export const deleteReport = async (id: string) => {
   await db.reports.delete(id);
 };
+
+export const deleteReports = async (ids: string[]) => {
+  await db.reports.bulkDelete(ids);
+};

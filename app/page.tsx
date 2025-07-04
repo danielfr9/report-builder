@@ -130,15 +130,14 @@ export default function ReportBuilder() {
     }
   };
 
-  const handleDeleteReport = (report: Report) => {
-    if (report.type === "daily") {
-      if (dailyData?.id === report.id) {
-        setDailyData(null);
-      }
-    } else {
-      if (weeklyData?.id === report.id) {
-        setWeeklyData(null);
-      }
+  const handleDeleteReport = (reports: Report[]) => {
+    const ids = reports.map((r) => r.id);
+
+    if (ids.some((id) => id === dailyData?.id)) {
+      setDailyData(null);
+    }
+    if (ids.some((id) => id === weeklyData?.id)) {
+      setWeeklyData(null);
     }
   };
 
@@ -201,7 +200,7 @@ export default function ReportBuilder() {
           <ThemeToggle />
           <ModalReportsList
             onReportClick={handleReportClick}
-            onDeleteReport={handleDeleteReport}
+            onDeleteReports={handleDeleteReport}
           />
         </div>
       </div>

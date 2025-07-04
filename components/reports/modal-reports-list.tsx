@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteReport, getReports } from "@/lib/dexie/dao/reports";
+import { deleteReports, getReports } from "@/lib/dexie/dao/reports";
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -42,12 +42,12 @@ import ReportsTable from "./reports-table";
 
 interface ModalReportsListProps {
   onReportClick?: (report: Report) => void;
-  onDeleteReport?: (report: Report) => void;
+  onDeleteReports?: (reports: Report[]) => void;
 }
 
 const ModalReportsList = ({
   onReportClick,
-  onDeleteReport,
+  onDeleteReports,
 }: ModalReportsListProps) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
@@ -60,12 +60,12 @@ const ModalReportsList = ({
     toast.success("Reporte cargado correctamente");
   };
 
-  const handleDeleteReport = async (report: Report) => {
-    await deleteReport(report.id);
-
-    setReports(reports.filter((r) => r.id !== report.id));
-    onDeleteReport?.(report);
-    toast.success("Reporte eliminado correctamente");
+  const handleDeleteReports = async (reports: Report[]) => {
+    const ids = reports.map((r) => r.id);
+    await deleteReports(ids);
+    setReports(reports.filter((r) => !ids.includes(r.id)));
+    onDeleteReports?.(reports);
+    toast.success(`${reports.length} reportes eliminados correctamente`);
   };
 
   useEffect(() => {
@@ -77,6 +77,7 @@ const ModalReportsList = ({
       fetchReports();
     }
   }, [isOpen]);
+
   return (
     <>
       {selectedReport && (
@@ -134,53 +135,10 @@ const ModalReportsList = ({
             <div className="overflow-y-auto">
               <DialogDescription asChild>
                 <div className="px-6 py-4">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead></TableHead>
-                        <TableHead>Fecha</TableHead>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Sprint</TableHead>
-                        <TableHead className="text-right">Tareas</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {reports.map((item) => (
-                        <TableRow key={item.id} className="bg-transparent">
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleLoadReport(item)}
-                              >
-                                <EyeIcon className="w-4 h-4" />
-                              </Button>
-                              <BtnDeleteReport
-                                report={item}
-                                onDelete={handleDeleteReport}
-                              />
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {format(item.date, "dd/MM/yyyy")}
-                          </TableCell>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell>{item.type.toUpperCase()}</TableCell>
-                          <TableCell>{item.sprint?.name}</TableCell>
-                          <TableCell className="text-right">
-                            {item.tasks.length}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="px-6 py-4">
-                    <p className="text-sm text-muted-foreground">
-                      {reports.length} reportes
-                    </p>
-                  </div>
+                  <ReportsTable
+                    reports={reports}
+                    onDelete={handleDeleteReports}
+                  />
                 </div>
               </DialogDescription>
               <DialogFooter className="px-6 pb-6 sm:justify-start">
