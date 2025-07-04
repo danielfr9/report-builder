@@ -281,7 +281,7 @@ export default function ReportHeaderForm({
                     <ModalCreateSprint onSprintCreated={handleSprintCreated} />
                   </CommandEmpty>
                   <CommandGroup>
-                    {sprints.length === 0 && (
+                    {sprints.length > 0 && (
                       <div className="py-3">
                         <ModalCreateSprint
                           onSprintCreated={handleSprintCreated}
