@@ -1,4 +1,4 @@
-import { DraftDailyReport } from "../schemas/report.schema";
+import { DraftDailyReport, DraftWeeklyReport } from "../schemas/report.schema";
 import { Task } from "../schemas/tasks.schema";
 import { Sprint } from "../schemas/sprint.schema";
 
@@ -12,8 +12,15 @@ export interface LocalStorageSprint
   endDate: string;
 }
 
-export interface LocalStorageReport
+export interface LocalStorageDailyReport
   extends Omit<DraftDailyReport, "date" | "tasks" | "sprint"> {
+  date: string;
+  tasks: LocalStorageTask[];
+  sprint: LocalStorageSprint | undefined;
+}
+
+export interface LocalStorageWeeklyReport
+  extends Omit<DraftWeeklyReport, "date" | "tasks" | "sprint"> {
   date: string;
   tasks: LocalStorageTask[];
   sprint: LocalStorageSprint | undefined;

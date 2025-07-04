@@ -29,12 +29,14 @@ interface SortableObservationItemProps {
   observation: Observation;
   updateObservation: (id: string, value: Observation) => void;
   removeObservation: (id: string) => void;
+  readOnly?: boolean;
 }
 
 const SortableObservationItem = ({
   observation,
   updateObservation,
   removeObservation,
+  readOnly = false,
 }: SortableObservationItemProps) => {
   const form = useForm<z.infer<typeof createObservationSchema>>({
     resolver: zodResolver(createObservationSchema),
@@ -173,22 +175,26 @@ const SortableObservationItem = ({
           </p>
         </div>
         <div className="flex flex-row gap-2 max-md:w-full md:flex-col max-md:justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsEditing(true)}
-          >
-            <PencilIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => removeObservation(observation.id)}
-          >
-            <Trash2Icon className="w-4 h-4" />
-          </Button>
+          {!readOnly && (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
+                <PencilIcon className="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => removeObservation(observation.id)}
+              >
+                <Trash2Icon className="w-4 h-4" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>

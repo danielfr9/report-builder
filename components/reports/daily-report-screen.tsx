@@ -186,17 +186,6 @@ export default function DailyReportScreen({
     reportData.additionalNotes,
   ]);
 
-  // Clear saved data
-  // const clearSavedInfo = () => {
-  //   const clearedData: DraftDailyReport = {
-  //     ...defaultReport,
-  //   };
-
-  //   setReportData(clearedData);
-  //   onDataChange(clearedData);
-  //   toast.success("Datos borrados del navegador");
-  // };
-
   const handleArchiveReport = async () => {
     if (reportData.status === REPORT_STATUS.ARCHIVED) {
       toast.error("No se puede archivar un reporte archivado");
@@ -204,7 +193,9 @@ export default function DailyReportScreen({
     }
 
     try {
-      await archiveReport(reportData);
+      await archiveReport({
+        ...reportData,
+      });
       setReportData(defaultReport);
       onDataChange(defaultReport);
 
@@ -337,6 +328,10 @@ export default function DailyReportScreen({
       .reduce((sum, task) => sum + task.storyPoints, 0);
   }, [reportData.tasks]);
 
+  const readOnly = useMemo(() => {
+    return reportData.status === REPORT_STATUS.ARCHIVED;
+  }, [reportData.status]);
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="text-center mb-8 relative">
@@ -382,31 +377,34 @@ export default function DailyReportScreen({
               setReportData(defaultReport);
               onDataChange(defaultReport);
             }}
+            readOnly={readOnly}
           />
 
           {/* Completed Tasks */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl md:text-2xl">
-                Registro de Tareas
-              </CardTitle>
-              <CardDescription>
-                Registra las tareas relacionadas al sprint actual o proyectos en
-                curso.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Always visible add task form */}
-              <AddTaskForm
-                onAdd={(task) => {
-                  setReportData((prev) => ({
-                    ...prev,
-                    tasks: [...prev.tasks, task],
-                  }));
-                }}
-              />
-            </CardContent>
-          </Card>
+          {!readOnly && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl md:text-2xl">
+                  Registro de Tareas
+                </CardTitle>
+                <CardDescription>
+                  Registra las tareas relacionadas al sprint actual o proyectos
+                  en curso.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Always visible add task form */}
+                <AddTaskForm
+                  onAdd={(task) => {
+                    setReportData((prev) => ({
+                      ...prev,
+                      tasks: [...prev.tasks, task],
+                    }));
+                  }}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
@@ -433,6 +431,7 @@ export default function DailyReportScreen({
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
+                      readOnly={readOnly}
                     />
                   ))}
                 </SortableContext>
@@ -471,6 +470,7 @@ export default function DailyReportScreen({
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
+                      readOnly={readOnly}
                     />
                   ))}
                 </SortableContext>
@@ -509,6 +509,7 @@ export default function DailyReportScreen({
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
+                      readOnly={readOnly}
                     />
                   ))}
                 </SortableContext>
@@ -547,6 +548,7 @@ export default function DailyReportScreen({
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
+                      readOnly={readOnly}
                     />
                   ))}
                 </SortableContext>
@@ -574,14 +576,16 @@ export default function DailyReportScreen({
                 <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
                 <div className="space-y-4 mt-2">
                   {/* Always visible add block form */}
-                  <AddBlockForm
-                    onAdd={(block) => {
-                      setReportData((prev) => ({
-                        ...prev,
-                        blocks: [...prev.blocks, block],
-                      }));
-                    }}
-                  />
+                  {!readOnly && (
+                    <AddBlockForm
+                      onAdd={(block) => {
+                        setReportData((prev) => ({
+                          ...prev,
+                          blocks: [...prev.blocks, block],
+                        }));
+                      }}
+                    />
+                  )}
 
                   <DndContext
                     sensors={sensors}
@@ -619,14 +623,16 @@ export default function DailyReportScreen({
                 </Label>
                 <div className="space-y-4 mt-2">
                   {/* Always visible add observation form */}
-                  <AddObservationForm
-                    onAdd={(observation) => {
-                      setReportData((prev) => ({
-                        ...prev,
-                        observations: [...prev.observations, observation],
-                      }));
-                    }}
-                  />
+                  {!readOnly && (
+                    <AddObservationForm
+                      onAdd={(observation) => {
+                        setReportData((prev) => ({
+                          ...prev,
+                          observations: [...prev.observations, observation],
+                        }));
+                      }}
+                    />
+                  )}
 
                   <DndContext
                     sensors={sensors}
@@ -668,6 +674,7 @@ export default function DailyReportScreen({
                   className="max-w-full md:max-w-32 text-sm md:text-base"
                   min="1"
                   max="24"
+                  disabled={readOnly}
                   value={reportData.hoursWorked}
                   onChange={(e) =>
                     setReportData((prev) => ({

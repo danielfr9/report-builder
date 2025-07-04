@@ -28,12 +28,14 @@ interface SortableBlockItemProps {
   block: Block;
   updateBlock: (id: string, value: Block) => void;
   removeBlock: (id: string) => void;
+  readOnly?: boolean;
 }
 
 const SortableBlockItem = ({
   block,
   updateBlock,
   removeBlock,
+  readOnly = false,
 }: SortableBlockItemProps) => {
   const form = useForm<z.infer<typeof createBlockSchema>>({
     resolver: zodResolver(createBlockSchema),
@@ -165,22 +167,26 @@ const SortableBlockItem = ({
           </p>
         </div>
         <div className="flex flex-row gap-2 max-md:w-full md:flex-col max-md:justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsEditing(true)}
-          >
-            <PencilIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => removeBlock(block.id)}
-          >
-            <Trash2Icon className="w-4 h-4" />
-          </Button>
+          {!readOnly && (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
+                <PencilIcon className="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => removeBlock(block.id)}
+              >
+                <Trash2Icon className="w-4 h-4" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>

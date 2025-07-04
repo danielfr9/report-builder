@@ -1,8 +1,9 @@
 import {
-  LocalStorageReport,
+  LocalStorageDailyReport,
   LocalStorageSprint,
+  LocalStorageWeeklyReport,
 } from "../interfaces/localstorage.interface";
-import { DraftDailyReport } from "../schemas/report.schema";
+import { DraftDailyReport, DraftWeeklyReport } from "../schemas/report.schema";
 import { Task } from "../schemas/tasks.schema";
 import { Sprint } from "../schemas/sprint.schema";
 
@@ -23,11 +24,24 @@ export const formatSprint = (sprint: Sprint): LocalStorageSprint => {
 
 export const formatDailyReport = (
   report: DraftDailyReport
-): LocalStorageReport => {
+): LocalStorageDailyReport => {
   return {
     ...report,
     date: report.date.toISOString(),
     tasks: report.tasks.map((t) => formatTask(t)),
+    sprint: report.sprint ? formatSprint(report.sprint) : undefined,
+  };
+};
+
+export const formatWeeklyReport = (
+  report: DraftWeeklyReport
+): LocalStorageWeeklyReport => {
+  return {
+    ...report,
+    date: report.date.toISOString(),
+    tasks: report.tasks.map((t) => formatTask(t)),
+    blocks: report.blocks,
+    observations: report.observations,
     sprint: report.sprint ? formatSprint(report.sprint) : undefined,
   };
 };

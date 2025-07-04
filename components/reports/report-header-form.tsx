@@ -24,6 +24,7 @@ import {
   CalendarIcon,
   CheckIcon,
   ChevronsUpDown,
+  PencilIcon,
   PlusIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -39,7 +40,7 @@ import {
   AlertDialogAction,
 } from "../ui/alert-dialog";
 import { Sprint } from "@/lib/schemas/sprint.schema";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getSprints } from "@/lib/dexie/dao/sprint";
 import {
   Command,
@@ -65,6 +66,7 @@ interface ReportHeaderFormProps {
   onArchiveReport: () => void;
   onClearData: () => void;
   onNewReport: () => void;
+  readOnly?: boolean;
 }
 
 export default function ReportHeaderForm({
@@ -73,6 +75,7 @@ export default function ReportHeaderForm({
   onArchiveReport,
   onClearData,
   onNewReport,
+  readOnly = false,
 }: ReportHeaderFormProps) {
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [open, setOpen] = useState(false);
@@ -190,6 +193,7 @@ export default function ReportHeaderForm({
                   "h-10 w-full justify-start pr-10 text-left font-normal text-sm md:text-base",
                   !header.date && "text-muted-foreground"
                 )}
+                disabled={readOnly}
                 id="calendar-input"
               >
                 <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
@@ -224,6 +228,7 @@ export default function ReportHeaderForm({
             className="text-sm md:text-base"
             placeholder="Tu nombre"
             value={header.owner}
+            disabled={readOnly}
             onChange={(e) =>
               onHeaderChange({ ...header, owner: e.target.value })
             }
@@ -236,6 +241,7 @@ export default function ReportHeaderForm({
             className="text-sm md:text-base"
             placeholder="Nombre del proyecto"
             value={header.name}
+            disabled={readOnly}
             onChange={(e) =>
               onHeaderChange({ ...header, name: e.target.value })
             }
@@ -250,6 +256,7 @@ export default function ReportHeaderForm({
                 role="combobox"
                 aria-expanded={open}
                 className="w-full justify-between"
+                disabled={readOnly}
               >
                 {header.sprint ? header.sprint.name : "Selecciona un sprint"}
                 <ChevronsUpDown className="opacity-50" />
@@ -291,10 +298,12 @@ export default function ReportHeaderForm({
             </PopoverContent>
           </Popover>
         </div>
-        <small className="col-span-1 md:col-span-2 text-xs text-gray-500 inline-block ml-auto">
-          *Todos los datos del reporte se guardan automáticamente en tu
-          navegador.
-        </small>
+        {!readOnly && (
+          <small className="col-span-1 md:col-span-2 text-xs text-gray-500 inline-block ml-auto">
+            *Todos los datos del reporte se guardan automáticamente en tu
+            navegador.
+          </small>
+        )}
       </CardContent>
     </Card>
   );

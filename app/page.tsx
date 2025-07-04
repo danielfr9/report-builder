@@ -11,10 +11,14 @@ import {
   V3_WEEKLY_REPORT_STORAGE_KEY,
   V3_SHARED_HEADER_KEY,
   CURRENT_DAILY_REPORT_KEY,
+  CURRENT_WEEKLY_REPORT_KEY,
 } from "@/lib/constants/localstorage-keys";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
-import { LocalStorageReport } from "@/lib/interfaces/localstorage.interface";
-import { formatDailyReport } from "@/lib/localstorage/parsers";
+import { LocalStorageDailyReport } from "@/lib/interfaces/localstorage.interface";
+import {
+  formatDailyReport,
+  formatWeeklyReport,
+} from "@/lib/localstorage/parsers";
 import {
   DraftDailyReport,
   Report,
@@ -33,71 +37,12 @@ export default function ReportBuilder() {
   const [dailyData, setDailyData] = useState<DailyReport | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeeklyReport | null>(null);
 
-  // // Helper function to parse header data with proper date conversion
-  // const parseHeaderData = (
-  //   headerData: ReportHeaderLocalStorage | null | undefined
-  // ): ReportHeader => {
-  //   if (!headerData)
-  //     return {
-  //       date: null,
-  //       name: "",
-  //       project: "",
-  //       sprint: { from: null, to: null },
-  //     };
-
-  //   return {
-  //     date: headerData.date ? parseISO(headerData.date) : null,
-  //     name: headerData.name || "",
-  //     project: headerData.project || "",
-  //     sprint: {
-  //       from: headerData.sprint?.from ? parseISO(headerData.sprint.from) : null,
-  //       to: headerData.sprint?.to ? parseISO(headerData.sprint.to) : null,
-  //     },
-  //   };
-  // };
-
-  // // Format header data to be saved to localStorage
-  // const formatHeaderData = (
-  //   headerData: ReportHeader
-  // ): ReportHeaderLocalStorage => {
-  //   return {
-  //     date: headerData.date?.toISOString() ?? null,
-  //     name: headerData.name,
-  //     project: headerData.project,
-  //     sprint: {
-  //       from: headerData.sprint?.from?.toISOString() ?? null,
-  //       to: headerData.sprint?.to?.toISOString() ?? null,
-  //     },
-  //   };
-  // };
-
-  // // Load shared header data from localStorage
-  // const loadSharedHeader = (): ReportHeader => {
-  //   try {
-  //     const savedHeader = localStorage.getItem(V3_SHARED_HEADER_KEY);
-  //     if (savedHeader) {
-  //       return parseHeaderData(JSON.parse(savedHeader));
-  //     }
-  //   } catch (error) {
-  //     console.error("Error loading shared header from localStorage:", error);
-  //   }
-  //   return {
-  //     date: new Date(),
-  //     name: "",
-  //     project: "",
-  //     sprint: { from: null, to: null },
-  //   };
-  // };
-
-  // // Save shared header data to localStorage
-  // const saveSharedHeader = (header: ReportHeader) => {
-  //   try {
-  //     const sharedHeader = formatHeaderData(header);
-  //     localStorage.setItem(V3_SHARED_HEADER_KEY, JSON.stringify(sharedHeader));
-  //   } catch (error) {
-  //     console.error("Error saving shared header to localStorage:", error);
-  //   }
-  // };
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   // Handle daily data changes
   const handleDailyDataChange = (data: DailyReport) => {
@@ -118,12 +63,30 @@ export default function ReportBuilder() {
     }
   };
 
+  const handleWeeklyDataChange = (data: WeeklyReport) => {
+    if (data.status === REPORT_STATUS.ARCHIVED) {
+      return;
+    }
+
+    const dataToSave = formatWeeklyReport(data as DraftWeeklyReport);
+
+    try {
+      localStorage.setItem(
+        CURRENT_WEEKLY_REPORT_KEY,
+        JSON.stringify(dataToSave)
+      );
+      setWeeklyData(data);
+    } catch (error) {
+      console.error("Error saving weekly data to localStorage:", error);
+    }
+  };
+
   const loadData = async () => {
     // Get the current draft report
     const currentReport = localStorage.getItem(CURRENT_DAILY_REPORT_KEY);
     if (currentReport) {
       // Parse the current report to an object
-      const rawReport = JSON.parse(currentReport) as LocalStorageReport;
+      const rawReport = JSON.parse(currentReport) as LocalStorageDailyReport;
 
       // Validate the report
       const validReport = ReportSchema.omit({
@@ -155,11 +118,27 @@ export default function ReportBuilder() {
         ...report,
         type: "daily",
       });
+      setReportType("daily");
+      scrollToTop();
     } else {
       setWeeklyData({
         ...report,
         type: "weekly",
       });
+      setReportType("weekly");
+      scrollToTop();
+    }
+  };
+
+  const handleDeleteReport = (report: Report) => {
+    if (report.type === "daily") {
+      if (dailyData?.id === report.id) {
+        setDailyData(null);
+      }
+    } else {
+      if (weeklyData?.id === report.id) {
+        setWeeklyData(null);
+      }
     }
   };
 
@@ -186,13 +165,17 @@ export default function ReportBuilder() {
     <div className="relative p-4 pb-24 min-h-screen bg-background">
       <div className={`${reportType === "daily" ? "block" : "hidden"}`}>
         <DailyReportScreen
-          key={dailyData?.id ?? "new"}
+          key={dailyData?.id ?? "new-daily"}
           initialData={dailyData}
           onDataChange={handleDailyDataChange}
         />
       </div>
       <div className={`${reportType === "weekly" ? "block" : "hidden"}`}>
-        <WeeklyReportScreen initialData={weeklyData} onDataChange={() => {}} />
+        <WeeklyReportScreen
+          key={weeklyData?.id ?? "new-weekly"}
+          initialData={weeklyData}
+          onDataChange={handleWeeklyDataChange}
+        />
       </div>
 
       {/* Pill-like menu/navigation at the bottom of the screen */}
@@ -216,7 +199,10 @@ export default function ReportBuilder() {
           </Button>
           <Separator orientation="vertical" className="h-10" />
           <ThemeToggle />
-          <ModalReportsList onReportClick={handleReportClick} />
+          <ModalReportsList
+            onReportClick={handleReportClick}
+            onDeleteReport={handleDeleteReport}
+          />
         </div>
       </div>
     </div>

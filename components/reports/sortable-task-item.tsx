@@ -45,12 +45,14 @@ interface SortableTaskItemProps {
   task: Task;
   updateTask: (id: string, value: Task) => void;
   removeTask: (id: string) => void;
+  readOnly?: boolean;
 }
 
 const SortableTaskItem = ({
   task,
   updateTask,
   removeTask,
+  readOnly = false,
 }: SortableTaskItemProps) => {
   const form = useForm<z.infer<typeof updateTaskSchema>>({
     resolver: zodResolver(updateTaskSchema),
@@ -376,22 +378,26 @@ const SortableTaskItem = ({
           )}
         </div>
         <div className="flex flex-row gap-2 max-md:w-full md:flex-col max-md:justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsEditing(true)}
-          >
-            <PencilIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => removeTask(task.id)}
-          >
-            <Trash2Icon className="w-4 h-4" />
-          </Button>
+          {!readOnly && (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
+                <PencilIcon className="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => removeTask(task.id)}
+              >
+                <Trash2Icon className="w-4 h-4" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>

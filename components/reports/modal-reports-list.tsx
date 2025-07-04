@@ -1,6 +1,6 @@
 "use client";
 
-import { getReports } from "@/lib/dexie/dao/reports";
+import { deleteReport, getReports } from "@/lib/dexie/dao/reports";
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -27,12 +27,28 @@ import { CircleAlertIcon, EyeIcon, ListIcon, Trash2Icon } from "lucide-react";
 import { Report } from "@/lib/schemas/report.schema";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
+import ReportsTable from "./reports-table";
 
 interface ModalReportsListProps {
   onReportClick?: (report: Report) => void;
+  onDeleteReport?: (report: Report) => void;
 }
 
-const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
+const ModalReportsList = ({
+  onReportClick,
+  onDeleteReport,
+}: ModalReportsListProps) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -42,6 +58,14 @@ const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
     setIsOpen(false);
     onReportClick?.(report);
     toast.success("Reporte cargado correctamente");
+  };
+
+  const handleDeleteReport = async (report: Report) => {
+    await deleteReport(report.id);
+
+    setReports(reports.filter((r) => r.id !== report.id));
+    onDeleteReport?.(report);
+    toast.success("Reporte eliminado correctamente");
   };
 
   useEffect(() => {
@@ -115,71 +139,48 @@ const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
                       <TableRow className="hover:bg-transparent">
                         <TableHead></TableHead>
                         <TableHead>Fecha</TableHead>
+                        <TableHead>Nombre</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead>Sprint</TableHead>
                         <TableHead className="text-right">Tareas</TableHead>
-                        <TableHead className="text-right">
-                          Observaciones
-                        </TableHead>
-                        <TableHead className="text-right">Bloques</TableHead>
-                        <TableHead className="text-right">
-                          Horas trabajadas
-                        </TableHead>
-                        <TableHead className="text-right">
-                          Notas adicionales
-                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {reports.map((item) => (
                         <TableRow key={item.id} className="bg-transparent">
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleLoadReport(item)}
-                            >
-                              <EyeIcon className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleLoadReport(item)}
+                              >
+                                <EyeIcon className="w-4 h-4" />
+                              </Button>
+                              <BtnDeleteReport
+                                report={item}
+                                onDelete={handleDeleteReport}
+                              />
+                            </div>
                           </TableCell>
                           <TableCell className="font-medium">
                             {format(item.date, "dd/MM/yyyy")}
                           </TableCell>
+                          <TableCell>{item.name}</TableCell>
                           <TableCell>{item.type.toUpperCase()}</TableCell>
                           <TableCell>{item.sprint?.name}</TableCell>
                           <TableCell className="text-right">
                             {item.tasks.length}
                           </TableCell>
-                          <TableCell className="text-right">
-                            {item.observations.length}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {item.blocks.length}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {item.hoursWorked}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {item.additionalNotes}
-                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
-                    <TableFooter>
-                      <TableRow className="bg-transparent">
-                        <TableCell></TableCell>
-                        <TableCell>Total</TableCell>
-                        <TableCell className="text-right">
-                          {reports.length}{" "}
-                          {reports.length === 1 ? "reporte" : "reportes"}
-                        </TableCell>
-                        <TableCell
-                          colSpan={7}
-                          className="text-right"
-                        ></TableCell>
-                      </TableRow>
-                    </TableFooter>
                   </Table>
+                  <div className="px-6 py-4">
+                    <p className="text-sm text-muted-foreground">
+                      {reports.length} reportes
+                    </p>
+                  </div>
                 </div>
               </DialogDescription>
               <DialogFooter className="px-6 pb-6 sm:justify-start">
@@ -193,6 +194,50 @@ const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
           </DialogHeader>
         </DialogContent>
       </Dialog>
+    </>
+  );
+};
+
+const BtnDeleteReport = ({
+  report,
+  onDelete,
+}: {
+  report: Report;
+  onDelete: (report: Report) => void;
+}) => {
+  const handleDeleteReport = async () => {
+    onDelete(report);
+  };
+
+  return (
+    <>
+      <AlertDialog>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              ¿Estás seguro de querer eliminar este reporte?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Los datos del reporte se perderán permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteReport}>
+              Archivar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="destructive"
+            size="icon"
+            className="text-xs max-md:ml-auto"
+          >
+            <Trash2Icon className="h-4 w-4 opacity-50" />
+          </Button>
+        </AlertDialogTrigger>
+      </AlertDialog>
     </>
   );
 };

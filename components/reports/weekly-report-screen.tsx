@@ -52,16 +52,18 @@ import AddBlockForm from "./add-block-form";
 import SortableBlockItem from "./sortable-block-item";
 import AddObservationForm from "./add-observation-form";
 import SortableObservationItem from "./sortable-observation-item";
-import { DraftWeeklyReport } from "@/lib/schemas/report.schema";
+import { DraftWeeklyReport, WeeklyReport } from "@/lib/schemas/report.schema";
 import { REPORT_TYPE } from "@/lib/constants/report-type";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
+import { archiveReport } from "@/lib/dexie/dao/reports";
 
 interface WeeklyReportScreenProps {
-  initialData: DraftWeeklyReport | null;
-  onDataChange: (data: DraftWeeklyReport) => void;
+  initialData: WeeklyReport | null;
+  onDataChange: (data: WeeklyReport) => void;
 }
 
-const defaultReport: DraftWeeklyReport = {
+const defaultReport: WeeklyReport = {
+  id: "",
   type: REPORT_TYPE.WEEKLY,
   tasks: [],
   blocks: [],
@@ -79,7 +81,7 @@ export default function WeeklyReportScreen({
   initialData,
   onDataChange,
 }: WeeklyReportScreenProps) {
-  const [reportData, setReportData] = useState<DraftWeeklyReport>(
+  const [reportData, setReportData] = useState<WeeklyReport>(
     initialData || {
       ...defaultReport,
     }
@@ -187,11 +189,23 @@ export default function WeeklyReportScreen({
   ]);
 
   // Clear saved data
-  const archiveReport = () => {
-    alert("Not implemented");
-    // setReportData(defaultReport);
-    // onDataChange(defaultReport);
-    // toast.success("Datos borrados del navegador");
+  const handleArchiveReport = async () => {
+    if (reportData.status === REPORT_STATUS.ARCHIVED) {
+      toast.error("No se puede archivar un reporte archivado");
+      return;
+    }
+
+    try {
+      await archiveReport({
+        ...reportData,
+      });
+      setReportData(defaultReport);
+      onDataChange(defaultReport);
+      toast.success("Reporte archivado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al archivar el reporte");
+    }
   };
 
   const updateTask = (id: string, value: Task) => {
@@ -324,6 +338,10 @@ export default function WeeklyReportScreen({
     );
   }, [reportData.tasks]);
 
+  const readOnly = useMemo(() => {
+    return reportData.status === REPORT_STATUS.ARCHIVED;
+  }, [reportData.status]);
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="text-center mb-8 relative">
@@ -350,6 +368,7 @@ export default function WeeklyReportScreen({
         <TabsContent value="builder" className="space-y-6">
           {/* Header Information */}
           <ReportHeaderForm
+            readOnly={readOnly}
             header={{
               date: reportData.date,
               name: reportData.name,
@@ -364,40 +383,43 @@ export default function WeeklyReportScreen({
               setReportData(defaultReport);
               onDataChange(defaultReport);
             }}
-            onArchiveReport={archiveReport}
+            onArchiveReport={handleArchiveReport}
             onNewReport={() => {
               setReportData(defaultReport);
               onDataChange(defaultReport);
             }}
           />
 
-          {/* Completed Tasks */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl md:text-2xl">
-                Registro de Tareas
-              </CardTitle>
-              <CardDescription>
-                Registra las tareas relacionadas al sprint actual o proyectos en
-                curso.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Always visible add task form */}
-              <AddTaskForm
-                onAdd={(taskData) => {
-                  const newTask: Task = {
-                    ...taskData,
-                    id: Date.now().toString(),
-                  };
-                  setReportData((prev) => ({
-                    ...prev,
-                    tasks: [...prev.tasks, newTask],
-                  }));
-                }}
-              />
-            </CardContent>
-          </Card>
+          {!readOnly && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl md:text-2xl">
+                  Registro de Tareas
+                </CardTitle>
+                <CardDescription>
+                  Registra las tareas relacionadas al sprint actual o proyectos
+                  en curso.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Always visible add task form */}
+                {!readOnly && (
+                  <AddTaskForm
+                    onAdd={(taskData) => {
+                      const newTask: Task = {
+                        ...taskData,
+                        id: Date.now().toString(),
+                      };
+                      setReportData((prev) => ({
+                        ...prev,
+                        tasks: [...prev.tasks, newTask],
+                      }));
+                    }}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
@@ -424,6 +446,7 @@ export default function WeeklyReportScreen({
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
+                      readOnly={readOnly}
                     />
                   ))}
                 </SortableContext>
@@ -461,6 +484,7 @@ export default function WeeklyReportScreen({
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
+                      readOnly={readOnly}
                     />
                   ))}
                 </SortableContext>
@@ -499,6 +523,7 @@ export default function WeeklyReportScreen({
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
+                      readOnly={readOnly}
                     />
                   ))}
                 </SortableContext>
@@ -537,6 +562,7 @@ export default function WeeklyReportScreen({
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
+                      readOnly={readOnly}
                     />
                   ))}
                 </SortableContext>
@@ -564,14 +590,16 @@ export default function WeeklyReportScreen({
                 <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
                 <div className="space-y-4 mt-2">
                   {/* Always visible add block form */}
-                  <AddBlockForm
-                    onAdd={(blockData) => {
-                      setReportData((prev) => ({
-                        ...prev,
-                        blocks: [...prev.blocks, blockData],
-                      }));
-                    }}
-                  />
+                  {!readOnly && (
+                    <AddBlockForm
+                      onAdd={(blockData) => {
+                        setReportData((prev) => ({
+                          ...prev,
+                          blocks: [...prev.blocks, blockData],
+                        }));
+                      }}
+                    />
+                  )}
 
                   <DndContext
                     sensors={sensors}
@@ -589,6 +617,7 @@ export default function WeeklyReportScreen({
                             block={block}
                             updateBlock={updateBlock}
                             removeBlock={removeBlock}
+                            readOnly={readOnly}
                           />
                         ))}
                       </div>
@@ -605,14 +634,16 @@ export default function WeeklyReportScreen({
                 <Label htmlFor="observations">Logros y Mejoras</Label>
                 <div className="space-y-4 mt-2">
                   {/* Always visible add observation form */}
-                  <AddObservationForm
-                    onAdd={(observation) => {
-                      setReportData((prev) => ({
-                        ...prev,
-                        observations: [...prev.observations, observation],
-                      }));
-                    }}
-                  />
+                  {!readOnly && (
+                    <AddObservationForm
+                      onAdd={(observation) => {
+                        setReportData((prev) => ({
+                          ...prev,
+                          observations: [...prev.observations, observation],
+                        }));
+                      }}
+                    />
+                  )}
 
                   <DndContext
                     sensors={sensors}
@@ -632,6 +663,7 @@ export default function WeeklyReportScreen({
                             observation={observation}
                             updateObservation={updateObservation}
                             removeObservation={removeObservation}
+                            readOnly={readOnly}
                           />
                         ))}
                       </div>
@@ -652,6 +684,7 @@ export default function WeeklyReportScreen({
                   className="max-w-full md:max-w-32 text-sm md:text-base"
                   min="1"
                   max="168"
+                  disabled={readOnly}
                   value={reportData.hoursWorked}
                   onChange={(e) =>
                     setReportData((prev) => ({
@@ -721,6 +754,7 @@ export default function WeeklyReportScreen({
                   id="notes"
                   className="text-sm md:text-base"
                   placeholder="Describe las tareas o objetivos planificados para la próxima semana..."
+                  disabled={readOnly}
                   value={reportData.additionalNotes}
                   onChange={(e) =>
                     setReportData((prev) => ({
