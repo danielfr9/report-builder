@@ -23,7 +23,7 @@ import {
   DialogClose,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { CircleAlertIcon, ListIcon } from "lucide-react";
+import { CircleAlertIcon, EyeIcon, ListIcon, Trash2Icon } from "lucide-react";
 import { Report } from "@/lib/schemas/report.schema";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
@@ -113,6 +113,7 @@ const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
+                        <TableHead></TableHead>
                         <TableHead>Fecha</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead>Sprint</TableHead>
@@ -131,11 +132,16 @@ const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
                     </TableHeader>
                     <TableBody>
                       {reports.map((item) => (
-                        <TableRow
-                          key={item.id}
-                          onClick={() => setSelectedReport(item)}
-                          className="cursor-pointer hover:bg-secondary"
-                        >
+                        <TableRow key={item.id} className="hover:bg-secondary">
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleLoadReport(item)}
+                            >
+                              <EyeIcon className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
                           <TableCell className="font-medium">
                             {format(item.date, "dd/MM/yyyy")}
                           </TableCell>
@@ -161,6 +167,7 @@ const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
                     </TableBody>
                     <TableFooter className="bg-transparent">
                       <TableRow className="bg-secondary">
+                        <TableCell></TableCell>
                         <TableCell>Total</TableCell>
                         <TableCell className="text-right">
                           {reports.length}{" "}
@@ -177,7 +184,9 @@ const ModalReportsList = ({ onReportClick }: ModalReportsListProps) => {
               </DialogDescription>
               <DialogFooter className="px-6 pb-6 sm:justify-start">
                 <DialogClose asChild>
-                  <Button type="button">Okay</Button>
+                  <Button type="button" className="ml-auto">
+                    Okay
+                  </Button>
                 </DialogClose>
               </DialogFooter>
             </div>
