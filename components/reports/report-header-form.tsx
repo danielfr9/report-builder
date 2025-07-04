@@ -51,6 +51,7 @@ import {
   CommandItem,
 } from "../ui/command";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
+import ModalCreateSprint from "./modal-create-sprint";
 
 interface Header {
   date: Date;
@@ -90,6 +91,11 @@ export default function ReportHeaderForm({
 
   const onSelectSprint = (sprint: Sprint) => {
     onHeaderChange({ ...header, sprint });
+  };
+
+  const handleSprintCreated = (sprint: Sprint) => {
+    onHeaderChange({ ...header, sprint });
+    setSprints([...sprints, sprint]);
   };
 
   const handleNewReport = () => {
@@ -270,8 +276,16 @@ export default function ReportHeaderForm({
               <Command>
                 <CommandInput placeholder="Buscar sprint..." className="h-9" />
                 <CommandList>
-                  <CommandEmpty>No se encontraron sprints.</CommandEmpty>
+                  <CommandEmpty className="flex flex-col items-center justify-center gap-2 py-4">
+                    No se encontraron sprints.
+                    <ModalCreateSprint onSprintCreated={handleSprintCreated} />
+                  </CommandEmpty>
                   <CommandGroup>
+                    <div className="py-3">
+                      <ModalCreateSprint
+                        onSprintCreated={handleSprintCreated}
+                      />
+                    </div>
                     {sprints.map((sprint) => (
                       <CommandItem
                         key={sprint.id}

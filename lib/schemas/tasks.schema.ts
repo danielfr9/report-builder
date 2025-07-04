@@ -12,7 +12,7 @@ export const taskSchema = z.object({
 });
 export type Task = z.infer<typeof taskSchema>;
 
-export const createTaskSchema = z.object({
+export const CreateTaskSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   storyPoints: z.coerce
     .number()
@@ -25,8 +25,8 @@ export const createTaskSchema = z.object({
   finishDate: z.date(),
 });
 
-export type NewTask = z.infer<typeof createTaskSchema>;
+export type NewTask = z.infer<typeof CreateTaskSchema>;
 
-export const updateTaskSchema = createTaskSchema.extend({
+export const updateTaskSchema = CreateTaskSchema.extend({
   id: z.string().min(1, { message: "ID es requerido" }),
 });

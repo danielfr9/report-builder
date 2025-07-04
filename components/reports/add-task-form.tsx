@@ -31,7 +31,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { createTaskSchema } from "@/lib/schemas/tasks.schema";
+import { CreateTaskSchema } from "@/lib/schemas/tasks.schema";
 import { createTask } from "@/lib/dexie/dao/tasks";
 import { toast } from "sonner";
 
@@ -41,8 +41,8 @@ interface AddTaskFormProps {
 }
 
 const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
-  const form = useForm<z.infer<typeof createTaskSchema>>({
-    resolver: zodResolver(createTaskSchema),
+  const form = useForm<z.infer<typeof CreateTaskSchema>>({
+    resolver: zodResolver(CreateTaskSchema),
     defaultValues: {
       name: "",
       storyPoints: 1,
@@ -53,7 +53,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
     },
   });
 
-  const handleSubmit = async (data: z.infer<typeof createTaskSchema>) => {
+  const handleSubmit = async (data: z.infer<typeof CreateTaskSchema>) => {
     const newTask = await createTask(data);
     if (newTask) {
       onAdd(newTask);

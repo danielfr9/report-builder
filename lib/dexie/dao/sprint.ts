@@ -12,11 +12,13 @@ export const getSprintById = async (id: string) => {
   return sprint;
 };
 
-export const createSprint = async (sprint: Sprint) => {
-  await db.sprints.add({
+export const createSprint = async (sprint: Omit<Sprint, "id">) => {
+  const id = await db.sprints.add({
     ...sprint,
     id: uuidv4(),
   });
+  const newSprint = await getSprintById(id);
+  return newSprint;
 };
 
 export const updateSprint = async (sprint: Sprint) => {
