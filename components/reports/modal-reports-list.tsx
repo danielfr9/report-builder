@@ -3,16 +3,6 @@
 import { deleteReports, getReports } from "@/lib/dexie/dao/reports";
 import React, { useState } from "react";
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-  TableFooter,
-} from "../ui/table";
-import { format } from "date-fns";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -23,22 +13,21 @@ import {
   DialogClose,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { CircleAlertIcon, EyeIcon, ListIcon, Trash2Icon } from "lucide-react";
-import { Report } from "@/lib/schemas/report.schema";
-import { Label } from "../ui/label";
-import { toast } from "sonner";
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
+  CircleAlertIcon,
+  HouseIcon,
+  ListIcon,
+  PanelsTopLeftIcon,
+} from "lucide-react";
+import { Report } from "@/lib/schemas/report.schema";
+import { toast } from "sonner";
 import ReportsTable from "./reports-table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { Badge } from "../ui/badge";
+import { Sprint } from "@/lib/schemas/sprint.schema";
+import { deleteSprints, getSprints } from "@/lib/dexie/dao/sprint";
+import SprintsTable from "./sprints-table";
 
 interface ModalReportsListProps {
   onReportClick?: (report: Report) => void;
@@ -49,10 +38,15 @@ const ModalReportsList = ({
   onReportClick,
   onDeleteReports,
 }: ModalReportsListProps) => {
-  const [reports, setReports] = useState<Report[]>([]);
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Reports
+  const [reports, setReports] = useState<Report[]>([]);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+
+  // Sprints
+  const [sprints, setSprints] = useState<Sprint[]>([]);
 
   const handleLoadReport = (report: Report) => {
     setSelectedReport(null);
@@ -61,25 +55,48 @@ const ModalReportsList = ({
     toast.success("Reporte cargado correctamente");
   };
 
-  const handleDeleteReports = async (reports: Report[]) => {
-    const ids = reports.map((r) => r.id);
-    await deleteReports(ids);
-    setReports(reports.filter((r) => !ids.includes(r.id)));
-    onDeleteReports?.(reports);
-    toast.success(`${reports.length} reportes eliminados correctamente`);
-  };
-
   const handleOpenModal = async () => {
     setIsLoading(true);
     try {
-      const fetchedReports = await getReports();
-      setReports(fetchedReports);
+      const [reports, sprints] = await Promise.allSettled([
+        getReports(),
+        getSprints(),
+      ]);
+
+      setReports(reports.status === "fulfilled" ? reports.value : []);
+      setSprints(sprints.status === "fulfilled" ? sprints.value : []);
       setIsOpen(true);
     } catch (error) {
       toast.error("Error al cargar los reportes");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDeleteReports = async (reportsDeleted: Report[]) => {
+    const ids = reportsDeleted.map((r) => r.id);
+    await deleteReports(ids);
+
+    setReports(reports.filter((r) => !ids.includes(r.id)));
+
+    onDeleteReports?.(reportsDeleted);
+    toast.success(
+      `${reportsDeleted.length} ${
+        reportsDeleted.length > 1 ? "reportes eliminados" : "reporte eliminado"
+      } correctamente`
+    );
+  };
+
+  const handleDeleteSprints = async (sprintsDeleted: Sprint[]) => {
+    const ids = sprintsDeleted.map((s) => s.id);
+    await deleteSprints(ids);
+    setSprints(sprints.filter((s) => !ids.includes(s.id)));
+
+    toast.success(
+      `${sprintsDeleted.length} ${
+        sprintsDeleted.length > 1 ? "sprints eliminados" : "sprint eliminado"
+      } correctamente`
+    );
   };
 
   return (
@@ -133,17 +150,58 @@ const ModalReportsList = ({
             disabled={isLoading}
           >
             <ListIcon className="w-4 h-4" />
-            <span className="hidden md:block">Reportes</span>
+            <span className="hidden md:block">Historial</span>
           </Button>
         </DialogTrigger>
-        <DialogContent className="flex flex-col gap-0 p-0 sm:max-h-[min(640px,80vh)] sm:max-w-5xl [&>button:last-child]:top-3.5">
+        <DialogContent className="flex flex-col gap-0 p-0 max-h-[min(640px,80vh)] sm:max-w-5xl [&>button:last-child]:top-3.5">
           <DialogHeader className="contents space-y-0 text-left">
             <DialogTitle className="border-b px-6 py-4 text-base">
-              Reportes
+              Historial
             </DialogTitle>
-            <div className="overflow-y-auto">
-              <DialogDescription asChild>
-                <div className="px-6 py-4">
+            <DialogDescription asChild>
+              <Tabs defaultValue="tab-1" className="overflow-y-auto relative">
+                <div className="sticky top-0 z-10 w-full bg-transparent">
+                  <ScrollArea className="w-full">
+                    <TabsList className="text-foreground mb-3 h-auto gap-2 rounded-none border-b px-0 py-1 w-full bg-background">
+                      <TabsTrigger
+                        value="tab-1"
+                        className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                      >
+                        <HouseIcon
+                          className="-ms-0.5 me-1.5 opacity-60"
+                          size={16}
+                          aria-hidden="true"
+                        />
+                        Reportes
+                        <Badge
+                          className="bg-primary/15 ms-1.5 min-w-5 px-1"
+                          variant="secondary"
+                        >
+                          {reports.length}
+                        </Badge>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="tab-2"
+                        className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                      >
+                        <PanelsTopLeftIcon
+                          className="-ms-0.5 me-1.5 opacity-60"
+                          size={16}
+                          aria-hidden="true"
+                        />
+                        Sprints
+                        <Badge
+                          className="bg-primary/15 ms-1.5 min-w-5 px-1"
+                          variant="secondary"
+                        >
+                          {sprints.length}
+                        </Badge>
+                      </TabsTrigger>
+                    </TabsList>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                </div>
+                <TabsContent value="tab-1" className="px-6 pb-4 relative">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-center">
@@ -160,63 +218,18 @@ const ModalReportsList = ({
                       onView={handleLoadReport}
                     />
                   )}
-                </div>
-              </DialogDescription>
-              <DialogFooter className="px-6 pb-6 sm:justify-start">
-                <DialogClose asChild>
-                  <Button type="button" className="ml-auto">
-                    Okay
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </div>
+                </TabsContent>
+                <TabsContent value="tab-2" className="px-6 pb-4 relative">
+                  <SprintsTable
+                    sprints={sprints}
+                    onDelete={handleDeleteSprints}
+                  />
+                </TabsContent>
+              </Tabs>
+            </DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>
-    </>
-  );
-};
-
-const BtnDeleteReport = ({
-  report,
-  onDelete,
-}: {
-  report: Report;
-  onDelete: (report: Report) => void;
-}) => {
-  const handleDeleteReport = async () => {
-    onDelete(report);
-  };
-
-  return (
-    <>
-      <AlertDialog>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              ¿Estás seguro de querer eliminar este reporte?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Los datos del reporte se perderán permanentemente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteReport}>
-              Archivar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-        <AlertDialogTrigger asChild>
-          <Button
-            variant="destructive"
-            size="icon"
-            className="text-xs max-md:ml-auto"
-          >
-            <Trash2Icon className="h-4 w-4 opacity-50" />
-          </Button>
-        </AlertDialogTrigger>
-      </AlertDialog>
     </>
   );
 };

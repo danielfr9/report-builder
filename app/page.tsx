@@ -134,6 +134,7 @@ export default function ReportBuilder() {
   };
 
   const handleDeleteReport = (reports: Report[]) => {
+    // Check if the current report is in the reports deleted
     const ids = reports.map((r) => r.id);
 
     if (ids.some((id) => id === dailyData?.id)) {

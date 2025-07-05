@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { Calendar } from "../ui/calendar";
 import { createSprint } from "@/lib/dexie/dao/sprint";
 import { toast } from "sonner";
+import { DateRange } from "react-day-picker";
 
 interface ModalCreateSprintProps {
   onSprintCreated: (sprint: Sprint) => void;
@@ -61,6 +62,9 @@ const ModalCreateSprint = ({ onSprintCreated }: ModalCreateSprintProps) => {
     }
     setIsLoading(false);
   };
+
+  const startDate = form.watch("startDate");
+  const endDate = form.watch("endDate");
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -99,98 +103,58 @@ const ModalCreateSprint = ({ onSprintCreated }: ModalCreateSprintProps) => {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Fecha de inicio</FormLabel>
-                          <FormControl>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "h-10 w-full justify-start pr-10 text-left font-normal text-sm md:text-base",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                  id="calendar-input"
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                                  {field.value
-                                    ? format(field.value, "dd/MM/yyyy")
-                                    : "Selecciona una fecha"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-[--radix-popover-trigger-width] p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  className="!w-[var(--radix-popover-trigger-width)]"
-                                  mode="single"
-                                  selected={
-                                    field.value
-                                      ? new Date(field.value)
-                                      : undefined
-                                  }
-                                  locale={es}
-                                  onSelect={(selectedDate) => {
-                                    field.onChange(selectedDate || null);
-                                  }}
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="endDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Fecha de fin</FormLabel>
-                          <FormControl>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "h-10 w-full justify-start pr-10 text-left font-normal text-sm md:text-base",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                  id="calendar-input"
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                                  {field.value
-                                    ? format(field.value, "dd/MM/yyyy")
-                                    : "Selecciona una fecha"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-[--radix-popover-trigger-width] p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  className="!w-[var(--radix-popover-trigger-width)]"
-                                  mode="single"
-                                  selected={
-                                    field.value
-                                      ? new Date(field.value)
-                                      : undefined
-                                  }
-                                  locale={es}
-                                  onSelect={(selectedDate) => {
-                                    field.onChange(selectedDate || null);
-                                  }}
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          id="sprint-input"
+                          variant="outline"
+                          className={cn(
+                            "h-10 w-full justify-start pr-10 text-left font-normal text-sm md:text-base",
+                            !startDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                          {startDate ? (
+                            endDate ? (
+                              <>
+                                {format(startDate, "LLL dd, y", { locale: es })}{" "}
+                                - {format(endDate, "LLL dd, y", { locale: es })}
+                              </>
+                            ) : (
+                              format(startDate, "LLL dd, y", { locale: es })
+                            )
+                          ) : (
+                            <span>Selecciona un rango de fechas</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          autoFocus
+                          mode="range"
+                          locale={es}
+                          defaultMonth={startDate || undefined}
+                          selected={
+                            startDate && endDate
+                              ? {
+                                  from: startDate,
+                                  to: endDate,
+                                }
+                              : undefined
+                          }
+                          onSelect={(dateRange: DateRange | undefined) => {
+                            const startDate =
+                              dateRange?.from || form.getValues("startDate");
+                            const endDate =
+                              dateRange?.to || form.getValues("endDate");
+
+                            form.setValue("startDate", startDate);
+                            form.setValue("endDate", endDate);
+                          }}
+                          numberOfMonths={2}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <Button
                       type="submit"
                       className="w-full"

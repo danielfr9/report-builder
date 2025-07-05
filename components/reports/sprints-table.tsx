@@ -28,7 +28,6 @@ import {
   CircleXIcon,
   Columns3Icon,
   EllipsisIcon,
-  EyeIcon,
   FilterIcon,
   ListFilterIcon,
   PlusIcon,
@@ -92,34 +91,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Report } from "@/lib/schemas/report.schema";
-import { REPORT_STATUS } from "@/lib/constants/report-status";
-import { toast } from "sonner";
+import { Sprint } from "@/lib/schemas/sprint.schema";
 import { format } from "date-fns";
+import ModalCreateSprint from "./modal-create-sprint";
 
 // Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<Report> = (row, columnId, filterValue) => {
+const multiColumnFilterFn: FilterFn<Sprint> = (row, columnId, filterValue) => {
   const searchableRowContent =
-    `${row.original.name} ${row.original.owner}`.toLowerCase();
+    `${row.original.name} ${row.original.startDate} ${row.original.endDate}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
 
-const statusFilterFn: FilterFn<Report> = (
-  row,
-  columnId,
-  filterValue: string[]
-) => {
-  if (!filterValue?.length) return true;
-  const status = row.getValue(columnId) as string;
-  return filterValue.includes(status);
-};
-
-const getColumns = ({
-  onView = () => {},
-}: {
-  onView?: (report: Report) => void;
-}): ColumnDef<Report>[] => [
+const columns: ColumnDef<Sprint>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -143,106 +127,40 @@ const getColumns = ({
     enableSorting: false,
     enableHiding: false,
   },
-
   {
-    id: "view",
-    header: () => <div className="sr-only">Ver</div>,
-    cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onView?.(row.original)}
-      >
-        <EyeIcon className="w-4 h-4" />
-      </Button>
-    ),
-    size: 48,
-    enableHiding: false,
-  },
-  {
-    id: "date",
-    header: "Fecha",
-    accessorKey: "date",
-    cell: ({ row }) => (
-      <div className="font-medium line-clamp-2 text-ellipsis">
-        {format(row.getValue("date"), "dd/MM/yyyy")}
-      </div>
-    ),
-    size: 120,
-  },
-  {
-    header: "Nombre",
+    header: "Sprint",
     accessorKey: "name",
     cell: ({ row }) => (
-      <div className="font-medium line-clamp-2 text-ellipsis">
-        {row.getValue("name")}
-      </div>
+      <div className="font-medium">{row.getValue("name")}</div>
     ),
     size: 180,
     filterFn: multiColumnFilterFn,
     enableHiding: false,
   },
   {
-    header: "Propietario",
-    accessorKey: "owner",
-    cell: ({ row }) => (
-      <div className="font-medium line-clamp-2 text-ellipsis">
-        {row.getValue("owner")}
-      </div>
-    ),
-    size: 220,
-  },
-  {
-    header: "Tipo",
-    accessorKey: "type",
-    cell: ({ row }) => (
-      <Badge
-        className={cn(
-          row.getValue("type") === REPORT_STATUS.ARCHIVED &&
-            "bg-muted-foreground/60 text-primary-foreground",
-          row.getValue("type") === REPORT_STATUS.DRAFT &&
-            "bg-muted-foreground/60 text-primary-foreground"
-        )}
-      >
-        {row.getValue("type")}
-      </Badge>
-    ),
-    size: 100,
-  },
-  {
-    header: "Sprint",
-    accessorKey: "sprint",
+    header: "Inicio",
+    accessorKey: "startDate",
     cell: ({ row }) => {
-      return (
-        <div className="font-medium line-clamp-2 text-ellipsis">
-          {row.original.sprint?.name}
-        </div>
-      );
+      return <div>{format(row.original.startDate, "dd/MM/yyyy")}</div>;
     },
     size: 120,
   },
   {
-    header: "Tareas",
-    accessorKey: "tasks",
+    header: "Fin",
+    accessorKey: "endDate",
     cell: ({ row }) => {
-      return (
-        <div className="font-medium line-clamp-2 text-ellipsis">
-          {row.original.tasks.length}
-        </div>
-      );
+      return <div>{format(row.original.endDate, "dd/MM/yyyy")}</div>;
     },
     size: 120,
   },
 ];
 
-export default function ReportsTable({
-  reports,
+export default function SprintsTable({
+  sprints,
   onDelete,
-  onView,
 }: {
-  reports: Report[];
-  onDelete: (report: Report[]) => void;
-  onView?: (report: Report) => void;
+  sprints: Sprint[];
+  onDelete: (sprints: Sprint[]) => void;
 }) {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -260,7 +178,7 @@ export default function ReportsTable({
     },
   ]);
 
-  const [data, setData] = useState<Report[]>(reports);
+  const [data, setData] = useState<Sprint[]>(sprints);
 
   const handleDeleteRows = () => {
     const selectedRows = table.getSelectedRowModel().rows;
@@ -269,16 +187,12 @@ export default function ReportsTable({
     );
     setData(updatedData);
     table.resetRowSelection();
-    onDelete(selectedRows.map((row) => row.original));
+    onDelete(updatedData);
   };
 
-  const columns = useMemo(
-    () =>
-      getColumns({
-        onView: onView,
-      }),
-    [onView]
-  );
+  const handleAddSprint = (sprint: Sprint) => {
+    setData([...data, sprint]);
+  };
 
   const table = useReactTable({
     data,
@@ -301,59 +215,18 @@ export default function ReportsTable({
     },
   });
 
-  // Get unique status values
-  const uniqueTypeValues = useMemo(() => {
-    const statusColumn = table.getColumn("type");
-
-    if (!statusColumn) return [];
-
-    const values = Array.from(statusColumn.getFacetedUniqueValues().keys());
-
-    return values.sort();
-  }, [table.getColumn("type")?.getFacetedUniqueValues()]);
-
-  // Get counts for each status
-  const typeCounts = useMemo(() => {
-    const statusColumn = table.getColumn("type");
-    if (!statusColumn) return new Map();
-    return statusColumn.getFacetedUniqueValues();
-  }, [table.getColumn("type")?.getFacetedUniqueValues()]);
-
-  const selectedTypes = useMemo(() => {
-    const filterValue = table.getColumn("type")?.getFilterValue() as string[];
-    return filterValue ?? [];
-  }, [table.getColumn("type")?.getFilterValue()]);
-
-  const handleTypeChange = (checked: boolean, value: string) => {
-    const filterValue = table.getColumn("type")?.getFilterValue() as string[];
-    const newFilterValue = filterValue ? [...filterValue] : [];
-
-    if (checked) {
-      newFilterValue.push(value);
-    } else {
-      const index = newFilterValue.indexOf(value);
-      if (index > -1) {
-        newFilterValue.splice(index, 1);
-      }
-    }
-
-    table
-      .getColumn("type")
-      ?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
-  };
-
   return (
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {/* Filter by name or owner */}
+          {/* Filter by name or email */}
           <div className="relative">
             <Input
               id={`${id}-input`}
               ref={inputRef}
               className={cn(
-                "peer w-full md:min-w-96 ps-9",
+                "peer min-w-60 ps-9",
                 Boolean(table.getColumn("name")?.getFilterValue()) && "pe-9"
               )}
               value={
@@ -362,9 +235,9 @@ export default function ReportsTable({
               onChange={(e) =>
                 table.getColumn("name")?.setFilterValue(e.target.value)
               }
-              placeholder="Filtrar por nombre o propietario..."
+              placeholder="Filtrar por nombre..."
               type="text"
-              aria-label="Filtrar por nombre o propietario"
+              aria-label="Filtrar por nombre"
             />
             <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
               <ListFilterIcon size={16} aria-hidden="true" />
@@ -372,7 +245,7 @@ export default function ReportsTable({
             {Boolean(table.getColumn("name")?.getFilterValue()) && (
               <button
                 className="text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
-                aria-label="Clear filter"
+                aria-label="Limpiar filtro"
                 onClick={() => {
                   table.getColumn("name")?.setFilterValue("");
                   if (inputRef.current) {
@@ -384,53 +257,6 @@ export default function ReportsTable({
               </button>
             )}
           </div>
-          {/* Filter by type */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <FilterIcon
-                  className="-ms-1 opacity-60"
-                  size={16}
-                  aria-hidden="true"
-                />
-                Tipo
-                {selectedTypes.length > 0 && (
-                  <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
-                    {selectedTypes.length}
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto min-w-36 p-3" align="start">
-              <div className="space-y-3">
-                <div className="text-muted-foreground text-xs font-medium">
-                  Tipos
-                </div>
-                <div className="space-y-3">
-                  {uniqueTypeValues.map((value, i) => (
-                    <div key={value} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`${id}-${i}`}
-                        checked={selectedTypes.includes(value)}
-                        onCheckedChange={(checked: boolean) =>
-                          handleTypeChange(checked, value)
-                        }
-                      />
-                      <Label
-                        htmlFor={`${id}-${i}`}
-                        className="flex grow justify-between gap-2 font-normal"
-                      >
-                        {value}{" "}
-                        <span className="text-muted-foreground ms-2 text-xs">
-                          {typeCounts.get(value)}
-                        </span>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
           {/* Toggle columns visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -493,14 +319,15 @@ export default function ReportsTable({
                   </div>
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      ¿Estás seguro de querer eliminar estos reportes?
+                      Estás seguro de querer eliminar estos sprints?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Los datos de los reportes se perderán permanentemente.
-                      {table.getSelectedRowModel().rows.length} selected{" "}
+                      Esta acción no se puede deshacer. Esto eliminará
+                      permanentemente {table.getSelectedRowModel().rows.length}{" "}
+                      selected{" "}
                       {table.getSelectedRowModel().rows.length === 1
-                        ? "reporte"
-                        : "reportes"}
+                        ? "row"
+                        : "rows"}
                       .
                     </AlertDialogDescription>
                   </AlertDialogHeader>
@@ -514,6 +341,8 @@ export default function ReportsTable({
               </AlertDialogContent>
             </AlertDialog>
           )}
+          {/* Add user button */}
+          <ModalCreateSprint onSprintCreated={handleAddSprint} />
         </div>
       </div>
 

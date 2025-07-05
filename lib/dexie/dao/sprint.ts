@@ -28,3 +28,7 @@ export const updateSprint = async (sprint: Sprint) => {
 export const deleteSprint = async (id: string) => {
   await db.sprints.delete(id);
 };
+
+export const deleteSprints = async (ids: string[]) => {
+  await db.sprints.bulkDelete(ids);
+};
