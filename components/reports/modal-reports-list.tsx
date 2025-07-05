@@ -28,6 +28,7 @@ import { Badge } from "../ui/badge";
 import { Sprint } from "@/lib/schemas/sprint.schema";
 import { deleteSprints, getSprints } from "@/lib/dexie/dao/sprint";
 import SprintsTable from "./sprints-table";
+import { useLiveQuery } from "dexie-react-hooks";
 
 interface ModalReportsListProps {
   onReportClick?: (report: Report) => void;
@@ -39,14 +40,13 @@ const ModalReportsList = ({
   onDeleteReports,
 }: ModalReportsListProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Reports
-  const [reports, setReports] = useState<Report[]>([]);
+  const reports = useLiveQuery(() => getReports());
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
   // Sprints
-  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const sprints = useLiveQuery(() => getSprints());
 
   const handleLoadReport = (report: Report) => {
     setSelectedReport(null);
@@ -55,29 +55,9 @@ const ModalReportsList = ({
     toast.success("Reporte cargado correctamente");
   };
 
-  const handleOpenModal = async () => {
-    setIsLoading(true);
-    try {
-      const [reports, sprints] = await Promise.allSettled([
-        getReports(),
-        getSprints(),
-      ]);
-
-      setReports(reports.status === "fulfilled" ? reports.value : []);
-      setSprints(sprints.status === "fulfilled" ? sprints.value : []);
-      setIsOpen(true);
-    } catch (error) {
-      toast.error("Error al cargar los reportes");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleDeleteReports = async (reportsDeleted: Report[]) => {
     const ids = reportsDeleted.map((r) => r.id);
     await deleteReports(ids);
-
-    setReports(reports.filter((r) => !ids.includes(r.id)));
 
     onDeleteReports?.(reportsDeleted);
     toast.success(
@@ -90,7 +70,6 @@ const ModalReportsList = ({
   const handleDeleteSprints = async (sprintsDeleted: Sprint[]) => {
     const ids = sprintsDeleted.map((s) => s.id);
     await deleteSprints(ids);
-    setSprints(sprints.filter((s) => !ids.includes(s.id)));
 
     toast.success(
       `${sprintsDeleted.length} ${
@@ -146,8 +125,7 @@ const ModalReportsList = ({
           <Button
             variant="outline"
             className="flex items-center gap-2"
-            onClick={handleOpenModal}
-            disabled={isLoading}
+            onClick={() => setIsOpen(true)}
           >
             <ListIcon className="w-4 h-4" />
             <span className="hidden md:block">Historial</span>
@@ -177,7 +155,7 @@ const ModalReportsList = ({
                           className="bg-primary/15 ms-1.5 min-w-5 px-1"
                           variant="secondary"
                         >
-                          {reports.length}
+                          {reports?.length || 0}
                         </Badge>
                       </TabsTrigger>
                       <TabsTrigger
@@ -194,7 +172,7 @@ const ModalReportsList = ({
                           className="bg-primary/15 ms-1.5 min-w-5 px-1"
                           variant="secondary"
                         >
-                          {sprints.length}
+                          {sprints?.length || 0}
                         </Badge>
                       </TabsTrigger>
                     </TabsList>
@@ -202,7 +180,7 @@ const ModalReportsList = ({
                   </ScrollArea>
                 </div>
                 <TabsContent value="tab-1" className="px-6 pb-4 relative">
-                  {isLoading ? (
+                  {!reports ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -213,17 +191,28 @@ const ModalReportsList = ({
                     </div>
                   ) : (
                     <ReportsTable
-                      reports={reports}
+                      reports={reports || []}
                       onDelete={handleDeleteReports}
                       onView={handleLoadReport}
                     />
                   )}
                 </TabsContent>
                 <TabsContent value="tab-2" className="px-6 pb-4 relative">
-                  <SprintsTable
-                    sprints={sprints}
-                    onDelete={handleDeleteSprints}
-                  />
+                  {!sprints ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p className="text-muted-foreground">
+                          Cargando sprints...
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <SprintsTable
+                      sprints={sprints || []}
+                      onDelete={handleDeleteSprints}
+                    />
+                  )}
                 </TabsContent>
               </Tabs>
             </DialogDescription>

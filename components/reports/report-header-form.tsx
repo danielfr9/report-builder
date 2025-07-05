@@ -52,6 +52,7 @@ import {
 } from "../ui/command";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import ModalCreateSprint from "./modal-create-sprint";
+import { useLiveQuery } from "dexie-react-hooks";
 
 interface Header {
   date: Date;
@@ -78,16 +79,9 @@ export default function ReportHeaderForm({
   onNewReport,
   readOnly = false,
 }: ReportHeaderFormProps) {
-  const [sprints, setSprints] = useState<Sprint[]>([]);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchSprints = async () => {
-      const sprints = await getSprints();
-      setSprints(sprints);
-    };
-    fetchSprints();
-  }, []);
+  const sprints = useLiveQuery(() => getSprints());
 
   const onSelectSprint = (sprint: Sprint) => {
     onHeaderChange({ ...header, sprint });
@@ -95,7 +89,6 @@ export default function ReportHeaderForm({
 
   const handleSprintCreated = (sprint: Sprint) => {
     onHeaderChange({ ...header, sprint });
-    setSprints([...sprints, sprint]);
   };
 
   const handleNewReport = () => {
@@ -281,37 +274,38 @@ export default function ReportHeaderForm({
                     <ModalCreateSprint onSprintCreated={handleSprintCreated} />
                   </CommandEmpty>
                   <CommandGroup>
-                    {sprints.length > 0 && (
+                    {sprints && sprints.length > 0 && (
                       <div className="py-3">
                         <ModalCreateSprint
                           onSprintCreated={handleSprintCreated}
                         />
                       </div>
                     )}
-                    {sprints.map((sprint) => (
-                      <CommandItem
-                        key={sprint.id}
-                        value={sprint.id}
-                        onSelect={(currentValue) => {
-                          onSelectSprint(
-                            sprints.find(
-                              (sprint) => sprint.id === currentValue
-                            ) as Sprint
-                          );
-                          setOpen(false);
-                        }}
-                      >
-                        {sprint.name}
-                        <CheckIcon
-                          className={cn(
-                            "ml-auto",
-                            header.sprint?.id === sprint.id
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
+                    {sprints &&
+                      sprints.map((sprint) => (
+                        <CommandItem
+                          key={sprint.id}
+                          value={sprint.id}
+                          onSelect={(currentValue) => {
+                            onSelectSprint(
+                              sprints.find(
+                                (sprint) => sprint.id === currentValue
+                              ) as Sprint
+                            );
+                            setOpen(false);
+                          }}
+                        >
+                          {sprint.name}
+                          <CheckIcon
+                            className={cn(
+                              "ml-auto",
+                              header.sprint?.id === sprint.id
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                        </CommandItem>
+                      ))}
                   </CommandGroup>
                 </CommandList>
               </Command>

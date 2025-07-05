@@ -181,16 +181,22 @@ export default function SprintsTable({
   const [data, setData] = useState<Sprint[]>(sprints);
 
   const handleDeleteRows = () => {
+    // Get the selected rows
     const selectedRows = table.getSelectedRowModel().rows;
-    const updatedData = data.filter(
-      (item) => !selectedRows.some((row) => row.original.id === item.id)
-    );
-    setData(updatedData);
+    // Send the selected rows to the parent component
+    onDelete(selectedRows.map((row) => row.original));
+    // Reset the row selection
     table.resetRowSelection();
-    onDelete(updatedData);
+    // Update the data
+    setData(
+      data.filter(
+        (item) => !selectedRows.some((row) => row.original.id === item.id)
+      )
+    );
   };
 
   const handleAddSprint = (sprint: Sprint) => {
+    // Add the new sprint to the data
     setData([...data, sprint]);
   };
 
