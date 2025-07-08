@@ -109,6 +109,14 @@ export default function ReportBuilder() {
     const response = await createReportAction(newReport);
     if (response.success) {
       setDailyData(response.data as DailyReport);
+
+      const formattedReport = formatDailyReport(
+        response.data as DraftDailyReport
+      );
+      localStorage.setItem(
+        CURRENT_DAILY_REPORT_KEY,
+        JSON.stringify(formattedReport)
+      );
     } else {
       toast.error(response.error);
     }
@@ -132,6 +140,14 @@ export default function ReportBuilder() {
     const response = await createReportAction(newReport);
     if (response.success) {
       setWeeklyData(response.data as WeeklyReport);
+
+      const formattedReport = formatWeeklyReport(
+        response.data as DraftWeeklyReport
+      );
+      localStorage.setItem(
+        CURRENT_WEEKLY_REPORT_KEY,
+        JSON.stringify(formattedReport)
+      );
     } else {
       toast.error(response.error);
     }
