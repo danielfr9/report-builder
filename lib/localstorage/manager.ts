@@ -8,7 +8,7 @@ import {
 } from "../interfaces/localstorage.interface";
 import { parseDailyReport, parseWeeklyReport } from "./format-parsers";
 
-const getRawCurrentDailytReport = () => {
+const getRawCurrentDailyReport = () => {
   const currentReport = localStorage.getItem(CURRENT_DAILY_REPORT_KEY);
   if (currentReport) {
     return JSON.parse(currentReport) as LocalStorageDailyReport;
@@ -17,8 +17,8 @@ const getRawCurrentDailytReport = () => {
   return null;
 };
 
-const getCurrentDailytReport = () => {
-  const rawReport = getRawCurrentDailytReport();
+const getCurrentDailyReport = () => {
+  const rawReport = getRawCurrentDailyReport();
   if (rawReport) {
     const parsedReport = parseDailyReport(rawReport);
     if (parsedReport.success) {
@@ -65,9 +65,9 @@ const setCurrentWeeklyReport = (report: LocalStorageWeeklyReport) => {
 };
 
 export {
-  getRawCurrentDailytReport,
+  getRawCurrentDailyReport,
   getRawCurrentWeeklyReport,
-  getCurrentDailytReport,
+  getCurrentDailyReport,
   getCurrentWeeklyReport,
   setCurrentDailyReport,
   setCurrentWeeklyReport,

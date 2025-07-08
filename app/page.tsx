@@ -26,7 +26,7 @@ import {
   formatWeeklyReport,
 } from "@/lib/localstorage/format-parsers";
 import {
-  getCurrentDailytReport,
+  getCurrentDailyReport,
   getCurrentWeeklyReport,
   removeCurrentDailyReport,
   removeCurrentWeeklyReport,
@@ -60,7 +60,6 @@ export default function ReportBuilder() {
 
   // Handle daily data changes
   const handleDailyDataChange = useDebouncedCallback((data: DailyReport) => {
-    console.log("handleDailyDataChange", data);
     if (data.status === REPORT_STATUS.ARCHIVED) {
       return;
     }
@@ -164,7 +163,7 @@ export default function ReportBuilder() {
 
   // Load the current daily report
   const loadDailyReport = async () => {
-    const currentDailyReport = getCurrentDailytReport();
+    const currentDailyReport = getCurrentDailyReport();
 
     if (currentDailyReport) {
       const item = await getReportById(currentDailyReport.id);
@@ -258,6 +257,14 @@ export default function ReportBuilder() {
     }
   };
 
+  const handleNewReport = () => {
+    if (reportType === "daily") {
+      loadDailyReport();
+    } else {
+      loadWeeklyReport();
+    }
+  };
+
   useEffect(() => {
     localStorage.removeItem(V3_SHARED_HEADER_KEY);
     localStorage.removeItem(V3_DAILY_REPORT_STORAGE_KEY);
@@ -285,6 +292,7 @@ export default function ReportBuilder() {
           initialData={dailyData}
           onDataChange={handleDailyDataChange}
           onArchiveReport={handleArchiveReport}
+          onNewReport={handleNewReport}
         />
       </div>
       <div className={`${reportType === "weekly" ? "block" : "hidden"}`}>
@@ -293,6 +301,7 @@ export default function ReportBuilder() {
           initialData={weeklyData}
           onDataChange={handleWeeklyDataChange}
           onArchiveReport={handleArchiveReport}
+          onNewReport={handleNewReport}
         />
       </div>
 

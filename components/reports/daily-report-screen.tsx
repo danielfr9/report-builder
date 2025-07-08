@@ -63,6 +63,7 @@ interface DailyReportScreenProps {
   initialData: DailyReport | null;
   onDataChange: (data: DailyReport) => void;
   onArchiveReport: (data: DailyReport) => void;
+  onNewReport: () => void;
 }
 
 const defaultReport: DailyReport = {
@@ -84,6 +85,7 @@ export default function DailyReportScreen({
   initialData,
   onDataChange,
   onArchiveReport,
+  onNewReport,
 }: DailyReportScreenProps) {
   const [reportData, setReportData] = useState<DailyReport>(
     initialData || {
@@ -377,10 +379,7 @@ export default function DailyReportScreen({
               setReportData(defaultReport);
               onDataChange(defaultReport);
             }}
-            onNewReport={() => {
-              setReportData(defaultReport);
-              onDataChange(defaultReport);
-            }}
+            onNewReport={onNewReport}
             readOnly={readOnly}
           />
 

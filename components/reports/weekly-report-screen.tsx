@@ -64,6 +64,7 @@ interface WeeklyReportScreenProps {
   initialData: WeeklyReport | null;
   onDataChange: (data: WeeklyReport) => void;
   onArchiveReport: (data: WeeklyReport) => void;
+  onNewReport: () => void;
 }
 
 const defaultReport: WeeklyReport = {
@@ -85,6 +86,7 @@ export default function WeeklyReportScreen({
   initialData,
   onDataChange,
   onArchiveReport,
+  onNewReport,
 }: WeeklyReportScreenProps) {
   const [reportData, setReportData] = useState<WeeklyReport>(
     initialData || {
@@ -388,10 +390,7 @@ export default function WeeklyReportScreen({
               onDataChange(defaultReport);
             }}
             onArchiveReport={handleArchiveReport}
-            onNewReport={() => {
-              setReportData(defaultReport);
-              onDataChange(defaultReport);
-            }}
+            onNewReport={onNewReport}
           />
 
           {!readOnly && (

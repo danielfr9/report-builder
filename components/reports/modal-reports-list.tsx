@@ -32,7 +32,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { bulkDeleteSprintsAction } from "@/lib/actions/sprints.action";
 import { bulkDeleteReportsAction } from "@/lib/actions/reports.action";
 import {
-  getCurrentDailytReport,
+  getCurrentDailyReport,
   getCurrentWeeklyReport,
 } from "@/lib/localstorage/manager";
 import { REPORT_TYPE } from "@/lib/constants/report-type";
@@ -98,7 +98,7 @@ const ModalReportsList = ({
   };
 
   useEffect(() => {
-    const currentDailyReport = getCurrentDailytReport();
+    const currentDailyReport = getCurrentDailyReport();
     const currentWeeklyReport = getCurrentWeeklyReport();
     if (currentDailyReport) {
       setCurrentReports((prev) => {
