@@ -372,9 +372,10 @@ export default function DailyReportScreen({
               sprint: reportData.sprint,
               status: reportData.status,
             }}
-            onHeaderChange={(header) =>
-              setReportData((prev) => ({ ...prev, ...header }))
-            }
+            onHeaderChange={(header) => {
+              setReportData((prev) => ({ ...prev, ...header }));
+              onDataChange(reportData);
+            }}
             onArchiveReport={handleArchiveReport}
             onClearData={() => {
               setReportData(defaultReport);
@@ -402,6 +403,7 @@ export default function DailyReportScreen({
               <CardContent className="space-y-4">
                 {/* Always visible add task form */}
                 <AddTaskForm
+                  reportId={reportData.id}
                   onAdd={(task) => {
                     setReportData((prev) => ({
                       ...prev,
@@ -435,6 +437,7 @@ export default function DailyReportScreen({
                   {completedTasks.map((task) => (
                     <SortableTaskItem
                       key={task.id}
+                      reportId={reportData.id}
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
@@ -474,6 +477,7 @@ export default function DailyReportScreen({
                   {inProgressTasks.map((task) => (
                     <SortableTaskItem
                       key={task.id}
+                      reportId={reportData.id}
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
@@ -513,6 +517,7 @@ export default function DailyReportScreen({
                   {pendingTasks.map((task) => (
                     <SortableTaskItem
                       key={task.id}
+                      reportId={reportData.id}
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
@@ -552,6 +557,7 @@ export default function DailyReportScreen({
                   {blockedTasks.map((task) => (
                     <SortableTaskItem
                       key={task.id}
+                      reportId={reportData.id}
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
@@ -585,6 +591,7 @@ export default function DailyReportScreen({
                   {/* Always visible add block form */}
                   {!readOnly && (
                     <AddBlockForm
+                      reportId={reportData.id}
                       onAdd={(block) => {
                         setReportData((prev) => ({
                           ...prev,
@@ -609,6 +616,7 @@ export default function DailyReportScreen({
                         {reportData.blocks.filter(Boolean).map((block) => (
                           <SortableBlockItem
                             key={block.id}
+                            reportId={reportData.id}
                             block={block}
                             updateBlock={updateBlock}
                             removeBlock={removeBlock}
@@ -632,6 +640,7 @@ export default function DailyReportScreen({
                   {/* Always visible add observation form */}
                   {!readOnly && (
                     <AddObservationForm
+                      reportId={reportData.id}
                       onAdd={(observation) => {
                         setReportData((prev) => ({
                           ...prev,
@@ -658,6 +667,7 @@ export default function DailyReportScreen({
                           .map((observation) => (
                             <SortableObservationItem
                               key={observation.id}
+                              reportId={reportData.id}
                               observation={observation}
                               updateObservation={updateObservation}
                               removeObservation={removeObservation}

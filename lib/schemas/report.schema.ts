@@ -56,10 +56,10 @@ export const localStorageReportSchema = ReportDtoSchema.omit({
 });
 export type LocalStorageReport = z.infer<typeof localStorageReportSchema>;
 
-export type DraftDailyReport = Omit<ReportDto, "id" | "type"> & {
+export type DraftDailyReport = Omit<ReportDto, "type"> & {
   type: (typeof REPORT_TYPE)["DAILY"];
 };
-export type DraftWeeklyReport = Omit<ReportDto, "id" | "type"> & {
+export type DraftWeeklyReport = Omit<ReportDto, "type"> & {
   type: (typeof REPORT_TYPE)["WEEKLY"];
 };
 

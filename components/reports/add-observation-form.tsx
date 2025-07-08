@@ -17,14 +17,16 @@ import { toast } from "sonner";
 import { createObservationAction } from "@/lib/actions/observation.action";
 
 interface AddObservationFormProps {
+  reportId: string;
   onAdd: (observation: ObservationDto) => void;
 }
 
-const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {
+const AddObservationForm = ({ reportId, onAdd }: AddObservationFormProps) => {
   const form = useForm<z.infer<typeof createObservationSchema>>({
     resolver: zodResolver(createObservationSchema),
     defaultValues: {
       description: "",
+      reportId,
     },
   });
 

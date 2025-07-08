@@ -44,6 +44,7 @@ import { toast } from "sonner";
 import { updateTaskAction } from "@/lib/actions/tasks.action";
 
 interface SortableTaskItemProps {
+  reportId: string;
   task: TaskDto;
   updateTask: (id: string, value: TaskDto) => void;
   removeTask: (id: string) => void;
@@ -51,6 +52,7 @@ interface SortableTaskItemProps {
 }
 
 const SortableTaskItem = ({
+  reportId,
   task,
   updateTask,
   removeTask,
@@ -60,6 +62,7 @@ const SortableTaskItem = ({
     resolver: zodResolver(updateTaskSchema),
     defaultValues: {
       id: task.id,
+      reportId,
       name: task.name,
       storyPoints: task.storyPoints,
       status: task.status,
@@ -92,13 +95,7 @@ const SortableTaskItem = ({
         updateTask(data.id, data);
         setIsEditing(false);
         form.reset({
-          id: task.id,
-          name: task.name,
-          storyPoints: task.storyPoints,
-          status: task.status,
-          comments: task.comments,
-          actionPlan: task.actionPlan,
-          finishDate: task.finishDate,
+          ...form.getValues(),
         });
         toast.success("Tarea actualizada correctamente");
         return;

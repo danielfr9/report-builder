@@ -84,6 +84,7 @@ const archiveReportAction = async (
   }
 
   try {
+    console.log("parsedReport", parsedReport.data);
     await archiveReport(parsedReport.data.id);
 
     return {

@@ -37,13 +37,15 @@ import { createTaskAction } from "@/lib/actions/tasks.action";
 
 // Add Task Form Component
 interface AddTaskFormProps {
+  reportId: string;
   onAdd: (task: TaskDto) => void;
 }
 
-const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
+const AddTaskForm = ({ reportId, onAdd }: AddTaskFormProps) => {
   const form = useForm<z.infer<typeof createTaskSchema>>({
     resolver: zodResolver(createTaskSchema),
     defaultValues: {
+      reportId,
       name: "",
       storyPoints: 1,
       status: TASK_STATUS.COMPLETED,

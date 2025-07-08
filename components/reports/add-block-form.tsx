@@ -17,14 +17,16 @@ import { createBlockAction } from "@/lib/actions/block.action";
 
 // Add Block Form Component
 interface AddBlockFormProps {
+  reportId: string;
   onAdd: (block: BlockDto) => void;
 }
 
-const AddBlockForm = ({ onAdd }: AddBlockFormProps) => {
+const AddBlockForm = ({ reportId, onAdd }: AddBlockFormProps) => {
   const form = useForm<z.infer<typeof createBlockSchema>>({
     resolver: zodResolver(createBlockSchema),
     defaultValues: {
       description: "",
+      reportId,
     },
   });
 

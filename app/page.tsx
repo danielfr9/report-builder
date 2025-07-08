@@ -16,6 +16,7 @@ import {
 } from "@/lib/constants/localstorage-keys";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { REPORT_TYPE } from "@/lib/constants/report-type";
+import { getReportById } from "@/lib/dexie/dao/reports";
 import {
   LocalStorageDailyReport,
   LocalStorageWeeklyReport,
@@ -164,6 +165,14 @@ export default function ReportBuilder() {
         currentDailyReport
       ) as LocalStorageDailyReport;
 
+      const item = await getReportById(rawReport.id);
+
+      if (!item) {
+        localStorage.removeItem(CURRENT_DAILY_REPORT_KEY);
+        await createNewDailyReport();
+        return;
+      }
+
       const dailyReport = parseDailyReport(rawReport);
 
       if (dailyReport.success) {
@@ -184,6 +193,13 @@ export default function ReportBuilder() {
       const rawReport = JSON.parse(
         currentWeeklyReport
       ) as LocalStorageWeeklyReport;
+
+      const item = await getReportById(rawReport.id);
+      if (!item) {
+        localStorage.removeItem(CURRENT_WEEKLY_REPORT_KEY);
+        await createNewWeeklyReport();
+        return;
+      }
 
       const weeklyReport = parseWeeklyReport(rawReport);
 

@@ -28,6 +28,7 @@ import { updateObservationAction } from "@/lib/actions/observation.action";
 import { toast } from "sonner";
 
 interface SortableObservationItemProps {
+  reportId: string;
   observation: ObservationDto;
   updateObservation: (id: string, value: ObservationDto) => void;
   removeObservation: (id: string) => void;
@@ -35,6 +36,7 @@ interface SortableObservationItemProps {
 }
 
 const SortableObservationItem = ({
+  reportId,
   observation,
   updateObservation,
   removeObservation,
@@ -43,6 +45,7 @@ const SortableObservationItem = ({
   const form = useForm<z.infer<typeof createObservationSchema>>({
     resolver: zodResolver(createObservationSchema),
     defaultValues: {
+      reportId,
       description: observation.description || "",
     },
   });
@@ -74,7 +77,7 @@ const SortableObservationItem = ({
         });
         setIsEditing(false);
         form.reset({
-          description: observation.description || "",
+          ...form.getValues(),
         });
         toast.success("Observación actualizada correctamente");
         return;

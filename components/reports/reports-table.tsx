@@ -500,12 +500,15 @@ export default function ReportsTable({
                       ¿Estás seguro de querer eliminar estos reportes?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Los datos de los reportes se perderán permanentemente.
-                      {table.getSelectedRowModel().rows.length} selected{" "}
-                      {table.getSelectedRowModel().rows.length === 1
-                        ? "reporte"
-                        : "reportes"}
-                      .
+                      {`Los datos de los reportes se perderán permanentemente.  ${
+                        table.getSelectedRowModel().rows.length
+                      }
+                      ${
+                        table.getSelectedRowModel().rows.length === 1
+                          ? "reporte seleccionado"
+                          : "reportes seleccionados"
+                      }.                      
+                      `}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                 </div>

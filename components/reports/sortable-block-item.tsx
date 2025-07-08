@@ -27,6 +27,7 @@ import { updateBlockAction } from "@/lib/actions/block.action";
 import { toast } from "sonner";
 
 interface SortableBlockItemProps {
+  reportId: string;
   block: BlockDto;
   updateBlock: (id: string, value: BlockDto) => void;
   removeBlock: (id: string) => void;
@@ -34,6 +35,7 @@ interface SortableBlockItemProps {
 }
 
 const SortableBlockItem = ({
+  reportId,
   block,
   updateBlock,
   removeBlock,
@@ -42,6 +44,7 @@ const SortableBlockItem = ({
   const form = useForm<z.infer<typeof createBlockSchema>>({
     resolver: zodResolver(createBlockSchema),
     defaultValues: {
+      reportId,
       description: block.description,
     },
   });
@@ -69,7 +72,7 @@ const SortableBlockItem = ({
         updateBlock(block.id, { ...block, description: data.description });
         setIsEditing(false);
         form.reset({
-          description: block.description || "",
+          ...form.getValues(),
         });
         toast.success("Bloque actualizado correctamente");
         return;

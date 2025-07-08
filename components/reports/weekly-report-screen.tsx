@@ -381,9 +381,10 @@ export default function WeeklyReportScreen({
               sprint: reportData.sprint,
               status: reportData.status,
             }}
-            onHeaderChange={(header) =>
-              setReportData((prev) => ({ ...prev, ...header }))
-            }
+            onHeaderChange={(header) => {
+              setReportData((prev) => ({ ...prev, ...header }));
+              onDataChange(reportData);
+            }}
             onClearData={() => {
               setReportData(defaultReport);
               onDataChange(defaultReport);
@@ -410,6 +411,7 @@ export default function WeeklyReportScreen({
                 {/* Always visible add task form */}
                 {!readOnly && (
                   <AddTaskForm
+                    reportId={reportData.id}
                     onAdd={(taskData) => {
                       const newTask: TaskDto = {
                         ...taskData,
@@ -448,6 +450,7 @@ export default function WeeklyReportScreen({
                   {completedTasks.map((task) => (
                     <SortableTaskItem
                       key={task.id}
+                      reportId={reportData.id}
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
@@ -486,6 +489,7 @@ export default function WeeklyReportScreen({
                   {inProgressTasks.map((task) => (
                     <SortableTaskItem
                       key={task.id}
+                      reportId={reportData.id}
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
@@ -525,6 +529,7 @@ export default function WeeklyReportScreen({
                   {pendingTasks.map((task) => (
                     <SortableTaskItem
                       key={task.id}
+                      reportId={reportData.id}
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
@@ -564,6 +569,7 @@ export default function WeeklyReportScreen({
                   {blockedTasks.map((task) => (
                     <SortableTaskItem
                       key={task.id}
+                      reportId={reportData.id}
                       task={task}
                       updateTask={updateTask}
                       removeTask={removeTask}
@@ -597,6 +603,7 @@ export default function WeeklyReportScreen({
                   {/* Always visible add block form */}
                   {!readOnly && (
                     <AddBlockForm
+                      reportId={reportData.id}
                       onAdd={(blockData) => {
                         setReportData((prev) => ({
                           ...prev,
@@ -619,6 +626,7 @@ export default function WeeklyReportScreen({
                         {reportData.blocks.map((block) => (
                           <SortableBlockItem
                             key={block.id}
+                            reportId={reportData.id}
                             block={block}
                             updateBlock={updateBlock}
                             removeBlock={removeBlock}
@@ -641,6 +649,7 @@ export default function WeeklyReportScreen({
                   {/* Always visible add observation form */}
                   {!readOnly && (
                     <AddObservationForm
+                      reportId={reportData.id}
                       onAdd={(observation) => {
                         setReportData((prev) => ({
                           ...prev,
@@ -665,6 +674,7 @@ export default function WeeklyReportScreen({
                         {reportData.observations.map((observation) => (
                           <SortableObservationItem
                             key={observation.id}
+                            reportId={reportData.id}
                             observation={observation}
                             updateObservation={updateObservation}
                             removeObservation={removeObservation}

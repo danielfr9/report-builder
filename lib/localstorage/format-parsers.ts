@@ -3,6 +3,7 @@ import {
   LocalStorageDailyReport,
   LocalStorageObservation,
   LocalStorageSprint,
+  LocalStorageTask,
   LocalStorageWeeklyReport,
 } from "../interfaces/localstorage.interface";
 import {
@@ -18,6 +19,7 @@ import { SprintDto } from "../schemas/sprint.schema";
 import { BlockDto } from "../schemas/block.schema";
 import { ObservationDto } from "../schemas/observation.schema";
 import { parseISO } from "date-fns";
+import { REPORT_TYPE } from "../constants/report-type";
 
 type ParseResult<T> =
   | {
@@ -29,10 +31,10 @@ type ParseResult<T> =
       error: string;
     };
 
-export const formatTask = (task: TaskDto) => {
+export const formatTask = (task: TaskDto): LocalStorageTask => {
   return {
     ...task,
-    finishDate: task.finishDate?.toISOString() ?? null,
+    finishDate: task.finishDate ? task.finishDate.toISOString() : null,
   };
 };
 
@@ -88,32 +90,84 @@ export const formatWeeklyReport = (
 
 /// Parsers
 
+export const parseTask = (task: LocalStorageTask): TaskDto => {
+  return {
+    id: task.id,
+    reportId: task.reportId,
+    name: task.name,
+    comments: task.comments,
+    storyPoints: task.storyPoints,
+    status: task.status,
+    actionPlan: task.actionPlan,
+    finishDate: task.finishDate ? parseISO(task.finishDate) : new Date(),
+  };
+};
+
+export const parseBlock = (block: LocalStorageBlock): BlockDto => {
+  return {
+    id: block.id,
+    description: block.description,
+    reportId: block.reportId,
+  };
+};
+export const parseObservation = (
+  observation: LocalStorageObservation
+): ObservationDto => {
+  return {
+    id: observation.id,
+    description: observation.description,
+    reportId: observation.reportId,
+  };
+};
+
+export const parseSprint = (sprint: LocalStorageSprint): SprintDto => {
+  return {
+    id: sprint.id,
+    name: sprint.name,
+    startDate: parseISO(sprint.startDate),
+    endDate: parseISO(sprint.endDate),
+  };
+};
+
 export const parseDailyReport = (
   rawReport: LocalStorageDailyReport
 ): ParseResult<DailyReport> => {
   // Validate the report
   const validReport = ReportDtoSchema.omit({
-    id: true,
     date: true,
+    tasks: true,
+    blocks: true,
+    observations: true,
+    sprint: true,
   }).safeParse(rawReport);
 
-  // If the report is valid, load the report
-  if (validReport.success) {
-    const report: ReportDto = {
-      ...validReport.data,
-      date: parseISO(rawReport.date),
-      id: "",
-    };
-
+  if (!validReport.success) {
+    console.log("validReport", validReport.error.message);
     return {
-      success: true,
-      data: report as DailyReport,
+      success: false,
+      error: validReport.error.message,
     };
   }
 
+  // If the report is valid, load the report
+  const report: ReportDto = {
+    id: rawReport.id,
+    type: REPORT_TYPE.DAILY,
+    owner: rawReport.owner,
+    name: rawReport.name,
+    status: rawReport.status,
+    hoursWorked: rawReport.hoursWorked,
+    additionalNotes: rawReport.additionalNotes,
+    sprint: rawReport.sprint ? parseSprint(rawReport.sprint) : null,
+    date: parseISO(rawReport.date),
+    tasks: rawReport.tasks.map((t) => parseTask(t)),
+    blocks: rawReport.blocks.map((b) => parseBlock(b)),
+    observations: rawReport.observations.map((o) => parseObservation(o)),
+  };
+
   return {
-    success: false,
-    error: validReport.error.message,
+    success: true,
+    data: report as DailyReport,
   };
 };
 
@@ -122,26 +176,39 @@ export const parseWeeklyReport = (
 ): ParseResult<WeeklyReport> => {
   // Validate the report
   const validReport = ReportDtoSchema.omit({
-    id: true,
     date: true,
+    tasks: true,
+    blocks: true,
+    observations: true,
+    sprint: true,
   }).safeParse(rawReport);
-
-  // If the report is valid, load the report
-  if (validReport.success) {
-    const report: ReportDto = {
-      ...validReport.data,
-      date: parseISO(rawReport.date),
-      id: "",
-    };
-
+  if (!validReport.success) {
+    console.log("validReport", validReport.error.message);
     return {
-      success: true,
-      data: report as WeeklyReport,
+      success: false,
+      error: validReport.error.message,
     };
   }
 
+  // If the report is valid, load the report
+
+  const report: ReportDto = {
+    id: rawReport.id,
+    type: REPORT_TYPE.WEEKLY,
+    owner: rawReport.owner,
+    name: rawReport.name,
+    status: rawReport.status,
+    hoursWorked: rawReport.hoursWorked,
+    additionalNotes: rawReport.additionalNotes,
+    sprint: rawReport.sprint ? parseSprint(rawReport.sprint) : null,
+    date: parseISO(rawReport.date),
+    tasks: rawReport.tasks.map((t) => parseTask(t)),
+    blocks: rawReport.blocks.map((b) => parseBlock(b)),
+    observations: rawReport.observations.map((o) => parseObservation(o)),
+  };
+
   return {
-    success: false,
-    error: validReport.error.message,
+    success: true,
+    data: report as WeeklyReport,
   };
 };

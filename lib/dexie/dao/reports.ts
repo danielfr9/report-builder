@@ -21,7 +21,7 @@ export const createReport = async (
 export const archiveReport = async (
   reportId: ReportModel["id"]
 ): Promise<void> => {
-  const res = await db.reports.update(reportId, {
+  const res = await db.reports.where("id").equals(reportId).modify({
     status: REPORT_STATUS.ARCHIVED,
   });
   if (res === 0) {
