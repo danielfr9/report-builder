@@ -317,10 +317,9 @@ export default function SprintsTable({
                     <AlertDialogDescription>
                       Esta acción no se puede deshacer. Esto eliminará
                       permanentemente {table.getSelectedRowModel().rows.length}{" "}
-                      selected{" "}
                       {table.getSelectedRowModel().rows.length === 1
-                        ? "row"
-                        : "rows"}
+                        ? "fila seleccionada"
+                        : "filas seleccionadas"}
                       .
                     </AlertDialogDescription>
                   </AlertDialogHeader>
