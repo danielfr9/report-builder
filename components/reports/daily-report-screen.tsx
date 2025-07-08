@@ -50,17 +50,18 @@ import SortableBlockItem from "./sortable-block-item";
 import SortableObservationItem from "./sortable-observation-item";
 import ReportHeaderForm from "./report-header-form";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { DailyReport, DraftDailyReport } from "@/lib/schemas/report.schema";
+import { DailyReport } from "@/lib/schemas/report.schema";
 import { TaskDto } from "@/lib/schemas/tasks.schema";
 import { BlockDto } from "@/lib/schemas/block.schema";
 import { ObservationDto } from "@/lib/schemas/observation.schema";
-import { archiveReport } from "@/lib/dexie/dao/reports";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
+import { archiveReportAction } from "@/lib/actions/reports";
 
 interface DailyReportScreenProps {
   initialData: DailyReport | null;
   onDataChange: (data: DailyReport) => void;
+  onArchiveReport: (data: DailyReport) => void;
 }
 
 const defaultReport: DailyReport = {
@@ -81,6 +82,7 @@ const defaultReport: DailyReport = {
 export default function DailyReportScreen({
   initialData,
   onDataChange,
+  onArchiveReport,
 }: DailyReportScreenProps) {
   const [reportData, setReportData] = useState<DailyReport>(
     initialData || {
@@ -194,13 +196,18 @@ export default function DailyReportScreen({
     }
 
     try {
-      await archiveReport({
-        ...reportData,
+      const response = await archiveReportAction({
+        id: reportData.id,
       });
-      setReportData(defaultReport);
-      onDataChange(defaultReport);
 
-      toast.success("Reporte archivado correctamente");
+      if (response.success) {
+        setReportData(defaultReport);
+        onArchiveReport(defaultReport);
+        toast.success("Reporte archivado correctamente");
+        return;
+      }
+
+      toast.error(response.error);
     } catch (error) {
       console.error(error);
       toast.error("Error al archivar el reporte");
@@ -326,8 +333,11 @@ export default function DailyReportScreen({
   }, [reportData.tasks]);
 
   const readOnly = useMemo(() => {
-    return reportData.status === REPORT_STATUS.ARCHIVED;
-  }, [reportData.status]);
+    if (!initialData) {
+      return true;
+    }
+    return initialData.status === REPORT_STATUS.ARCHIVED;
+  }, [initialData]);
 
   return (
     <div className="max-w-6xl mx-auto">

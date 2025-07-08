@@ -45,6 +45,7 @@ export default function ReportBuilder() {
   const [weeklyData, setWeeklyData] = useState<WeeklyReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Scroll to the top of the page
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -71,6 +72,7 @@ export default function ReportBuilder() {
     }
   };
 
+  // Handle weekly data changes
   const handleWeeklyDataChange = (data: WeeklyReport) => {
     if (data.status === REPORT_STATUS.ARCHIVED) {
       return;
@@ -89,6 +91,53 @@ export default function ReportBuilder() {
     }
   };
 
+  const createNewDailyReport = async () => {
+    // Create a new report and set it as the current report
+    const newReport: CreateReport = {
+      type: REPORT_TYPE.DAILY,
+      owner: "",
+      name: "",
+      additionalNotes: "",
+      date: new Date(),
+      hoursWorked: 8,
+      status: REPORT_STATUS.DRAFT,
+      sprintId: null,
+      tasks: [],
+      observations: [],
+      blocks: [],
+    };
+    const response = await createReportAction(newReport);
+    if (response.success) {
+      setDailyData(response.data as DailyReport);
+    } else {
+      toast.error(response.error);
+    }
+  };
+
+  const createNewWeeklyReport = async () => {
+    // Create a new report and set it as the current report
+    const newReport: CreateReport = {
+      type: REPORT_TYPE.WEEKLY,
+      owner: "",
+      name: "",
+      additionalNotes: "",
+      date: new Date(),
+      hoursWorked: 8,
+      status: REPORT_STATUS.DRAFT,
+      sprintId: null,
+      tasks: [],
+      observations: [],
+      blocks: [],
+    };
+    const response = await createReportAction(newReport);
+    if (response.success) {
+      setWeeklyData(response.data as WeeklyReport);
+    } else {
+      toast.error(response.error);
+    }
+  };
+
+  // Load the current daily report
   const loadDailyReport = async () => {
     const currentDailyReport = localStorage.getItem(CURRENT_DAILY_REPORT_KEY);
     if (currentDailyReport) {
@@ -118,29 +167,11 @@ export default function ReportBuilder() {
         });
       }
     } else {
-      // Create a new report and set it as the current report
-      const newReport: CreateReport = {
-        type: REPORT_TYPE.DAILY,
-        owner: "",
-        name: "",
-        additionalNotes: "",
-        date: new Date(),
-        hoursWorked: 8,
-        status: REPORT_STATUS.DRAFT,
-        sprintId: null,
-        tasks: [],
-        observations: [],
-        blocks: [],
-      };
-      const response = await createReportAction(newReport);
-      if (response.success) {
-        setDailyData(response.data as DailyReport);
-      } else {
-        toast.error(response.error);
-      }
+      await createNewDailyReport();
     }
   };
 
+  // Load the current weekly report
   const loadWeeklyReport = async () => {
     const currentWeeklyReport = localStorage.getItem(CURRENT_WEEKLY_REPORT_KEY);
     if (currentWeeklyReport) {
@@ -163,29 +194,11 @@ export default function ReportBuilder() {
         });
       }
     } else {
-      // Create a new report and set it as the current report
-      const newReport: CreateReport = {
-        type: REPORT_TYPE.WEEKLY,
-        owner: "",
-        name: "",
-        additionalNotes: "",
-        date: new Date(),
-        hoursWorked: 8,
-        status: REPORT_STATUS.DRAFT,
-        sprintId: null,
-        tasks: [],
-        observations: [],
-        blocks: [],
-      };
-      const response = await createReportAction(newReport);
-      if (response.success) {
-        setWeeklyData(response.data as WeeklyReport);
-      } else {
-        toast.error(response.error);
-      }
+      await createNewWeeklyReport();
     }
   };
 
+  // Load the current draft reports
   const loadData = async () => {
     setIsLoading(true);
 
@@ -196,6 +209,7 @@ export default function ReportBuilder() {
     setIsLoading(false);
   };
 
+  // When a report is selected on the reports list, set the current report to it
   const handleViewReport = (report: ReportDto) => {
     console.log("report", report);
     if (report.type === "daily") {
@@ -215,7 +229,8 @@ export default function ReportBuilder() {
     }
   };
 
-  const handleDeleteReport = (reports: ReportDto[]) => {
+  // When a report is deleted, update the current report to null (if applicable)
+  const onReportDeleted = (reports: ReportDto[]) => {
     // Check if the current report is in the reports deleted
     const ids = reports.map((r) => r.id);
 
@@ -224,6 +239,16 @@ export default function ReportBuilder() {
     }
     if (ids.some((id) => id === weeklyData?.id)) {
       setWeeklyData(null);
+    }
+  };
+
+  const handleArchiveReport = async (data: DailyReport | WeeklyReport) => {
+    if (data.type === REPORT_TYPE.DAILY) {
+      setDailyData(null);
+      await createNewDailyReport();
+    } else {
+      setWeeklyData(null);
+      await createNewWeeklyReport();
     }
   };
 
@@ -253,6 +278,7 @@ export default function ReportBuilder() {
           key={dailyData?.id ?? "new-daily"}
           initialData={dailyData}
           onDataChange={handleDailyDataChange}
+          onArchiveReport={handleArchiveReport}
         />
       </div>
       <div className={`${reportType === "weekly" ? "block" : "hidden"}`}>
@@ -260,6 +286,7 @@ export default function ReportBuilder() {
           key={weeklyData?.id ?? "new-weekly"}
           initialData={weeklyData}
           onDataChange={handleWeeklyDataChange}
+          onArchiveReport={handleArchiveReport}
         />
       </div>
 
@@ -286,7 +313,7 @@ export default function ReportBuilder() {
           <ThemeToggle />
           <ModalReportsList
             onReportClick={handleViewReport}
-            onDeleteReports={handleDeleteReport}
+            onDeleteReports={onReportDeleted}
           />
         </div>
       </div>

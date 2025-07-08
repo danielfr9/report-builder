@@ -1,10 +1,19 @@
 import { createBlock } from "../dexie/dao/blocks";
 import { createObservation } from "../dexie/dao/observations";
-import { createReport, getReportById } from "../dexie/dao/reports";
+import {
+  archiveReport,
+  createReport,
+  getReportById,
+} from "../dexie/dao/reports";
 import { createTask } from "../dexie/dao/tasks";
 import { InsertReport } from "../dexie/models/report";
 import { ApiResponse } from "../interfaces/api-response.interface";
-import { createReportSchema, ReportDto } from "../schemas/report.schema";
+import {
+  archiveReportSchema,
+  createReportSchema,
+  ReportDto,
+  ReportDtoSchema,
+} from "../schemas/report.schema";
 
 const createReportAction = async (
   report: unknown
@@ -53,4 +62,29 @@ const createReportAction = async (
   };
 };
 
-export { createReportAction };
+const archiveReportAction = async (
+  report: unknown
+): Promise<ApiResponse<null>> => {
+  const parsedReport = archiveReportSchema.safeParse(report);
+  if (!parsedReport.success) {
+    return {
+      success: false,
+      error: parsedReport.error.message,
+    };
+  }
+
+  const res = await archiveReport(parsedReport.data.id);
+  if (!res) {
+    return {
+      success: false,
+      error: "Error al archivar el reporte",
+    };
+  }
+
+  return {
+    success: true,
+    data: null,
+  };
+};
+
+export { createReportAction, archiveReportAction };

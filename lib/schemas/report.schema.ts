@@ -36,6 +36,11 @@ export const deleteReportSchema = ReportDtoSchema.pick({
 });
 export type DeleteReport = z.infer<typeof deleteReportSchema>;
 
+export const archiveReportSchema = ReportDtoSchema.pick({
+  id: true,
+});
+export type ArchiveReport = z.infer<typeof archiveReportSchema>;
+
 export const localStorageReportSchema = ReportDtoSchema.omit({
   date: true,
   sprint: true,

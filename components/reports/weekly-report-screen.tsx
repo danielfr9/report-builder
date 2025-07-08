@@ -52,16 +52,17 @@ import AddBlockForm from "./add-block-form";
 import SortableBlockItem from "./sortable-block-item";
 import AddObservationForm from "./add-observation-form";
 import SortableObservationItem from "./sortable-observation-item";
-import { DraftWeeklyReport, WeeklyReport } from "@/lib/schemas/report.schema";
+import { WeeklyReport } from "@/lib/schemas/report.schema";
 import { REPORT_TYPE } from "@/lib/constants/report-type";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
-import { archiveReport } from "@/lib/dexie/dao/reports";
 import { format } from "date-fns";
 import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf";
+import { archiveReportAction } from "@/lib/actions/reports";
 
 interface WeeklyReportScreenProps {
   initialData: WeeklyReport | null;
   onDataChange: (data: WeeklyReport) => void;
+  onArchiveReport: (data: WeeklyReport) => void;
 }
 
 const defaultReport: WeeklyReport = {
@@ -82,6 +83,7 @@ const defaultReport: WeeklyReport = {
 export default function WeeklyReportScreen({
   initialData,
   onDataChange,
+  onArchiveReport,
 }: WeeklyReportScreenProps) {
   const [reportData, setReportData] = useState<WeeklyReport>(
     initialData || {
@@ -198,12 +200,16 @@ export default function WeeklyReportScreen({
     }
 
     try {
-      await archiveReport({
-        ...reportData,
+      const response = await archiveReportAction({
+        id: reportData.id,
       });
-      setReportData(defaultReport);
-      onDataChange(defaultReport);
-      toast.success("Reporte archivado correctamente");
+      if (response.success) {
+        setReportData(defaultReport);
+        onArchiveReport(defaultReport);
+        toast.success("Reporte archivado correctamente");
+        return;
+      }
+      toast.error(response.error);
     } catch (error) {
       console.error(error);
       toast.error("Error al archivar el reporte");
@@ -335,8 +341,11 @@ export default function WeeklyReportScreen({
   }, [reportData.tasks]);
 
   const readOnly = useMemo(() => {
-    return reportData.status === REPORT_STATUS.ARCHIVED;
-  }, [reportData.status]);
+    if (!initialData) {
+      return true;
+    }
+    return initialData.status === REPORT_STATUS.ARCHIVED;
+  }, [initialData]);
 
   return (
     <div className="max-w-6xl mx-auto">

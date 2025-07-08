@@ -18,11 +18,16 @@ export const createReport = async (
   return id;
 };
 
-export const archiveReport = async (report: ReportModel) => {
-  await db.reports.put({
-    ...report,
+export const archiveReport = async (
+  reportId: ReportModel["id"]
+): Promise<boolean> => {
+  const res = await db.reports.update(reportId, {
     status: REPORT_STATUS.ARCHIVED,
   });
+  if (res === 0) {
+    return false;
+  }
+  return true;
 };
 
 export const updateReport = async (report: ReportModel) => {
