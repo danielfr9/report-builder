@@ -250,10 +250,15 @@ export default function ReportBuilder() {
     const ids = reports.map((r) => r.id);
 
     if (ids.some((id) => id === dailyData?.id)) {
+      localStorage.removeItem(CURRENT_DAILY_REPORT_KEY);
+
       setDailyData(null);
+      createNewDailyReport();
     }
     if (ids.some((id) => id === weeklyData?.id)) {
+      localStorage.removeItem(CURRENT_WEEKLY_REPORT_KEY);
       setWeeklyData(null);
+      createNewWeeklyReport();
     }
   };
 
