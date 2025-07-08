@@ -84,6 +84,15 @@ export default function ReportHeaderForm({
 
   const sprints = useLiveQuery(() => getAllSprints());
 
+  useEffect(() => {
+    if (header.sprint) {
+      const exist = sprints?.find((sprint) => sprint.id === header.sprint?.id);
+      if (!exist) {
+        onHeaderChange({ ...header, sprint: null });
+      }
+    }
+  }, [sprints, header.sprint]);
+
   const handleSprintCreated = (sprint: SprintDto) => {
     onHeaderChange({ ...header, sprint });
   };
