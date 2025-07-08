@@ -23,6 +23,8 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Label } from "../ui/label";
+import { updateBlockAction } from "@/lib/actions/block.action";
+import { toast } from "sonner";
 
 interface SortableBlockItemProps {
   block: BlockDto;
@@ -60,19 +62,28 @@ const SortableBlockItem = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleSubmit = (data: z.infer<typeof createBlockSchema>) => {
-    updateBlock(block.id, { ...block, description: data.description });
-    setIsEditing(false);
-    form.reset({
-      description: block.description || "",
-    });
+  const handleSubmit = async (data: z.infer<typeof createBlockSchema>) => {
+    try {
+      const response = await updateBlockAction(data);
+      if (response.success) {
+        updateBlock(block.id, { ...block, description: data.description });
+        setIsEditing(false);
+        form.reset({
+          description: block.description || "",
+        });
+        toast.success("Bloque actualizado correctamente");
+        return;
+      }
+      toast.error(response.error);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al actualizar el bloque");
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    form.reset({
-      description: block.description || "",
-    });
+    form.reset();
   };
 
   if (isEditing) {

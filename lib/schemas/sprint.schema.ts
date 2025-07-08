@@ -16,7 +16,9 @@ export const createSprintSchema = SprintDtoSchema.omit({
   id: true,
 });
 export type CreateSprint = z.infer<typeof createSprintSchema>;
-export type UpdateSprint = z.infer<typeof SprintDtoSchema>;
+
+export const updateSprintSchema = SprintDtoSchema;
+export type UpdateSprint = z.infer<typeof updateSprintSchema>;
 
 export const deleteSprintSchema = SprintDtoSchema.pick({
   id: true,

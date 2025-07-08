@@ -40,6 +40,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar } from "../ui/calendar";
+import { toast } from "sonner";
+import { updateTaskAction } from "@/lib/actions/tasks.action";
 
 interface SortableTaskItemProps {
   task: TaskDto;
@@ -83,23 +85,34 @@ const SortableTaskItem = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleSubmit = (data: z.infer<typeof updateTaskSchema>) => {
-    updateTask(data.id, data);
-    setIsEditing(false);
-    form.reset({
-      id: task.id,
-      name: task.name,
-      storyPoints: task.storyPoints,
-      status: task.status,
-      comments: task.comments,
-      actionPlan: task.actionPlan,
-      finishDate: task.finishDate,
-    });
+  const handleSubmit = async (data: z.infer<typeof updateTaskSchema>) => {
+    try {
+      const response = await updateTaskAction(data);
+      if (response.success) {
+        updateTask(data.id, data);
+        setIsEditing(false);
+        form.reset({
+          id: task.id,
+          name: task.name,
+          storyPoints: task.storyPoints,
+          status: task.status,
+          comments: task.comments,
+          actionPlan: task.actionPlan,
+          finishDate: task.finishDate,
+        });
+        toast.success("Tarea actualizada correctamente");
+        return;
+      }
+      toast.error(response.error);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al actualizar la tarea");
+    }
   };
 
   const handleCancel = () => {
-    form.reset();
     setIsEditing(false);
+    form.reset();
   };
 
   if (isEditing) {

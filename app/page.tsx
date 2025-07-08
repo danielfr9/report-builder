@@ -6,7 +6,7 @@ import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { createReportAction } from "@/lib/actions/reports";
+import { createReportAction } from "@/lib/actions/reports.action";
 import {
   V3_DAILY_REPORT_STORAGE_KEY,
   V3_WEEKLY_REPORT_STORAGE_KEY,

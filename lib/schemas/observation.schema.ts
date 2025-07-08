@@ -11,7 +11,9 @@ export const createObservationSchema = ObservationDtoSchema.omit({
   id: true,
 });
 export type CreateObservation = z.infer<typeof createObservationSchema>;
-export type UpdateObservation = z.infer<typeof ObservationDtoSchema>;
+
+export const updateObservationSchema = ObservationDtoSchema;
+export type UpdateObservation = z.infer<typeof updateObservationSchema>;
 
 export const deleteObservationSchema = ObservationDtoSchema.pick({
   id: true,

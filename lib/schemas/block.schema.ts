@@ -12,7 +12,9 @@ export const createBlockSchema = BlockDtoSchema.omit({
 });
 
 export type CreateBlock = z.infer<typeof createBlockSchema>;
-export type UpdateBlock = z.infer<typeof BlockDtoSchema>;
+
+export const updateBlockSchema = BlockDtoSchema;
+export type UpdateBlock = z.infer<typeof updateBlockSchema>;
 
 export const deleteBlockSchema = BlockDtoSchema.pick({
   id: true,

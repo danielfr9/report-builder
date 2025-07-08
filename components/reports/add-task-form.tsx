@@ -31,9 +31,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { CreateTaskSchema } from "@/lib/schemas/tasks.schema";
-import { createTask } from "@/lib/dexie/dao/tasks";
+import { createTaskSchema } from "@/lib/schemas/tasks.schema";
 import { toast } from "sonner";
+import { createTaskAction } from "@/lib/actions/tasks.action";
 
 // Add Task Form Component
 interface AddTaskFormProps {
@@ -41,8 +41,8 @@ interface AddTaskFormProps {
 }
 
 const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
-  const form = useForm<z.infer<typeof CreateTaskSchema>>({
-    resolver: zodResolver(CreateTaskSchema),
+  const form = useForm<z.infer<typeof createTaskSchema>>({
+    resolver: zodResolver(createTaskSchema),
     defaultValues: {
       name: "",
       storyPoints: 1,
@@ -53,12 +53,19 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
     },
   });
 
-  const handleSubmit = async (data: z.infer<typeof CreateTaskSchema>) => {
-    const newTask = await createTask(data);
-    if (newTask) {
-      onAdd(newTask);
-      form.reset();
-    } else {
+  const handleSubmit = async (data: z.infer<typeof createTaskSchema>) => {
+    try {
+      const response = await createTaskAction(data);
+      if (response.success) {
+        onAdd(response.data);
+        form.reset();
+        toast.success("Tarea creada correctamente");
+        return;
+      }
+
+      toast.error(response.error);
+    } catch (error) {
+      console.error(error);
       toast.error("Error al crear la tarea");
     }
   };

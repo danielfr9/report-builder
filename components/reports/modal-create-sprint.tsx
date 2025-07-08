@@ -2,17 +2,15 @@
 import React, { useState } from "react";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { CalendarIcon, PlusIcon } from "lucide-react";
-import { CreateSprintSchema, SprintDto } from "@/lib/schemas/sprint.schema";
+import { createSprintSchema, SprintDto } from "@/lib/schemas/sprint.schema";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,9 +21,9 @@ import { cn } from "@/lib/utils";
 import { es } from "date-fns/locale";
 import { format } from "date-fns";
 import { Calendar } from "../ui/calendar";
-import { createSprint } from "@/lib/dexie/dao/sprint";
 import { toast } from "sonner";
 import { DateRange } from "react-day-picker";
+import { createSprintAction } from "@/lib/actions/sprints.action";
 
 interface ModalCreateSprintProps {
   onSprintCreated: (sprint: SprintDto) => void;
@@ -34,8 +32,8 @@ interface ModalCreateSprintProps {
 const ModalCreateSprint = ({ onSprintCreated }: ModalCreateSprintProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const form = useForm<z.infer<typeof CreateSprintSchema>>({
-    resolver: zodResolver(CreateSprintSchema),
+  const form = useForm<z.infer<typeof createSprintSchema>>({
+    resolver: zodResolver(createSprintSchema),
     defaultValues: {
       name: "",
       startDate: new Date(),
@@ -47,16 +45,19 @@ const ModalCreateSprint = ({ onSprintCreated }: ModalCreateSprintProps) => {
     setIsOpen(true);
   };
 
-  const onSubmit = async (data: z.infer<typeof CreateSprintSchema>) => {
+  const onSubmit = async (data: z.infer<typeof createSprintSchema>) => {
     setIsLoading(true);
     try {
-      const response = await createSprint(data);
-      if (response) {
+      const response = await createSprintAction(data);
+      if (response.success) {
         toast.success("Sprint creado correctamente");
+        onSprintCreated(response.data);
         setIsOpen(false);
         form.reset();
-        onSprintCreated(response);
+        return;
       }
+
+      toast.error(response.error);
     } catch (error) {
       console.error(error);
     }

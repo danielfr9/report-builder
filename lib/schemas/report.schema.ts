@@ -29,7 +29,9 @@ export const createReportSchema = ReportDtoSchema.omit({
   sprintId: z.string().nullable(),
 });
 export type CreateReport = z.infer<typeof createReportSchema>;
-export type UpdateReport = z.infer<typeof ReportDtoSchema>;
+
+export const updateReportSchema = ReportDtoSchema;
+export type UpdateReport = z.infer<typeof updateReportSchema>;
 
 export const deleteReportSchema = ReportDtoSchema.pick({
   id: true,

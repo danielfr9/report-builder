@@ -13,7 +13,7 @@ export const taskModelSchema = z.object({
     required_error: "El estado es requerido",
   }),
   actionPlan: z.string(),
-  finishDate: z.date({
+  finishDate: z.string({
     required_error: "La fecha de finalización es requerida",
   }),
 });

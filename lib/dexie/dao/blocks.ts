@@ -3,13 +3,14 @@ import { v4 as uuidv4 } from "uuid";
 import { BlockModel, InsertBlock } from "../models/block";
 import { BlockDto } from "@/lib/schemas/block.schema";
 
-export const createBlock = async (block: InsertBlock) => {
+export const createBlock = async (
+  block: InsertBlock
+): Promise<BlockModel["id"]> => {
   const id = await db.blocks.add({
     ...block,
     id: uuidv4(),
   });
-  const newBlock = await getBlockById(id);
-  return newBlock;
+  return id;
 };
 
 export const updateBlock = async (block: BlockModel) => {

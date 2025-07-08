@@ -13,8 +13,8 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { createObservation } from "@/lib/dexie/dao/observations";
 import { toast } from "sonner";
+import { createObservationAction } from "@/lib/actions/observation.action";
 
 interface AddObservationFormProps {
   onAdd: (observation: ObservationDto) => void;
@@ -31,13 +31,14 @@ const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {
   const handleSubmit = async (
     data: z.infer<typeof createObservationSchema>
   ) => {
-    const newObservation = await createObservation(data);
-    if (newObservation) {
-      onAdd(newObservation);
+    const response = await createObservationAction(data);
+    if (response.success) {
+      onAdd(response.data);
       form.reset();
-    } else {
-      toast.error("Error al crear la observación");
+      toast.success("Observación creada correctamente");
+      return;
     }
+    toast.error(response.error);
   };
 
   return (

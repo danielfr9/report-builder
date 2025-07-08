@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { createBlock } from "@/lib/dexie/dao/blocks";
 import { BlockDto, createBlockSchema } from "@/lib/schemas/block.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,6 +13,7 @@ import {
   FormMessage,
   FormLabel,
 } from "../ui/form";
+import { createBlockAction } from "@/lib/actions/block.action";
 
 // Add Block Form Component
 interface AddBlockFormProps {
@@ -29,13 +29,14 @@ const AddBlockForm = ({ onAdd }: AddBlockFormProps) => {
   });
 
   const handleSubmit = async (data: z.infer<typeof createBlockSchema>) => {
-    const newBlock = await createBlock(data);
-    if (newBlock) {
-      onAdd(newBlock);
+    const response = await createBlockAction(data);
+    if (response.success) {
+      onAdd(response.data);
       form.reset();
-    } else {
-      toast.error("Error al crear el bloqueo");
+      toast.success("Bloqueo creado correctamente");
+      return;
     }
+    toast.error(response.error);
   };
 
   return (

@@ -2,14 +2,16 @@ import { db } from "../db";
 import { v4 as uuidv4 } from "uuid";
 import { InsertTask, TaskModel } from "../models/task";
 import { TaskDto } from "@/lib/schemas/tasks.schema";
+import { parseISO } from "date-fns";
 
-export const createTask = async (task: InsertTask) => {
+export const createTask = async (
+  task: InsertTask
+): Promise<TaskModel["id"]> => {
   const id = await db.tasks.add({
     ...task,
     id: uuidv4(),
   });
-  const newTask = await getTaskById(id);
-  return newTask;
+  return id;
 };
 
 export const updateTask = async (task: TaskModel) => {
@@ -37,7 +39,10 @@ export const getTaskById = async (
   const task = await db.tasks.get(id);
   if (!task) return null;
 
-  return task;
+  return {
+    ...task,
+    finishDate: parseISO(task.finishDate),
+  };
 };
 
 export const getAllTasksByReportId = async (

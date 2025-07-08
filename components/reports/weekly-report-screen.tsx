@@ -57,7 +57,7 @@ import { REPORT_TYPE } from "@/lib/constants/report-type";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { format } from "date-fns";
 import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf";
-import { archiveReportAction } from "@/lib/actions/reports";
+import { archiveReportAction } from "@/lib/actions/reports.action";
 
 interface WeeklyReportScreenProps {
   initialData: WeeklyReport | null;

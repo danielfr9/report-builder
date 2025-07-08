@@ -20,14 +20,13 @@ export const createReport = async (
 
 export const archiveReport = async (
   reportId: ReportModel["id"]
-): Promise<boolean> => {
+): Promise<void> => {
   const res = await db.reports.update(reportId, {
     status: REPORT_STATUS.ARCHIVED,
   });
   if (res === 0) {
-    return false;
+    throw new Error("Error al archivar el reporte");
   }
-  return true;
 };
 
 export const updateReport = async (report: ReportModel) => {

@@ -3,13 +3,14 @@ import { v4 as uuidv4 } from "uuid";
 import { InsertObservation, ObservationModel } from "../models/observation";
 import { ObservationDto } from "@/lib/schemas/observation.schema";
 
-export const createObservation = async (observation: InsertObservation) => {
+export const createObservation = async (
+  observation: InsertObservation
+): Promise<ObservationModel["id"]> => {
   const id = await db.observations.add({
     ...observation,
     id: uuidv4(),
   });
-  const newObservation = await getObservationById(id);
-  return newObservation;
+  return id;
 };
 
 export const updateObservation = async (observation: ObservationModel) => {

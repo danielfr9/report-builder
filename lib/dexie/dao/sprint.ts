@@ -4,13 +4,14 @@ import { InsertSprint, SprintModel } from "../models/sprint";
 import { SprintDto } from "@/lib/schemas/sprint.schema";
 import { parseISO } from "date-fns";
 
-export const createSprint = async (sprint: InsertSprint) => {
+export const createSprint = async (
+  sprint: InsertSprint
+): Promise<SprintModel["id"]> => {
   const id = await db.sprints.add({
     ...sprint,
     id: uuidv4(),
   });
-  const newSprint = await getSprintById(id);
-  return newSprint;
+  return id;
 };
 
 export const updateSprint = async (sprint: SprintModel) => {

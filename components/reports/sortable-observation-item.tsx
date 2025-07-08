@@ -24,6 +24,8 @@ import {
   Form,
 } from "../ui/form";
 import { Label } from "../ui/label";
+import { updateObservationAction } from "@/lib/actions/observation.action";
+import { toast } from "sonner";
 
 interface SortableObservationItemProps {
   observation: ObservationDto;
@@ -60,22 +62,33 @@ const SortableObservationItem = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleSubmit = (data: z.infer<typeof createObservationSchema>) => {
-    updateObservation(observation.id, {
-      ...observation,
-      description: data.description,
-    });
-    setIsEditing(false);
-    form.reset({
-      description: observation.description || "",
-    });
+  const handleSubmit = async (
+    data: z.infer<typeof createObservationSchema>
+  ) => {
+    try {
+      const response = await updateObservationAction(data);
+      if (response.success) {
+        updateObservation(observation.id, {
+          ...observation,
+          description: data.description,
+        });
+        setIsEditing(false);
+        form.reset({
+          description: observation.description || "",
+        });
+        toast.success("Observación actualizada correctamente");
+        return;
+      }
+      toast.error(response.error);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al actualizar la observación");
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    form.reset({
-      description: observation.description || "",
-    });
+    form.reset();
   };
 
   if (isEditing) {

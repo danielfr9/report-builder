@@ -23,7 +23,9 @@ export const createTaskSchema = TaskDtoSchema.omit({
   id: true,
 });
 export type CreateTask = z.infer<typeof createTaskSchema>;
-export type UpdateTask = z.infer<typeof TaskDtoSchema>;
+
+export const updateTaskSchema = TaskDtoSchema;
+export type UpdateTask = z.infer<typeof updateTaskSchema>;
 
 export const deleteTaskSchema = TaskDtoSchema.pick({
   id: true,
