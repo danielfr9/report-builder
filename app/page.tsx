@@ -6,6 +6,7 @@ import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import {
   createReportAction,
   updateReportAction,
@@ -38,7 +39,6 @@ import {
   WeeklyReport,
   CreateReport,
 } from "@/lib/schemas/report.schema";
-import { debounce } from "@/lib/utils";
 
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -59,7 +59,7 @@ export default function ReportBuilder() {
   };
 
   // Handle daily data changes
-  const handleDailyDataChange = debounce((data: DailyReport) => {
+  const handleDailyDataChange = useDebouncedCallback((data: DailyReport) => {
     console.log("handleDailyDataChange", data);
     if (data.status === REPORT_STATUS.ARCHIVED) {
       return;
@@ -80,7 +80,7 @@ export default function ReportBuilder() {
   }, 500);
 
   // Handle weekly data changes
-  const handleWeeklyDataChange = debounce((data: WeeklyReport) => {
+  const handleWeeklyDataChange = useDebouncedCallback((data: WeeklyReport) => {
     if (data.status === REPORT_STATUS.ARCHIVED) {
       return;
     }

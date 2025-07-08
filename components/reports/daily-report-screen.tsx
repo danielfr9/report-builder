@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2Icon, DownloadIcon, PlusIcon, EyeIcon } from "lucide-react";
 import { DailyReportPreview } from "@/components/reports/daily-report-preview";
 import { toast } from "sonner";
-import { debounce, toSentenceCase } from "@/lib/utils";
+import { toSentenceCase } from "@/lib/utils";
 import { format, isSaturday } from "date-fns";
 import {
   DndContext,
@@ -57,6 +57,7 @@ import { ObservationDto } from "@/lib/schemas/observation.schema";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf.action";
 import { archiveReportAction } from "@/lib/actions/reports.action";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 
 interface DailyReportScreenProps {
   initialData: DailyReport | null;
@@ -93,14 +94,6 @@ export default function DailyReportScreen({
   const [isGenerating, startGenerating] = useTransition();
   const [activeTab, setActiveTab] = useState("builder");
   const isInitialLoad = useRef(true);
-
-  // Only create the debounced function once
-  const debouncedOnChange = useCallback(
-    debounce((data) => {
-      onDataChange(data);
-    }, 1000),
-    [onDataChange]
-  );
 
   // DnD Kit sensors
   const sensors = useSensors(
@@ -178,7 +171,7 @@ export default function DailyReportScreen({
     // Don't notify during initial load to prevent overwriting migrated data
     if (isInitialLoad.current) return;
 
-    debouncedOnChange(reportData); // Wait 1000ms after the last change before notifying parent
+    onDataChange(reportData);
   }, [
     reportData.date,
     reportData.name,
