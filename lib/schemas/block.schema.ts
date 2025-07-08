@@ -1,18 +1,20 @@
 import { z } from "zod";
 
-export const blockSchema = z.object({
-  id: z.string(),
-  description: z.string(),
-});
-
-export type Block = z.infer<typeof blockSchema>;
-
-export const createBlockSchema = z.object({
+export const BlockDtoSchema = z.object({
+  id: z.string().min(1, { message: "ID es requerido" }),
+  reportId: z.string().min(1, { message: "ID del reporte es requerido" }),
   description: z.string().min(1, { message: "Descripción es requerida" }),
 });
+export type BlockDto = z.infer<typeof BlockDtoSchema>;
 
-export type NewBlock = z.infer<typeof createBlockSchema>;
-
-export const updateBlockSchema = createBlockSchema.extend({
-  id: z.string().min(1, { message: "ID es requerido" }),
+export const createBlockSchema = BlockDtoSchema.omit({
+  id: true,
 });
+
+export type CreateBlock = z.infer<typeof createBlockSchema>;
+export type UpdateBlock = z.infer<typeof BlockDtoSchema>;
+
+export const deleteBlockSchema = BlockDtoSchema.pick({
+  id: true,
+});
+export type DeleteBlock = z.infer<typeof deleteBlockSchema>;

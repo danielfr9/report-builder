@@ -1,38 +1,61 @@
 import { z } from "zod";
-import { blockSchema } from "./block.schema";
-import { observationSchema } from "./observation.schema";
-import { taskSchema } from "./tasks.schema";
+import { BlockDtoSchema } from "./block.schema";
+import { ObservationDtoSchema } from "./observation.schema";
+import { TaskDtoSchema } from "./tasks.schema";
 import { REPORT_TYPE } from "../constants/report-type";
-import { SprintSchema } from "./sprint.schema";
+import { SprintDtoSchema } from "./sprint.schema";
 import { REPORT_STATUS } from "../constants/report-status";
 
-export const ReportSchema = z.object({
+export const ReportDtoSchema = z.object({
   id: z.string(),
   date: z.date(),
   owner: z.string(),
   name: z.string(),
-  tasks: z.array(taskSchema),
-  observations: z.array(observationSchema),
-  blocks: z.array(blockSchema),
+  tasks: z.array(TaskDtoSchema),
+  observations: z.array(ObservationDtoSchema),
+  blocks: z.array(BlockDtoSchema),
   hoursWorked: z.number(),
   additionalNotes: z.string(),
   type: z.nativeEnum(REPORT_TYPE),
-  sprint: SprintSchema.nullable(),
-  status: z.nativeEnum(REPORT_STATUS),
+  sprint: SprintDtoSchema.nullable(),
+  status: z.nativeEnum(REPORT_STATUS).default(REPORT_STATUS.DRAFT),
 });
+export type ReportDto = z.infer<typeof ReportDtoSchema>;
 
-export type Report = z.infer<typeof ReportSchema>;
+export const createReportSchema = ReportDtoSchema.omit({
+  id: true,
+});
+export type CreateReport = z.infer<typeof createReportSchema>;
+export type UpdateReport = z.infer<typeof ReportDtoSchema>;
 
-export type DraftDailyReport = Omit<Report, "id" | "type"> & {
+export const deleteReportSchema = ReportDtoSchema.pick({
+  id: true,
+});
+export type DeleteReport = z.infer<typeof deleteReportSchema>;
+
+export const localStorageReportSchema = ReportDtoSchema.omit({
+  date: true,
+  sprint: true,
+  observations: true,
+  blocks: true,
+}).extend({
+  date: z.string(),
+  sprint: z.string().nullable(),
+  observations: z.array(z.string()).default([]),
+  blocks: z.array(z.string()).default([]),
+});
+export type LocalStorageReport = z.infer<typeof localStorageReportSchema>;
+
+export type DraftDailyReport = Omit<ReportDto, "id" | "type"> & {
   type: (typeof REPORT_TYPE)["DAILY"];
 };
-export type DraftWeeklyReport = Omit<Report, "id" | "type"> & {
+export type DraftWeeklyReport = Omit<ReportDto, "id" | "type"> & {
   type: (typeof REPORT_TYPE)["WEEKLY"];
 };
 
-export type DailyReport = Omit<Report, "type"> & {
+export type DailyReport = Omit<ReportDto, "type"> & {
   type: (typeof REPORT_TYPE)["DAILY"];
 };
-export type WeeklyReport = Omit<Report, "type"> & {
+export type WeeklyReport = Omit<ReportDto, "type"> & {
   type: (typeof REPORT_TYPE)["WEEKLY"];
 };

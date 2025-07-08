@@ -92,20 +92,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Report } from "@/lib/schemas/report.schema";
+import { ReportDto } from "@/lib/schemas/report.schema";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
 // Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<Report> = (row, columnId, filterValue) => {
+const multiColumnFilterFn: FilterFn<ReportDto> = (
+  row,
+  columnId,
+  filterValue
+) => {
   const searchableRowContent =
     `${row.original.name} ${row.original.owner}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
 
-const statusFilterFn: FilterFn<Report> = (
+const statusFilterFn: FilterFn<ReportDto> = (
   row,
   columnId,
   filterValue: string[]
@@ -118,8 +122,8 @@ const statusFilterFn: FilterFn<Report> = (
 const getColumns = ({
   onView = () => {},
 }: {
-  onView?: (report: Report) => void;
-}): ColumnDef<Report>[] => [
+  onView?: (report: ReportDto) => void;
+}): ColumnDef<ReportDto>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -240,9 +244,9 @@ export default function ReportsTable({
   onDelete,
   onView,
 }: {
-  reports: Report[];
-  onDelete: (report: Report[]) => void;
-  onView?: (report: Report) => void;
+  reports: ReportDto[];
+  onDelete: (report: ReportDto[]) => void;
+  onView?: (report: ReportDto) => void;
 }) {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -260,7 +264,7 @@ export default function ReportsTable({
     },
   ]);
 
-  const [data, setData] = useState<Report[]>(reports);
+  const [data, setData] = useState<ReportDto[]>(reports);
 
   const handleDeleteRows = () => {
     const selectedRows = table.getSelectedRowModel().rows;

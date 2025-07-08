@@ -12,7 +12,7 @@ import {
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { CalendarIcon, PlusIcon } from "lucide-react";
-import { CreateSprintSchema, Sprint } from "@/lib/schemas/sprint.schema";
+import { CreateSprintSchema, SprintDto } from "@/lib/schemas/sprint.schema";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import { DateRange } from "react-day-picker";
 
 interface ModalCreateSprintProps {
-  onSprintCreated: (sprint: Sprint) => void;
+  onSprintCreated: (sprint: SprintDto) => void;
 }
 
 const ModalCreateSprint = ({ onSprintCreated }: ModalCreateSprintProps) => {

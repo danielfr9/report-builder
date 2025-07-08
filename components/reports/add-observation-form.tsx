@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Observation } from "@/lib/schemas/observation.schema";
+import { ObservationDto } from "@/lib/schemas/observation.schema";
 import { createObservationSchema } from "@/lib/schemas/observation.schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,7 +17,7 @@ import { createObservation } from "@/lib/dexie/dao/observations";
 import { toast } from "sonner";
 
 interface AddObservationFormProps {
-  onAdd: (observation: Observation) => void;
+  onAdd: (observation: ObservationDto) => void;
 }
 
 const AddObservationForm = ({ onAdd }: AddObservationFormProps) => {

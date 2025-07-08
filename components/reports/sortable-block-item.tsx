@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Block, createBlockSchema } from "@/lib/schemas/block.schema";
+import { BlockDto, createBlockSchema } from "@/lib/schemas/block.schema";
 import { z } from "zod";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -25,8 +25,8 @@ import {
 import { Label } from "../ui/label";
 
 interface SortableBlockItemProps {
-  block: Block;
-  updateBlock: (id: string, value: Block) => void;
+  block: BlockDto;
+  updateBlock: (id: string, value: BlockDto) => void;
   removeBlock: (id: string) => void;
   readOnly?: boolean;
 }

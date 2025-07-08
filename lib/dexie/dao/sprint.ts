@@ -1,18 +1,10 @@
 import { db } from "../db";
-import { Sprint } from "../../schemas/sprint.schema";
 import { v4 as uuidv4 } from "uuid";
+import { InsertSprint, SprintModel } from "../models/sprint";
+import { SprintDto } from "@/lib/schemas/sprint.schema";
+import { parseISO } from "date-fns";
 
-export const getSprints = async () => {
-  const sprints = await db.sprints.toArray();
-  return sprints;
-};
-
-export const getSprintById = async (id: string) => {
-  const sprint = await db.sprints.get(id);
-  return sprint;
-};
-
-export const createSprint = async (sprint: Omit<Sprint, "id">) => {
+export const createSprint = async (sprint: InsertSprint) => {
   const id = await db.sprints.add({
     ...sprint,
     id: uuidv4(),
@@ -21,14 +13,38 @@ export const createSprint = async (sprint: Omit<Sprint, "id">) => {
   return newSprint;
 };
 
-export const updateSprint = async (sprint: Sprint) => {
+export const updateSprint = async (sprint: SprintModel) => {
   await db.sprints.put(sprint);
 };
 
-export const deleteSprint = async (id: string) => {
+export const deleteSprint = async (id: SprintModel["id"]) => {
   await db.sprints.delete(id);
 };
 
-export const deleteSprints = async (ids: string[]) => {
+export const bulkDeleteSprints = async (ids: SprintModel["id"][]) => {
   await db.sprints.bulkDelete(ids);
+};
+
+export const getSprintById = async (
+  id: SprintModel["id"]
+): Promise<SprintDto | null> => {
+  const sprint = await db.sprints.get(id);
+  if (!sprint) return null;
+
+  return {
+    ...sprint,
+    startDate: parseISO(sprint.startDate),
+    endDate: parseISO(sprint.endDate),
+  };
+};
+
+export const getAllSprints = async (): Promise<SprintDto[]> => {
+  const sprints = await db.sprints.toArray();
+  const sprintDtos: SprintDto[] = [];
+  for (const sprint of sprints) {
+    const sprintDto = await getSprintById(sprint.id);
+    if (!sprintDto) continue;
+    sprintDtos.push(sprintDto);
+  }
+  return sprintDtos;
 };

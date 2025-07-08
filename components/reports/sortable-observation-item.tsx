@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Observation } from "@/lib/schemas/observation.schema";
+import { ObservationDto } from "@/lib/schemas/observation.schema";
 import { createObservationSchema } from "@/lib/schemas/observation.schema";
 import { z } from "zod";
 import { useSortable } from "@dnd-kit/sortable";
@@ -26,8 +26,8 @@ import {
 import { Label } from "../ui/label";
 
 interface SortableObservationItemProps {
-  observation: Observation;
-  updateObservation: (id: string, value: Observation) => void;
+  observation: ObservationDto;
+  updateObservation: (id: string, value: ObservationDto) => void;
   removeObservation: (id: string) => void;
   readOnly?: boolean;
 }

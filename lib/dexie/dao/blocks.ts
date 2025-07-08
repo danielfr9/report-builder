@@ -1,18 +1,9 @@
 import { db } from "../db";
-import { Block } from "../../schemas/block.schema";
 import { v4 as uuidv4 } from "uuid";
+import { BlockModel, InsertBlock } from "../models/block";
+import { BlockDto } from "@/lib/schemas/block.schema";
 
-export const getBlocks = async () => {
-  const blocks = await db.blocks.toArray();
-  return blocks;
-};
-
-export const getBlockById = async (id: string) => {
-  const block = await db.blocks.get(id);
-  return block;
-};
-
-export const createBlock = async (block: Omit<Block, "id">) => {
+export const createBlock = async (block: InsertBlock) => {
   const id = await db.blocks.add({
     ...block,
     id: uuidv4(),
@@ -21,10 +12,43 @@ export const createBlock = async (block: Omit<Block, "id">) => {
   return newBlock;
 };
 
-export const updateBlock = async (block: Block) => {
+export const updateBlock = async (block: BlockModel) => {
   await db.blocks.put(block);
 };
 
-export const deleteBlock = async (id: string) => {
+export const deleteBlock = async (id: BlockModel["id"]) => {
   await db.blocks.delete(id);
+};
+
+export const getAllBlocks = async (): Promise<BlockDto[]> => {
+  const blocks = await db.blocks.toArray();
+  const blockDtos: BlockDto[] = [];
+  for (const block of blocks) {
+    const blockDto = await getBlockById(block.id);
+    if (!blockDto) continue;
+    blockDtos.push(blockDto);
+  }
+  return blockDtos;
+};
+
+export const getBlockById = async (
+  id: BlockModel["id"]
+): Promise<BlockDto | null> => {
+  const block = await db.blocks.get(id);
+  if (!block) return null;
+
+  return block;
+};
+
+export const getAllBlocksByReportId = async (
+  reportId: BlockModel["reportId"]
+): Promise<BlockDto[]> => {
+  const blocks = await db.blocks.where("reportId").equals(reportId).toArray();
+  const blockDtos: BlockDto[] = [];
+  for (const block of blocks) {
+    const blockDto = await getBlockById(block.id);
+    if (!blockDto) continue;
+    blockDtos.push(blockDto);
+  }
+  return blockDtos;
 };

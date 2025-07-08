@@ -91,19 +91,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Sprint } from "@/lib/schemas/sprint.schema";
+import { SprintDto } from "@/lib/schemas/sprint.schema";
 import { format } from "date-fns";
 import ModalCreateSprint from "./modal-create-sprint";
 
 // Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<Sprint> = (row, columnId, filterValue) => {
+const multiColumnFilterFn: FilterFn<SprintDto> = (
+  row,
+  columnId,
+  filterValue
+) => {
   const searchableRowContent =
     `${row.original.name} ${row.original.startDate} ${row.original.endDate}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
 
-const columns: ColumnDef<Sprint>[] = [
+const columns: ColumnDef<SprintDto>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -159,8 +163,8 @@ export default function SprintsTable({
   sprints,
   onDelete,
 }: {
-  sprints: Sprint[];
-  onDelete: (sprints: Sprint[]) => void;
+  sprints: SprintDto[];
+  onDelete: (sprints: SprintDto[]) => void;
 }) {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -178,7 +182,7 @@ export default function SprintsTable({
     },
   ]);
 
-  const [data, setData] = useState<Sprint[]>(sprints);
+  const [data, setData] = useState<SprintDto[]>(sprints);
 
   const handleDeleteRows = () => {
     // Get the selected rows
@@ -195,7 +199,7 @@ export default function SprintsTable({
     );
   };
 
-  const handleAddSprint = (sprint: Sprint) => {
+  const handleAddSprint = (sprint: SprintDto) => {
     // Add the new sprint to the data
     setData([...data, sprint]);
   };

@@ -21,8 +21,8 @@ import {
 } from "@/lib/localstorage/parsers";
 import {
   DraftDailyReport,
-  Report,
-  ReportSchema,
+  ReportDto,
+  ReportDtoSchema,
   DraftWeeklyReport,
   DailyReport,
   WeeklyReport,
@@ -91,14 +91,14 @@ export default function ReportBuilder() {
       const rawReport = JSON.parse(currentReport) as LocalStorageDailyReport;
 
       // Validate the report
-      const validReport = ReportSchema.omit({
+      const validReport = ReportDtoSchema.omit({
         id: true,
         date: true,
       }).safeParse(rawReport);
 
       // If the report is valid, load the report
       if (validReport.success) {
-        const report: Report = {
+        const report: ReportDto = {
           ...validReport.data,
           date: parseISO(rawReport.date),
           id: "",
@@ -114,7 +114,7 @@ export default function ReportBuilder() {
     setIsLoading(false);
   };
 
-  const handleReportClick = (report: Report) => {
+  const handleReportClick = (report: ReportDto) => {
     console.log("report", report);
     if (report.type === "daily") {
       setDailyData({
@@ -133,7 +133,7 @@ export default function ReportBuilder() {
     }
   };
 
-  const handleDeleteReport = (reports: Report[]) => {
+  const handleDeleteReport = (reports: ReportDto[]) => {
     // Check if the current report is in the reports deleted
     const ids = reports.map((r) => r.id);
 

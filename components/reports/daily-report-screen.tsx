@@ -51,9 +51,9 @@ import SortableObservationItem from "./sortable-observation-item";
 import ReportHeaderForm from "./report-header-form";
 import { TASK_STATUS } from "@/lib/constants/task-status";
 import { DailyReport, DraftDailyReport } from "@/lib/schemas/report.schema";
-import { Task } from "@/lib/schemas/tasks.schema";
-import { Block } from "@/lib/schemas/block.schema";
-import { Observation } from "@/lib/schemas/observation.schema";
+import { TaskDto } from "@/lib/schemas/tasks.schema";
+import { BlockDto } from "@/lib/schemas/block.schema";
+import { ObservationDto } from "@/lib/schemas/observation.schema";
 import { archiveReport } from "@/lib/dexie/dao/reports";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
@@ -207,7 +207,7 @@ export default function DailyReportScreen({
     }
   };
 
-  const updateTask = (id: string, value: Task) => {
+  const updateTask = (id: string, value: TaskDto) => {
     setReportData((prev) => ({
       ...prev,
       tasks: prev.tasks.map((task) => (task.id === id ? value : task)),
@@ -221,7 +221,7 @@ export default function DailyReportScreen({
     }));
   };
 
-  const updateBlock = (id: string, value: Block) => {
+  const updateBlock = (id: string, value: BlockDto) => {
     setReportData((prev) => ({
       ...prev,
       blocks: prev.blocks.map((block) => (block.id === id ? value : block)),
@@ -235,7 +235,7 @@ export default function DailyReportScreen({
     }));
   };
 
-  const updateObservation = (id: string, value: Observation) => {
+  const updateObservation = (id: string, value: ObservationDto) => {
     setReportData((prev) => ({
       ...prev,
       observations: prev.observations.map((observation) =>

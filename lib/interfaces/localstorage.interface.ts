@@ -1,13 +1,13 @@
 import { DraftDailyReport, DraftWeeklyReport } from "../schemas/report.schema";
-import { Task } from "../schemas/tasks.schema";
-import { Sprint } from "../schemas/sprint.schema";
+import { TaskDto } from "../schemas/tasks.schema";
+import { SprintDto } from "../schemas/sprint.schema";
 
-export interface LocalStorageTask extends Omit<Task, "finishDate"> {
+export interface LocalStorageTask extends Omit<TaskDto, "finishDate"> {
   finishDate: string | null;
 }
 
 export interface LocalStorageSprint
-  extends Omit<Sprint, "startDate" | "endDate"> {
+  extends Omit<SprintDto, "startDate" | "endDate"> {
   startDate: string;
   endDate: string;
 }

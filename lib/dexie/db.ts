@@ -1,40 +1,40 @@
 import Dexie, { type EntityTable } from "dexie";
-import { Report } from "../schemas/report.schema";
-import { Task } from "../schemas/tasks.schema";
-import { Sprint } from "../schemas/sprint.schema";
-import { Block } from "../schemas/block.schema";
-import { Observation } from "../schemas/observation.schema";
+import { ReportModel } from "./models/report";
+import { TaskModel } from "./models/task";
+import { SprintModel } from "./models/sprint";
+import { BlockModel } from "./models/block";
+import { ObservationModel } from "./models/observation";
 
 const db = new Dexie("ReportsDatabase") as Dexie & {
   tasks: EntityTable<
-    Task,
+    TaskModel,
     "id" // primary key "id" (for the typings only)
   >;
   reports: EntityTable<
-    Report,
+    ReportModel,
     "id" // primary key "id" (for the typings only)
   >;
   sprints: EntityTable<
-    Sprint,
+    SprintModel,
     "id" // primary key "id" (for the typings only)
   >;
   observations: EntityTable<
-    Observation,
+    ObservationModel,
     "id" // primary key "id" (for the typings only)
   >;
   blocks: EntityTable<
-    Block,
+    BlockModel,
     "id" // primary key "id" (for the typings only)
   >;
 };
 
 // Schema declaration:
 db.version(1).stores({
-  tasks: "++id, name, storyPoints, status, actionPlan, finishDate",
-  reports: "++id, date, owner, name, hoursWorked, additionalNotes, type",
+  tasks: "++id, reportId, name, storyPoints, status, actionPlan, finishDate",
+  reports: "++id, date, owner, name, additionalNotes, type, sprintId, status",
   sprints: "++id, startDate, endDate, name",
-  observations: "++id, description",
-  blocks: "++id, description",
+  observations: "++id, reportId, description",
+  blocks: "++id, reportId, description",
 });
 
 export { db };

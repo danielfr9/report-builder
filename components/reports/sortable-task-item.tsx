@@ -20,7 +20,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { TASK_STATUS } from "@/lib/constants/task-status";
-import { Task } from "@/lib/schemas/tasks.schema";
+import { TaskDto } from "@/lib/schemas/tasks.schema";
 import { updateTaskSchema } from "@/lib/schemas/tasks.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -42,8 +42,8 @@ import { es } from "date-fns/locale";
 import { Calendar } from "../ui/calendar";
 
 interface SortableTaskItemProps {
-  task: Task;
-  updateTask: (id: string, value: Task) => void;
+  task: TaskDto;
+  updateTask: (id: string, value: TaskDto) => void;
   removeTask: (id: string) => void;
   readOnly?: boolean;
 }

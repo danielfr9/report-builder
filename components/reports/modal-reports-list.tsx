@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteReports, getReports } from "@/lib/dexie/dao/reports";
+import { bulkDeleteReports, getAllReports } from "@/lib/dexie/dao/reports";
 import React, { useState } from "react";
 import {
   Dialog,
@@ -19,20 +19,20 @@ import {
   ListIcon,
   PanelsTopLeftIcon,
 } from "lucide-react";
-import { Report } from "@/lib/schemas/report.schema";
+import { ReportDto } from "@/lib/schemas/report.schema";
 import { toast } from "sonner";
 import ReportsTable from "./reports-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Badge } from "../ui/badge";
-import { Sprint } from "@/lib/schemas/sprint.schema";
-import { deleteSprints, getSprints } from "@/lib/dexie/dao/sprint";
+import { SprintDto } from "@/lib/schemas/sprint.schema";
+import { bulkDeleteSprints, getAllSprints } from "@/lib/dexie/dao/sprint";
 import SprintsTable from "./sprints-table";
 import { useLiveQuery } from "dexie-react-hooks";
 
 interface ModalReportsListProps {
-  onReportClick?: (report: Report) => void;
-  onDeleteReports?: (reports: Report[]) => void;
+  onReportClick?: (report: ReportDto) => void;
+  onDeleteReports?: (reports: ReportDto[]) => void;
 }
 
 const ModalReportsList = ({
@@ -42,22 +42,22 @@ const ModalReportsList = ({
   const [isOpen, setIsOpen] = useState(false);
 
   // Reports
-  const reports = useLiveQuery(() => getReports());
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const reports = useLiveQuery(() => getAllReports());
+  const [selectedReport, setSelectedReport] = useState<ReportDto | null>(null);
 
   // Sprints
-  const sprints = useLiveQuery(() => getSprints());
+  const sprints = useLiveQuery(() => getAllSprints());
 
-  const handleLoadReport = (report: Report) => {
+  const handleLoadReport = (report: ReportDto) => {
     setSelectedReport(null);
     setIsOpen(false);
     onReportClick?.(report);
     toast.success("Reporte cargado correctamente");
   };
 
-  const handleDeleteReports = async (reportsDeleted: Report[]) => {
+  const handleDeleteReports = async (reportsDeleted: ReportDto[]) => {
     const ids = reportsDeleted.map((r) => r.id);
-    await deleteReports(ids);
+    await bulkDeleteReports(ids);
 
     onDeleteReports?.(reportsDeleted);
     toast.success(
@@ -67,9 +67,9 @@ const ModalReportsList = ({
     );
   };
 
-  const handleDeleteSprints = async (sprintsDeleted: Sprint[]) => {
+  const handleDeleteSprints = async (sprintsDeleted: SprintDto[]) => {
     const ids = sprintsDeleted.map((s) => s.id);
-    await deleteSprints(ids);
+    await bulkDeleteSprints(ids);
 
     toast.success(
       `${sprintsDeleted.length} ${

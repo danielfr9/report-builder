@@ -4,17 +4,17 @@ import {
   LocalStorageWeeklyReport,
 } from "../interfaces/localstorage.interface";
 import { DraftDailyReport, DraftWeeklyReport } from "../schemas/report.schema";
-import { Task } from "../schemas/tasks.schema";
-import { Sprint } from "../schemas/sprint.schema";
+import { TaskDto } from "../schemas/tasks.schema";
+import { SprintDto } from "../schemas/sprint.schema";
 
-export const formatTask = (task: Task) => {
+export const formatTask = (task: TaskDto) => {
   return {
     ...task,
     finishDate: task.finishDate?.toISOString() ?? null,
   };
 };
 
-export const formatSprint = (sprint: Sprint): LocalStorageSprint => {
+export const formatSprint = (sprint: SprintDto): LocalStorageSprint => {
   return {
     ...sprint,
     startDate: sprint.startDate.toISOString(),

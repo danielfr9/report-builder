@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createBlock } from "@/lib/dexie/dao/blocks";
-import { Block, createBlockSchema } from "@/lib/schemas/block.schema";
+import { BlockDto, createBlockSchema } from "@/lib/schemas/block.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -17,7 +17,7 @@ import {
 
 // Add Block Form Component
 interface AddBlockFormProps {
-  onAdd: (block: Block) => void;
+  onAdd: (block: BlockDto) => void;
 }
 
 const AddBlockForm = ({ onAdd }: AddBlockFormProps) => {

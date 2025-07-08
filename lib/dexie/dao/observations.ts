@@ -1,21 +1,9 @@
 import { db } from "../db";
-import { Observation } from "../../schemas/observation.schema";
 import { v4 as uuidv4 } from "uuid";
+import { InsertObservation, ObservationModel } from "../models/observation";
+import { ObservationDto } from "@/lib/schemas/observation.schema";
 
-// Observations
-export const getObservations = async () => {
-  const observations = await db.observations.toArray();
-  return observations;
-};
-
-export const getObservationById = async (id: string) => {
-  const observation = await db.observations.get(id);
-  return observation;
-};
-
-export const createObservation = async (
-  observation: Omit<Observation, "id">
-) => {
+export const createObservation = async (observation: InsertObservation) => {
   const id = await db.observations.add({
     ...observation,
     id: uuidv4(),
@@ -24,10 +12,46 @@ export const createObservation = async (
   return newObservation;
 };
 
-export const updateObservation = async (observation: Observation) => {
+export const updateObservation = async (observation: ObservationModel) => {
   await db.observations.put(observation);
 };
 
 export const deleteObservation = async (id: string) => {
   await db.observations.delete(id);
+};
+
+export const getAllObservations = async (): Promise<ObservationDto[]> => {
+  const observations = await db.observations.toArray();
+  const observationDtos: ObservationDto[] = [];
+  for (const observation of observations) {
+    const observationDto = await getObservationById(observation.id);
+    if (!observationDto) continue;
+    observationDtos.push(observationDto);
+  }
+  return observationDtos;
+};
+
+export const getObservationById = async (
+  id: ObservationModel["id"]
+): Promise<ObservationDto | null> => {
+  const observation = await db.observations.get(id);
+  if (!observation) return null;
+
+  return observation;
+};
+
+export const getAllObservationsByReportId = async (
+  reportId: ObservationModel["reportId"]
+): Promise<ObservationDto[]> => {
+  const observations = await db.observations
+    .where("reportId")
+    .equals(reportId)
+    .toArray();
+  const observationDtos: ObservationDto[] = [];
+  for (const observation of observations) {
+    const observationDto = await getObservationById(observation.id);
+    if (!observationDto) continue;
+    observationDtos.push(observationDto);
+  }
+  return observationDtos;
 };

@@ -39,9 +39,9 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from "../ui/alert-dialog";
-import { Sprint } from "@/lib/schemas/sprint.schema";
+import { SprintDto } from "@/lib/schemas/sprint.schema";
 import { useEffect, useMemo, useState } from "react";
-import { getSprints } from "@/lib/dexie/dao/sprint";
+import { getAllSprints } from "@/lib/dexie/dao/sprint";
 import {
   Command,
   CommandInput,
@@ -58,7 +58,7 @@ interface Header {
   date: Date;
   owner: string;
   name: string;
-  sprint?: Sprint | null;
+  sprint?: SprintDto | null;
   status: (typeof REPORT_STATUS)[keyof typeof REPORT_STATUS];
 }
 
@@ -81,13 +81,13 @@ export default function ReportHeaderForm({
 }: ReportHeaderFormProps) {
   const [open, setOpen] = useState(false);
 
-  const sprints = useLiveQuery(() => getSprints());
+  const sprints = useLiveQuery(() => getAllSprints());
 
-  const onSelectSprint = (sprint: Sprint) => {
+  const onSelectSprint = (sprint: SprintDto) => {
     onHeaderChange({ ...header, sprint });
   };
 
-  const handleSprintCreated = (sprint: Sprint) => {
+  const handleSprintCreated = (sprint: SprintDto) => {
     onHeaderChange({ ...header, sprint });
   };
 
@@ -290,7 +290,7 @@ export default function ReportHeaderForm({
                             onSelectSprint(
                               sprints.find(
                                 (sprint) => sprint.id === currentValue
-                              ) as Sprint
+                              ) as SprintDto
                             );
                             setOpen(false);
                           }}

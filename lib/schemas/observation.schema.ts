@@ -1,16 +1,19 @@
 import { z } from "zod";
 
-export const observationSchema = z.object({
-  id: z.string(),
-  description: z.string(),
-});
-
-export type Observation = z.infer<typeof observationSchema>;
-
-export const createObservationSchema = z.object({
+export const ObservationDtoSchema = z.object({
+  id: z.string().min(1, { message: "ID es requerido" }),
+  reportId: z.string().min(1, { message: "ID del reporte es requerido" }),
   description: z.string().min(1, { message: "La observación es requerida" }),
 });
+export type ObservationDto = z.infer<typeof ObservationDtoSchema>;
 
-export const updateObservationSchema = createObservationSchema.extend({
-  id: z.string().min(1, { message: "ID es requerido" }),
+export const createObservationSchema = ObservationDtoSchema.omit({
+  id: true,
 });
+export type CreateObservation = z.infer<typeof createObservationSchema>;
+export type UpdateObservation = z.infer<typeof ObservationDtoSchema>;
+
+export const deleteObservationSchema = ObservationDtoSchema.pick({
+  id: true,
+});
+export type DeleteObservation = z.infer<typeof deleteObservationSchema>;
