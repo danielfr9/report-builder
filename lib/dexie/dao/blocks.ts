@@ -38,7 +38,11 @@ export const getBlockById = async (
   const block = await db.blocks.get(id);
   if (!block) return null;
 
-  return block;
+  return {
+    id: block.id,
+    description: block.description,
+    reportId: block.reportId,
+  };
 };
 
 export const getAllBlocksByReportId = async (

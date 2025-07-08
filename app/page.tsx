@@ -23,18 +23,18 @@ import {
 import {
   formatDailyReport,
   formatWeeklyReport,
-} from "@/lib/localstorage/parsers";
+  parseDailyReport,
+  parseWeeklyReport,
+} from "@/lib/localstorage/format-parsers";
 import {
   DraftDailyReport,
   ReportDto,
-  ReportDtoSchema,
   DraftWeeklyReport,
   DailyReport,
   WeeklyReport,
   CreateReport,
 } from "@/lib/schemas/report.schema";
 
-import { parseISO } from "date-fns";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -113,6 +113,7 @@ export default function ReportBuilder() {
       const formattedReport = formatDailyReport(
         response.data as DraftDailyReport
       );
+
       localStorage.setItem(
         CURRENT_DAILY_REPORT_KEY,
         JSON.stringify(formattedReport)
@@ -156,35 +157,24 @@ export default function ReportBuilder() {
   // Load the current daily report
   const loadDailyReport = async () => {
     const currentDailyReport = localStorage.getItem(CURRENT_DAILY_REPORT_KEY);
+
     if (currentDailyReport) {
       // Parse the current report to an object
       const rawReport = JSON.parse(
         currentDailyReport
       ) as LocalStorageDailyReport;
 
-      // Validate the report
-      const validReport = ReportDtoSchema.omit({
-        id: true,
-        date: true,
-      }).safeParse(rawReport);
+      const dailyReport = parseDailyReport(rawReport);
 
-      // If the report is valid, load the report
-      if (validReport.success) {
-        const report: ReportDto = {
-          ...validReport.data,
-          date: parseISO(rawReport.date),
-          id: "",
-        };
-
-        // Set the daily data
-        setDailyData({
-          ...report,
-          type: REPORT_TYPE.DAILY,
-        });
+      if (dailyReport.success) {
+        setDailyData(dailyReport.data);
+        return;
       }
-    } else {
-      await createNewDailyReport();
+
+      return;
     }
+
+    await createNewDailyReport();
   };
 
   // Load the current weekly report
@@ -194,24 +184,18 @@ export default function ReportBuilder() {
       const rawReport = JSON.parse(
         currentWeeklyReport
       ) as LocalStorageWeeklyReport;
-      const validReport = ReportDtoSchema.omit({
-        id: true,
-        date: true,
-      }).safeParse(rawReport);
-      if (validReport.success) {
-        const report: ReportDto = {
-          ...validReport.data,
-          date: parseISO(rawReport.date),
-          id: "",
-        };
-        setWeeklyData({
-          ...report,
-          type: REPORT_TYPE.WEEKLY,
-        });
+
+      const weeklyReport = parseWeeklyReport(rawReport);
+
+      if (weeklyReport.success) {
+        setWeeklyData(weeklyReport.data);
+        return;
       }
-    } else {
-      await createNewWeeklyReport();
+
+      return;
     }
+
+    await createNewWeeklyReport();
   };
 
   // Load the current draft reports
@@ -227,7 +211,6 @@ export default function ReportBuilder() {
 
   // When a report is selected on the reports list, set the current report to it
   const handleViewReport = (report: ReportDto) => {
-    console.log("report", report);
     if (report.type === "daily") {
       setDailyData({
         ...report,

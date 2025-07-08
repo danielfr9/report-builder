@@ -40,7 +40,13 @@ export const getTaskById = async (
   if (!task) return null;
 
   return {
-    ...task,
+    id: task.id,
+    reportId: task.reportId,
+    name: task.name,
+    comments: task.comments,
+    storyPoints: task.storyPoints,
+    status: task.status,
+    actionPlan: task.actionPlan,
     finishDate: parseISO(task.finishDate),
   };
 };

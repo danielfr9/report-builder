@@ -33,7 +33,8 @@ export const getSprintById = async (
   if (!sprint) return null;
 
   return {
-    ...sprint,
+    id: sprint.id,
+    name: sprint.name,
     startDate: parseISO(sprint.startDate),
     endDate: parseISO(sprint.endDate),
   };

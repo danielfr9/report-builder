@@ -695,6 +695,7 @@ export default function DailyReportScreen({
                 <Label htmlFor="notes">Notas Adicionales (Opcional)</Label>
                 <Textarea
                   id="notes"
+                  disabled={readOnly}
                   className="text-sm md:text-base"
                   placeholder="Cualquier información adicional que consideres relevante"
                   value={reportData.additionalNotes}

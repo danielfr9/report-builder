@@ -53,7 +53,14 @@ export const getReportById = async (
   const sprint = report?.sprintId ? await getSprintById(report.sprintId) : null;
 
   return {
-    ...report,
+    id: report.id,
+    date: report.date,
+    owner: report.owner,
+    name: report.name,
+    hoursWorked: report.hoursWorked,
+    additionalNotes: report.additionalNotes,
+    type: report.type,
+    status: report.status,
     tasks,
     observations,
     blocks,

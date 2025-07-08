@@ -38,7 +38,11 @@ export const getObservationById = async (
   const observation = await db.observations.get(id);
   if (!observation) return null;
 
-  return observation;
+  return {
+    id: observation.id,
+    description: observation.description,
+    reportId: observation.reportId,
+  };
 };
 
 export const getAllObservationsByReportId = async (
