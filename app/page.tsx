@@ -6,6 +6,7 @@ import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { createReportAction } from "@/lib/actions/reports";
 import {
   V3_DAILY_REPORT_STORAGE_KEY,
   V3_WEEKLY_REPORT_STORAGE_KEY,
@@ -14,7 +15,11 @@ import {
   CURRENT_WEEKLY_REPORT_KEY,
 } from "@/lib/constants/localstorage-keys";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
-import { LocalStorageDailyReport } from "@/lib/interfaces/localstorage.interface";
+import { REPORT_TYPE } from "@/lib/constants/report-type";
+import {
+  LocalStorageDailyReport,
+  LocalStorageWeeklyReport,
+} from "@/lib/interfaces/localstorage.interface";
 import {
   formatDailyReport,
   formatWeeklyReport,
@@ -26,11 +31,13 @@ import {
   DraftWeeklyReport,
   DailyReport,
   WeeklyReport,
+  CreateReport,
 } from "@/lib/schemas/report.schema";
 
 import { parseISO } from "date-fns";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function ReportBuilder() {
   const [reportType, setReportType] = useState<"daily" | "weekly">("daily");
@@ -82,13 +89,13 @@ export default function ReportBuilder() {
     }
   };
 
-  const loadData = async () => {
-    setIsLoading(true);
-    // Get the current draft report
-    const currentReport = localStorage.getItem(CURRENT_DAILY_REPORT_KEY);
-    if (currentReport) {
+  const loadDailyReport = async () => {
+    const currentDailyReport = localStorage.getItem(CURRENT_DAILY_REPORT_KEY);
+    if (currentDailyReport) {
       // Parse the current report to an object
-      const rawReport = JSON.parse(currentReport) as LocalStorageDailyReport;
+      const rawReport = JSON.parse(
+        currentDailyReport
+      ) as LocalStorageDailyReport;
 
       // Validate the report
       const validReport = ReportDtoSchema.omit({
@@ -107,14 +114,89 @@ export default function ReportBuilder() {
         // Set the daily data
         setDailyData({
           ...report,
-          type: "daily",
+          type: REPORT_TYPE.DAILY,
         });
       }
+    } else {
+      // Create a new report and set it as the current report
+      const newReport: CreateReport = {
+        type: REPORT_TYPE.DAILY,
+        owner: "",
+        name: "",
+        additionalNotes: "",
+        date: new Date(),
+        hoursWorked: 8,
+        status: REPORT_STATUS.DRAFT,
+        sprintId: null,
+        tasks: [],
+        observations: [],
+        blocks: [],
+      };
+      const response = await createReportAction(newReport);
+      if (response.success) {
+        setDailyData(response.data as DailyReport);
+      } else {
+        toast.error(response.error);
+      }
     }
+  };
+
+  const loadWeeklyReport = async () => {
+    const currentWeeklyReport = localStorage.getItem(CURRENT_WEEKLY_REPORT_KEY);
+    if (currentWeeklyReport) {
+      const rawReport = JSON.parse(
+        currentWeeklyReport
+      ) as LocalStorageWeeklyReport;
+      const validReport = ReportDtoSchema.omit({
+        id: true,
+        date: true,
+      }).safeParse(rawReport);
+      if (validReport.success) {
+        const report: ReportDto = {
+          ...validReport.data,
+          date: parseISO(rawReport.date),
+          id: "",
+        };
+        setWeeklyData({
+          ...report,
+          type: REPORT_TYPE.WEEKLY,
+        });
+      }
+    } else {
+      // Create a new report and set it as the current report
+      const newReport: CreateReport = {
+        type: REPORT_TYPE.WEEKLY,
+        owner: "",
+        name: "",
+        additionalNotes: "",
+        date: new Date(),
+        hoursWorked: 8,
+        status: REPORT_STATUS.DRAFT,
+        sprintId: null,
+        tasks: [],
+        observations: [],
+        blocks: [],
+      };
+      const response = await createReportAction(newReport);
+      if (response.success) {
+        setWeeklyData(response.data as WeeklyReport);
+      } else {
+        toast.error(response.error);
+      }
+    }
+  };
+
+  const loadData = async () => {
+    setIsLoading(true);
+
+    // Get the current draft reports
+    await loadDailyReport();
+    await loadWeeklyReport();
+
     setIsLoading(false);
   };
 
-  const handleReportClick = (report: ReportDto) => {
+  const handleViewReport = (report: ReportDto) => {
     console.log("report", report);
     if (report.type === "daily") {
       setDailyData({
@@ -203,7 +285,7 @@ export default function ReportBuilder() {
           <Separator orientation="vertical" className="h-10" />
           <ThemeToggle />
           <ModalReportsList
-            onReportClick={handleReportClick}
+            onReportClick={handleViewReport}
             onDeleteReports={handleDeleteReport}
           />
         </div>

@@ -24,6 +24,9 @@ export type ReportDto = z.infer<typeof ReportDtoSchema>;
 
 export const createReportSchema = ReportDtoSchema.omit({
   id: true,
+  sprint: true,
+}).extend({
+  sprintId: z.string().nullable(),
 });
 export type CreateReport = z.infer<typeof createReportSchema>;
 export type UpdateReport = z.infer<typeof ReportDtoSchema>;

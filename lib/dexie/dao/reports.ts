@@ -8,13 +8,14 @@ import { getAllBlocksByReportId } from "./blocks";
 import { getAllObservationsByReportId } from "./observations";
 import { getSprintById } from "./sprint";
 
-export const createReport = async (report: InsertReport) => {
+export const createReport = async (
+  report: InsertReport
+): Promise<ReportModel["id"]> => {
   const id = await db.reports.add({
     ...report,
     id: uuidv4(),
   });
-  const newReport = await getReportById(id);
-  return newReport;
+  return id;
 };
 
 export const archiveReport = async (report: ReportModel) => {
