@@ -55,7 +55,7 @@ import { TaskDto } from "@/lib/schemas/tasks.schema";
 import { BlockDto } from "@/lib/schemas/block.schema";
 import { ObservationDto } from "@/lib/schemas/observation.schema";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
-import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf";
+import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf.action";
 import { archiveReportAction } from "@/lib/actions/reports.action";
 
 interface DailyReportScreenProps {

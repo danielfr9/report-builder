@@ -1,4 +1,5 @@
 import {
+  bulkDeleteSprints,
   createSprint,
   deleteSprint,
   getSprintById,
@@ -112,4 +113,36 @@ const deleteSprintAction = async (
     };
   }
 };
-export { createSprintAction, updateSprintAction, deleteSprintAction };
+
+const bulkDeleteSprintsAction = async (
+  data: unknown
+): Promise<ApiResponse<null>> => {
+  const parsedSprints = deleteSprintSchema.array().safeParse(data);
+  if (!parsedSprints.success) {
+    return {
+      success: false,
+      error: parsedSprints.error.message,
+    };
+  }
+
+  try {
+    await bulkDeleteSprints(parsedSprints.data.map((sprint) => sprint.id));
+    return {
+      success: true,
+      data: null,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      error: "Error al eliminar los sprints",
+    };
+  }
+};
+
+export {
+  createSprintAction,
+  updateSprintAction,
+  deleteSprintAction,
+  bulkDeleteSprintsAction,
+};

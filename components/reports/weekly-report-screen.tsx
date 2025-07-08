@@ -56,7 +56,7 @@ import { WeeklyReport } from "@/lib/schemas/report.schema";
 import { REPORT_TYPE } from "@/lib/constants/report-type";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { format } from "date-fns";
-import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf";
+import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf.action";
 import { archiveReportAction } from "@/lib/actions/reports.action";
 
 interface WeeklyReportScreenProps {

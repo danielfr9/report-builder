@@ -1,6 +1,6 @@
 "use client";
 
-import { bulkDeleteReports, getAllReports } from "@/lib/dexie/dao/reports";
+import { getAllReports } from "@/lib/dexie/dao/reports";
 import React, { useState } from "react";
 import {
   Dialog,
@@ -26,9 +26,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Badge } from "../ui/badge";
 import { SprintDto } from "@/lib/schemas/sprint.schema";
-import { bulkDeleteSprints, getAllSprints } from "@/lib/dexie/dao/sprint";
+import { getAllSprints } from "@/lib/dexie/dao/sprint";
 import SprintsTable from "./sprints-table";
 import { useLiveQuery } from "dexie-react-hooks";
+import { bulkDeleteSprintsAction } from "@/lib/actions/sprints.action";
+import { bulkDeleteReportsAction } from "@/lib/actions/reports.action";
 
 interface ModalReportsListProps {
   onReportClick?: (report: ReportDto) => void;
@@ -56,26 +58,32 @@ const ModalReportsList = ({
   };
 
   const handleDeleteReports = async (reportsDeleted: ReportDto[]) => {
-    const ids = reportsDeleted.map((r) => r.id);
-    await bulkDeleteReports(ids);
-
-    onDeleteReports?.(reportsDeleted);
-    toast.success(
-      `${reportsDeleted.length} ${
-        reportsDeleted.length > 1 ? "reportes eliminados" : "reporte eliminado"
-      } correctamente`
-    );
+    const response = await bulkDeleteReportsAction(reportsDeleted);
+    if (response.success) {
+      onDeleteReports?.(reportsDeleted);
+      toast.success(
+        `${reportsDeleted.length} ${
+          reportsDeleted.length > 1
+            ? "reportes eliminados"
+            : "reporte eliminado"
+        } correctamente`
+      );
+    } else {
+      toast.error(response.error);
+    }
   };
 
   const handleDeleteSprints = async (sprintsDeleted: SprintDto[]) => {
-    const ids = sprintsDeleted.map((s) => s.id);
-    await bulkDeleteSprints(ids);
-
-    toast.success(
-      `${sprintsDeleted.length} ${
-        sprintsDeleted.length > 1 ? "sprints eliminados" : "sprint eliminado"
-      } correctamente`
-    );
+    const response = await bulkDeleteSprintsAction(sprintsDeleted);
+    if (response.success) {
+      toast.success(
+        `${sprintsDeleted.length} ${
+          sprintsDeleted.length > 1 ? "sprints eliminados" : "sprint eliminado"
+        } correctamente`
+      );
+    } else {
+      toast.error(response.error);
+    }
   };
 
   return (
