@@ -27,6 +27,7 @@ import {
   PencilIcon,
   PlusIcon,
   Trash2Icon,
+  XIcon,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -82,10 +83,6 @@ export default function ReportHeaderForm({
   const [open, setOpen] = useState(false);
 
   const sprints = useLiveQuery(() => getAllSprints());
-
-  const onSelectSprint = (sprint: SprintDto) => {
-    onHeaderChange({ ...header, sprint });
-  };
 
   const handleSprintCreated = (sprint: SprintDto) => {
     onHeaderChange({ ...header, sprint });
@@ -261,8 +258,24 @@ export default function ReportHeaderForm({
                 className="w-full justify-between"
                 disabled={readOnly}
               >
-                {header.sprint ? header.sprint.name : "Selecciona un sprint"}
-                <ChevronsUpDown className="opacity-50" />
+                <div className="flex items-center justify-between w-full">
+                  {header.sprint ? header.sprint.name : "Selecciona un sprint"}
+                  <div className="flex items-center justify-between w-fit gap-4">
+                    {header.sprint && (
+                      <div
+                        className="h-4 w-4"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onHeaderChange({ ...header, sprint: null });
+                        }}
+                      >
+                        <XIcon className="h-4 w-4" />
+                        <span className="sr-only">Clear selection</span>
+                      </div>
+                    )}
+                    <ChevronsUpDown className="opacity-50" />
+                  </div>
+                </div>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
@@ -287,11 +300,13 @@ export default function ReportHeaderForm({
                           key={sprint.id}
                           value={sprint.id}
                           onSelect={(currentValue) => {
-                            onSelectSprint(
-                              sprints.find(
-                                (sprint) => sprint.id === currentValue
-                              ) as SprintDto
+                            const sprint = sprints.find(
+                              (sprint) => sprint.id === currentValue
                             );
+
+                            if (sprint) {
+                              onHeaderChange({ ...header, sprint });
+                            }
                             setOpen(false);
                           }}
                         >

@@ -373,8 +373,11 @@ export default function DailyReportScreen({
               status: reportData.status,
             }}
             onHeaderChange={(header) => {
-              setReportData((prev) => ({ ...prev, ...header }));
-              onDataChange(reportData);
+              setReportData((prev) => {
+                const newReport = { ...prev, ...header };
+                onDataChange(newReport);
+                return newReport;
+              });
             }}
             onArchiveReport={handleArchiveReport}
             onClearData={() => {

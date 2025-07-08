@@ -13,6 +13,7 @@ import {
   updateSprintSchema,
 } from "../schemas/sprint.schema";
 import { ApiResponse } from "../interfaces/api-response.interface";
+import { unlinkSprintFromReport } from "../dexie/dao/reports";
 
 const createSprintAction = async (
   data: unknown
@@ -127,6 +128,7 @@ const bulkDeleteSprintsAction = async (
 
   try {
     await bulkDeleteSprints(parsedSprints.data.map((sprint) => sprint.id));
+    await unlinkSprintFromReport(parsedSprints.data.map((sprint) => sprint.id));
     return {
       success: true,
       data: null,

@@ -6,7 +6,10 @@ import WeeklyReportScreen from "@/components/reports/weekly-report-screen";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { createReportAction } from "@/lib/actions/reports.action";
+import {
+  createReportAction,
+  updateReportAction,
+} from "@/lib/actions/reports.action";
 import {
   V3_DAILY_REPORT_STORAGE_KEY,
   V3_WEEKLY_REPORT_STORAGE_KEY,
@@ -18,15 +21,15 @@ import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { REPORT_TYPE } from "@/lib/constants/report-type";
 import { getReportById } from "@/lib/dexie/dao/reports";
 import {
-  LocalStorageDailyReport,
-  LocalStorageWeeklyReport,
-} from "@/lib/interfaces/localstorage.interface";
-import {
   formatDailyReport,
   formatWeeklyReport,
-  parseDailyReport,
-  parseWeeklyReport,
 } from "@/lib/localstorage/format-parsers";
+import {
+  getCurrentDailytReport,
+  getCurrentWeeklyReport,
+  removeCurrentDailyReport,
+  removeCurrentWeeklyReport,
+} from "@/lib/localstorage/manager";
 import {
   DraftDailyReport,
   ReportDto,
@@ -35,6 +38,7 @@ import {
   WeeklyReport,
   CreateReport,
 } from "@/lib/schemas/report.schema";
+import { debounce } from "@/lib/utils";
 
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -55,7 +59,8 @@ export default function ReportBuilder() {
   };
 
   // Handle daily data changes
-  const handleDailyDataChange = (data: DailyReport) => {
+  const handleDailyDataChange = debounce((data: DailyReport) => {
+    console.log("handleDailyDataChange", data);
     if (data.status === REPORT_STATUS.ARCHIVED) {
       return;
     }
@@ -67,14 +72,15 @@ export default function ReportBuilder() {
         CURRENT_DAILY_REPORT_KEY,
         JSON.stringify(dataToSave)
       );
+      updateReportAction(data);
       setDailyData(data);
     } catch (error) {
       console.error("Error saving daily data to localStorage:", error);
     }
-  };
+  }, 500);
 
   // Handle weekly data changes
-  const handleWeeklyDataChange = (data: WeeklyReport) => {
+  const handleWeeklyDataChange = debounce((data: WeeklyReport) => {
     if (data.status === REPORT_STATUS.ARCHIVED) {
       return;
     }
@@ -86,11 +92,12 @@ export default function ReportBuilder() {
         CURRENT_WEEKLY_REPORT_KEY,
         JSON.stringify(dataToSave)
       );
+      updateReportAction(data);
       setWeeklyData(data);
     } catch (error) {
       console.error("Error saving weekly data to localStorage:", error);
     }
-  };
+  }, 500);
 
   const createNewDailyReport = async () => {
     // Create a new report and set it as the current report
@@ -157,29 +164,18 @@ export default function ReportBuilder() {
 
   // Load the current daily report
   const loadDailyReport = async () => {
-    const currentDailyReport = localStorage.getItem(CURRENT_DAILY_REPORT_KEY);
+    const currentDailyReport = getCurrentDailytReport();
 
     if (currentDailyReport) {
-      // Parse the current report to an object
-      const rawReport = JSON.parse(
-        currentDailyReport
-      ) as LocalStorageDailyReport;
-
-      const item = await getReportById(rawReport.id);
+      const item = await getReportById(currentDailyReport.id);
 
       if (!item) {
-        localStorage.removeItem(CURRENT_DAILY_REPORT_KEY);
+        removeCurrentDailyReport();
         await createNewDailyReport();
         return;
       }
 
-      const dailyReport = parseDailyReport(rawReport);
-
-      if (dailyReport.success) {
-        setDailyData(dailyReport.data);
-        return;
-      }
-
+      setDailyData(currentDailyReport);
       return;
     }
 
@@ -188,26 +184,16 @@ export default function ReportBuilder() {
 
   // Load the current weekly report
   const loadWeeklyReport = async () => {
-    const currentWeeklyReport = localStorage.getItem(CURRENT_WEEKLY_REPORT_KEY);
+    const currentWeeklyReport = getCurrentWeeklyReport();
     if (currentWeeklyReport) {
-      const rawReport = JSON.parse(
-        currentWeeklyReport
-      ) as LocalStorageWeeklyReport;
-
-      const item = await getReportById(rawReport.id);
+      const item = await getReportById(currentWeeklyReport.id);
       if (!item) {
-        localStorage.removeItem(CURRENT_WEEKLY_REPORT_KEY);
+        removeCurrentWeeklyReport();
         await createNewWeeklyReport();
         return;
       }
 
-      const weeklyReport = parseWeeklyReport(rawReport);
-
-      if (weeklyReport.success) {
-        setWeeklyData(weeklyReport.data);
-        return;
-      }
-
+      setWeeklyData(currentWeeklyReport);
       return;
     }
 
@@ -250,13 +236,13 @@ export default function ReportBuilder() {
     const ids = reports.map((r) => r.id);
 
     if (ids.some((id) => id === dailyData?.id)) {
-      localStorage.removeItem(CURRENT_DAILY_REPORT_KEY);
+      removeCurrentDailyReport();
 
       setDailyData(null);
       createNewDailyReport();
     }
     if (ids.some((id) => id === weeklyData?.id)) {
-      localStorage.removeItem(CURRENT_WEEKLY_REPORT_KEY);
+      removeCurrentWeeklyReport();
       setWeeklyData(null);
       createNewWeeklyReport();
     }

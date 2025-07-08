@@ -382,8 +382,11 @@ export default function WeeklyReportScreen({
               status: reportData.status,
             }}
             onHeaderChange={(header) => {
-              setReportData((prev) => ({ ...prev, ...header }));
-              onDataChange(reportData);
+              setReportData((prev) => {
+                const newReport = { ...prev, ...header };
+                onDataChange(newReport);
+                return newReport;
+              });
             }}
             onClearData={() => {
               setReportData(defaultReport);

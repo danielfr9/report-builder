@@ -7,6 +7,7 @@ import { getAllTasksByReportId } from "./tasks";
 import { getAllBlocksByReportId } from "./blocks";
 import { getAllObservationsByReportId } from "./observations";
 import { getSprintById } from "./sprint";
+import { SprintModel } from "../models/sprint";
 
 export const createReport = async (
   report: InsertReport
@@ -31,6 +32,14 @@ export const archiveReport = async (
 
 export const updateReport = async (report: ReportModel) => {
   await db.reports.put(report);
+};
+
+export const unlinkSprintFromReport = async (
+  sprintIds: SprintModel["id"][]
+) => {
+  await db.reports.where("sprintId").anyOf(sprintIds).modify({
+    sprintId: null,
+  });
 };
 
 export const deleteReport = async (id: ReportModel["id"]) => {

@@ -18,6 +18,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 import {
+  AwardIcon,
   ChevronDownIcon,
   ChevronFirstIcon,
   ChevronLastIcon,
@@ -96,6 +97,8 @@ import { ReportDto } from "@/lib/schemas/report.schema";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { REPORT_TYPE } from "@/lib/constants/report-type";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 // Custom filter function for multi-column searching
 const multiColumnFilterFn: FilterFn<ReportDto> = (
@@ -120,8 +123,13 @@ const statusFilterFn: FilterFn<ReportDto> = (
 };
 
 const getColumns = ({
+  currentReports,
   onView = () => {},
 }: {
+  currentReports: {
+    id: string;
+    type: (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
+  }[];
   onView?: (report: ReportDto) => void;
 }): ColumnDef<ReportDto>[] => [
   {
@@ -138,6 +146,9 @@ const getColumns = ({
     ),
     cell: ({ row }) => (
       <Checkbox
+        disabled={currentReports.some(
+          (report) => report.id === row.original.id
+        )}
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
@@ -151,16 +162,28 @@ const getColumns = ({
   {
     id: "view",
     header: () => <div className="sr-only">Ver</div>,
-    cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onView?.(row.original)}
-      >
-        <EyeIcon className="w-4 h-4" />
-      </Button>
-    ),
-    size: 48,
+    cell: ({ row }) =>
+      currentReports.some((report) => report.id === row.original.id) ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center justify-center">
+              <AwardIcon className="w-4 h-4" />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Reporte actual</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onView?.(row.original)}
+        >
+          <EyeIcon className="w-4 h-4" />
+        </Button>
+      ),
+    size: 72,
     enableHiding: false,
   },
   {
@@ -240,10 +263,15 @@ const getColumns = ({
 ];
 
 export default function ReportsTable({
+  currentReports,
   reports,
   onDelete,
   onView,
 }: {
+  currentReports: {
+    id: string;
+    type: (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
+  }[];
   reports: ReportDto[];
   onDelete: (report: ReportDto[]) => void;
   onView?: (report: ReportDto) => void;
@@ -280,8 +308,9 @@ export default function ReportsTable({
     () =>
       getColumns({
         onView: onView,
+        currentReports: currentReports,
       }),
-    [onView]
+    [onView, currentReports]
   );
 
   const table = useReactTable({

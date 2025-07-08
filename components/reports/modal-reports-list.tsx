@@ -1,7 +1,7 @@
 "use client";
 
 import { getAllReports } from "@/lib/dexie/dao/reports";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,11 @@ import SprintsTable from "./sprints-table";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bulkDeleteSprintsAction } from "@/lib/actions/sprints.action";
 import { bulkDeleteReportsAction } from "@/lib/actions/reports.action";
+import {
+  getCurrentDailytReport,
+  getCurrentWeeklyReport,
+} from "@/lib/localstorage/manager";
+import { REPORT_TYPE } from "@/lib/constants/report-type";
 
 interface ModalReportsListProps {
   onReportClick?: (report: ReportDto) => void;
@@ -42,6 +47,12 @@ const ModalReportsList = ({
   onDeleteReports,
 }: ModalReportsListProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [currentReports, setCurrentReports] = useState<
+    {
+      id: string;
+      type: (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
+    }[]
+  >([]);
 
   // Reports
   const reports = useLiveQuery(() => getAllReports());
@@ -85,6 +96,33 @@ const ModalReportsList = ({
       toast.error(response.error);
     }
   };
+
+  useEffect(() => {
+    const currentDailyReport = getCurrentDailytReport();
+    const currentWeeklyReport = getCurrentWeeklyReport();
+    if (currentDailyReport) {
+      setCurrentReports((prev) => {
+        return [
+          ...prev,
+          {
+            id: currentDailyReport.id,
+            type: REPORT_TYPE.DAILY as typeof REPORT_TYPE.DAILY,
+          },
+        ];
+      });
+    }
+    if (currentWeeklyReport) {
+      setCurrentReports((prev) => {
+        return [
+          ...prev,
+          {
+            id: currentWeeklyReport.id,
+            type: REPORT_TYPE.WEEKLY as typeof REPORT_TYPE.WEEKLY,
+          },
+        ];
+      });
+    }
+  }, []);
 
   return (
     <>
@@ -199,6 +237,7 @@ const ModalReportsList = ({
                     </div>
                   ) : (
                     <ReportsTable
+                      currentReports={currentReports}
                       reports={reports || []}
                       onDelete={handleDeleteReports}
                       onView={handleLoadReport}
