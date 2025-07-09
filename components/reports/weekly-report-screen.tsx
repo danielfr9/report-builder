@@ -58,13 +58,12 @@ import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { format } from "date-fns";
 import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf.action";
 import { archiveReportAction } from "@/lib/actions/reports.action";
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 
 interface WeeklyReportScreenProps {
   initialData: WeeklyReport | null;
   onDataChange: (data: WeeklyReport) => void;
   onArchiveReport: (data: WeeklyReport) => void;
-  onNewReport: () => void;
+  onReloadCurrentReport: () => void;
 }
 
 const defaultReport: WeeklyReport = {
@@ -86,7 +85,7 @@ export default function WeeklyReportScreen({
   initialData,
   onDataChange,
   onArchiveReport,
-  onNewReport,
+  onReloadCurrentReport,
 }: WeeklyReportScreenProps) {
   const [reportData, setReportData] = useState<WeeklyReport>(
     initialData || {
@@ -390,7 +389,7 @@ export default function WeeklyReportScreen({
               onDataChange(defaultReport);
             }}
             onArchiveReport={handleArchiveReport}
-            onNewReport={onNewReport}
+            onReloadCurrentReport={onReloadCurrentReport}
           />
 
           {!readOnly && (

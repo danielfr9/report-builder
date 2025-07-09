@@ -57,13 +57,12 @@ import { ObservationDto } from "@/lib/schemas/observation.schema";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf.action";
 import { archiveReportAction } from "@/lib/actions/reports.action";
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 
 interface DailyReportScreenProps {
   initialData: DailyReport | null;
   onDataChange: (data: DailyReport) => void;
   onArchiveReport: (data: DailyReport) => void;
-  onNewReport: () => void;
+  onReloadCurrentReport: () => void;
 }
 
 const defaultReport: DailyReport = {
@@ -85,7 +84,7 @@ export default function DailyReportScreen({
   initialData,
   onDataChange,
   onArchiveReport,
-  onNewReport,
+  onReloadCurrentReport,
 }: DailyReportScreenProps) {
   const [reportData, setReportData] = useState<DailyReport>(
     initialData || {
@@ -379,7 +378,7 @@ export default function DailyReportScreen({
               setReportData(defaultReport);
               onDataChange(defaultReport);
             }}
-            onNewReport={onNewReport}
+            onReloadCurrentReport={onReloadCurrentReport}
             readOnly={readOnly}
           />
 

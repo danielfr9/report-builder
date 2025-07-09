@@ -24,7 +24,6 @@ import {
   CalendarIcon,
   CheckIcon,
   ChevronsUpDown,
-  PencilIcon,
   PlusIcon,
   Trash2Icon,
   XIcon,
@@ -41,7 +40,7 @@ import {
   AlertDialogAction,
 } from "../ui/alert-dialog";
 import { SprintDto } from "@/lib/schemas/sprint.schema";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getAllSprints } from "@/lib/dexie/dao/sprint";
 import {
   Command,
@@ -68,7 +67,7 @@ interface ReportHeaderFormProps {
   onHeaderChange: (header: Header) => void;
   onArchiveReport: () => void;
   onClearData: () => void;
-  onNewReport: () => void;
+  onReloadCurrentReport: () => void;
   readOnly?: boolean;
 }
 
@@ -77,7 +76,7 @@ export default function ReportHeaderForm({
   onHeaderChange,
   onArchiveReport,
   onClearData,
-  onNewReport,
+  onReloadCurrentReport,
   readOnly = false,
 }: ReportHeaderFormProps) {
   const [open, setOpen] = useState(false);
@@ -97,8 +96,8 @@ export default function ReportHeaderForm({
     onHeaderChange({ ...header, sprint });
   };
 
-  const handleNewReport = () => {
-    onNewReport();
+  const handleReloadCurrentReport = () => {
+    onReloadCurrentReport();
   };
 
   return (
@@ -118,10 +117,10 @@ export default function ReportHeaderForm({
                 variant="outline"
                 size="sm"
                 className="text-xs max-md:ml-auto"
-                onClick={handleNewReport}
+                onClick={handleReloadCurrentReport}
               >
                 <PlusIcon className="mr-2 h-4 w-4 opacity-50" />
-                Nuevo reporte
+                Volver a reporte actual
               </Button>
             </div>
           )}

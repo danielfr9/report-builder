@@ -247,7 +247,8 @@ export default function ReportBuilder() {
     }
   };
 
-  const handleArchiveReport = async (data: DailyReport | WeeklyReport) => {
+  // When a report is archived, create a new report
+  const onArchiveReport = async (data: DailyReport | WeeklyReport) => {
     if (data.type === REPORT_TYPE.DAILY) {
       setDailyData(null);
       await createNewDailyReport();
@@ -257,7 +258,8 @@ export default function ReportBuilder() {
     }
   };
 
-  const handleNewReport = () => {
+  // When the user wants to reload the current report, load the data from the database
+  const onReloadCurrentReport = () => {
     if (reportType === "daily") {
       loadDailyReport();
     } else {
@@ -291,8 +293,8 @@ export default function ReportBuilder() {
           key={dailyData?.id ?? "new-daily"}
           initialData={dailyData}
           onDataChange={handleDailyDataChange}
-          onArchiveReport={handleArchiveReport}
-          onNewReport={handleNewReport}
+          onArchiveReport={onArchiveReport}
+          onReloadCurrentReport={onReloadCurrentReport}
         />
       </div>
       <div className={`${reportType === "weekly" ? "block" : "hidden"}`}>
@@ -300,8 +302,8 @@ export default function ReportBuilder() {
           key={weeklyData?.id ?? "new-weekly"}
           initialData={weeklyData}
           onDataChange={handleWeeklyDataChange}
-          onArchiveReport={handleArchiveReport}
-          onNewReport={handleNewReport}
+          onArchiveReport={onArchiveReport}
+          onReloadCurrentReport={onReloadCurrentReport}
         />
       </div>
 
