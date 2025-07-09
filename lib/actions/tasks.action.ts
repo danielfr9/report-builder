@@ -67,7 +67,10 @@ const importTasksIntoReportAction = async (
     for (const importTask of parsedTasks.data.tasks) {
       const taskDto = await getTaskById(importTask.id);
       if (!taskDto) {
-        return { success: false, error: "Error al obtener la tarea" };
+        return {
+          success: false,
+          error: `Error al obtener la tarea ID: ${importTask.id}`,
+        };
       }
 
       insertTasks.push({
