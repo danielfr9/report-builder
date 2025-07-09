@@ -31,3 +31,9 @@ export const deleteTaskSchema = TaskDtoSchema.pick({
   id: true,
 });
 export type DeleteTask = z.infer<typeof deleteTaskSchema>;
+
+export const importTasksIntoReportSchema = z.object({
+  tasks: z.array(TaskDtoSchema.pick({ id: true })),
+  reportId: z.string().min(1, { message: "El ID del reporte es requerido" }),
+});
+export type ImportTasksIntoReport = z.infer<typeof importTasksIntoReportSchema>;

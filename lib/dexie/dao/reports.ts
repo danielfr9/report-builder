@@ -100,3 +100,17 @@ export const getAllReportsBySprintId = async (
   }
   return reportDtos;
 };
+
+export const getAllArchivedReports = async (): Promise<ReportDto[]> => {
+  const reports = await db.reports
+    .where("status")
+    .equals(REPORT_STATUS.ARCHIVED)
+    .toArray();
+  const reportDtos: ReportDto[] = [];
+  for (const report of reports) {
+    const reportDto = await getReportById(report.id);
+    if (!reportDto) continue;
+    reportDtos.push(reportDto);
+  }
+  return reportDtos;
+};

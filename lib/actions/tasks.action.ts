@@ -9,6 +9,7 @@ import { ApiResponse } from "../interfaces/api-response.interface";
 import {
   createTaskSchema,
   deleteTaskSchema,
+  importTasksIntoReportSchema,
   TaskDto,
   updateTaskSchema,
 } from "../schemas/tasks.schema";
@@ -45,6 +46,48 @@ const createTaskAction = async (
       success: false,
       error: "Error al crear la tarea",
     };
+  }
+};
+
+const importTasksIntoReportAction = async (
+  data: unknown
+): Promise<ApiResponse<TaskDto[]>> => {
+  console.log("importTasksIntoReportAction", data);
+  const parsedTasks = importTasksIntoReportSchema.safeParse(data);
+  if (!parsedTasks.success) {
+    return {
+      success: false,
+      error: parsedTasks.error.message,
+    };
+  }
+
+  try {
+    const newTasks: TaskDto[] = [];
+
+    for (const importTask of parsedTasks.data.tasks) {
+      const taskDto = await getTaskById(importTask.id);
+      if (!taskDto) {
+        return { success: false, error: "Error al obtener la tarea" };
+      }
+
+      const insertTask: InsertTask = {
+        ...taskDto,
+        reportId: parsedTasks.data.reportId,
+        finishDate: new Date().toISOString(),
+      };
+
+      const newTaskId = await createTask(insertTask);
+      const newTask = await getTaskById(newTaskId);
+      if (!newTask) {
+        return { success: false, error: "Error al obtener la tarea" };
+      }
+      newTasks.push(newTask);
+    }
+
+    return { success: true, data: newTasks };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Error al importar las tareas" };
   }
 };
 
@@ -107,4 +150,9 @@ const deleteTaskAction = async (data: unknown): Promise<ApiResponse<null>> => {
   }
 };
 
-export { createTaskAction, updateTaskAction, deleteTaskAction };
+export {
+  createTaskAction,
+  updateTaskAction,
+  deleteTaskAction,
+  importTasksIntoReportAction,
+};

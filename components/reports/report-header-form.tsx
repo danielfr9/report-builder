@@ -53,6 +53,7 @@ import {
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import ModalCreateSprint from "./modal-create-sprint";
 import { useLiveQuery } from "dexie-react-hooks";
+import { REPORT_TYPE } from "@/lib/constants/report-type";
 
 interface Header {
   date: Date;
@@ -60,6 +61,7 @@ interface Header {
   name: string;
   sprint?: SprintDto | null;
   status: (typeof REPORT_STATUS)[keyof typeof REPORT_STATUS];
+  reportType: (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
 }
 
 interface ReportHeaderFormProps {
@@ -68,6 +70,7 @@ interface ReportHeaderFormProps {
   onArchiveReport: () => void;
   onClearData: () => void;
   onReloadCurrentReport: () => void;
+  onImportTasks?: () => void;
   readOnly?: boolean;
 }
 
@@ -77,6 +80,7 @@ export default function ReportHeaderForm({
   onArchiveReport,
   onClearData,
   onReloadCurrentReport,
+  onImportTasks,
   readOnly = false,
 }: ReportHeaderFormProps) {
   const [open, setOpen] = useState(false);
@@ -110,84 +114,99 @@ export default function ReportHeaderForm({
               Datos básicos del reporte
             </CardDescription>
           </div>
+          <div className="flex gap-2">
+            {header.reportType === REPORT_TYPE.WEEKLY && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs max-md:ml-auto"
+                  onClick={onImportTasks}
+                >
+                  <PlusIcon className="mr-2 h-4 w-4 opacity-50" />
+                  Importar tareas
+                </Button>
+              </div>
+            )}
 
-          {header.status === REPORT_STATUS.ARCHIVED && (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs max-md:ml-auto"
-                onClick={handleReloadCurrentReport}
-              >
-                <PlusIcon className="mr-2 h-4 w-4 opacity-50" />
-                Volver a reporte actual
-              </Button>
-            </div>
-          )}
+            {header.status === REPORT_STATUS.ARCHIVED && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs max-md:ml-auto"
+                  onClick={handleReloadCurrentReport}
+                >
+                  <PlusIcon className="mr-2 h-4 w-4 opacity-50" />
+                  Volver a reporte actual
+                </Button>
+              </div>
+            )}
 
-          {header.status === REPORT_STATUS.DRAFT && (
-            <div className="flex gap-2">
-              <AlertDialog>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      ¿Estás seguro de querer limpiar los datos?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Si el reporte ha sido completado, lo mejor es archivarlo
-                      en vez de limpiar los datos. Si no, los datos se perderán
-                      y no podrás recuperarlos.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={onClearData}>
-                      Limpiar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs max-md:ml-auto"
-                  >
-                    <Trash2Icon className="mr-2 h-4 w-4 opacity-50" />
-                    Limpiar Datos
-                  </Button>
-                </AlertDialogTrigger>
-              </AlertDialog>
-              <AlertDialog>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      ¿Estás seguro de querer archivar este reporte?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Los datos del reporte se guardarán en el historial de
-                      reportes.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={onArchiveReport}>
-                      Archivar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs max-md:ml-auto"
-                  >
-                    <ArchiveIcon className="mr-2 h-4 w-4 opacity-50" />
-                    Archivar reporte
-                  </Button>
-                </AlertDialogTrigger>
-              </AlertDialog>
-            </div>
-          )}
+            {header.status === REPORT_STATUS.DRAFT && (
+              <div className="flex gap-2">
+                <AlertDialog>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        ¿Estás seguro de querer limpiar los datos?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Si el reporte ha sido completado, lo mejor es archivarlo
+                        en vez de limpiar los datos. Si no, los datos se
+                        perderán y no podrás recuperarlos.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={onClearData}>
+                        Limpiar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs max-md:ml-auto"
+                    >
+                      <Trash2Icon className="mr-2 h-4 w-4 opacity-50" />
+                      Limpiar Datos
+                    </Button>
+                  </AlertDialogTrigger>
+                </AlertDialog>
+                <AlertDialog>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        ¿Estás seguro de querer archivar este reporte?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Los datos del reporte se guardarán en el historial de
+                        reportes.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={onArchiveReport}>
+                        Archivar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs max-md:ml-auto"
+                    >
+                      <ArchiveIcon className="mr-2 h-4 w-4 opacity-50" />
+                      Archivar reporte
+                    </Button>
+                  </AlertDialogTrigger>
+                </AlertDialog>
+              </div>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">

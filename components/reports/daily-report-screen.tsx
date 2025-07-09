@@ -57,6 +57,7 @@ import { ObservationDto } from "@/lib/schemas/observation.schema";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf.action";
 import { archiveReportAction } from "@/lib/actions/reports.action";
+import { REPORT_TYPE } from "@/lib/constants/report-type";
 
 interface DailyReportScreenProps {
   initialData: DailyReport | null;
@@ -365,6 +366,7 @@ export default function DailyReportScreen({
               name: reportData.name,
               sprint: reportData.sprint,
               status: reportData.status,
+              reportType: REPORT_TYPE.DAILY,
             }}
             onHeaderChange={(header) => {
               setReportData((prev) => {
