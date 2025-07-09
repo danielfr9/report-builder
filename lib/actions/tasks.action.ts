@@ -1,5 +1,6 @@
 import {
   createTask,
+  createTasks,
   deleteTask,
   getTaskById,
   updateTask,
@@ -52,7 +53,6 @@ const createTaskAction = async (
 const importTasksIntoReportAction = async (
   data: unknown
 ): Promise<ApiResponse<TaskDto[]>> => {
-  console.log("importTasksIntoReportAction", data);
   const parsedTasks = importTasksIntoReportSchema.safeParse(data);
   if (!parsedTasks.success) {
     return {
@@ -62,7 +62,7 @@ const importTasksIntoReportAction = async (
   }
 
   try {
-    const newTasks: TaskDto[] = [];
+    const insertTasks: InsertTask[] = [];
 
     for (const importTask of parsedTasks.data.tasks) {
       const taskDto = await getTaskById(importTask.id);
@@ -70,19 +70,17 @@ const importTasksIntoReportAction = async (
         return { success: false, error: "Error al obtener la tarea" };
       }
 
-      const insertTask: InsertTask = {
+      insertTasks.push({
         ...taskDto,
         reportId: parsedTasks.data.reportId,
         finishDate: new Date().toISOString(),
-      };
-
-      const newTaskId = await createTask(insertTask);
-      const newTask = await getTaskById(newTaskId);
-      if (!newTask) {
-        return { success: false, error: "Error al obtener la tarea" };
-      }
-      newTasks.push(newTask);
+      });
     }
+
+    const newTasksIds = await createTasks(insertTasks);
+    const newTasks = await Promise.all(
+      newTasksIds.map((newTaskId) => getTaskById(newTaskId))
+    ).then((tasks) => tasks.filter((task) => task !== null));
 
     return { success: true, data: newTasks };
   } catch (error) {

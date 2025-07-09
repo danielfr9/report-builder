@@ -14,6 +14,13 @@ export const createTask = async (
   return id;
 };
 
+export const createTasks = async (tasks: InsertTask[]) => {
+  const ids = await db.tasks.bulkAdd(tasks, {
+    allKeys: true,
+  });
+  return ids;
+};
+
 export const updateTask = async (task: TaskModel) => {
   await db.tasks.put(task);
 };
