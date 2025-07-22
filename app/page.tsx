@@ -12,9 +12,6 @@ import {
   updateReportAction,
 } from "@/lib/actions/reports.action";
 import {
-  V3_DAILY_REPORT_STORAGE_KEY,
-  V3_WEEKLY_REPORT_STORAGE_KEY,
-  V3_SHARED_HEADER_KEY,
   CURRENT_DAILY_REPORT_KEY,
   CURRENT_WEEKLY_REPORT_KEY,
 } from "@/lib/constants/localstorage-keys";
