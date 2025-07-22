@@ -268,9 +268,6 @@ export default function ReportBuilder() {
   };
 
   useEffect(() => {
-    localStorage.removeItem(V3_SHARED_HEADER_KEY);
-    localStorage.removeItem(V3_DAILY_REPORT_STORAGE_KEY);
-    localStorage.removeItem(V3_WEEKLY_REPORT_STORAGE_KEY);
     loadData();
   }, []);
 
