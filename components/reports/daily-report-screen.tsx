@@ -230,7 +230,7 @@ export default function DailyReportScreen({
   const removeBlock = (id: string) => {
     setReportData((prev) => ({
       ...prev,
-      tasks: prev.tasks.filter((task) => task.id !== id),
+      blocks: prev.blocks.filter((block) => block.id !== id),
     }));
   };
 
