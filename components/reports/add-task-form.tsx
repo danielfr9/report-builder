@@ -61,6 +61,7 @@ const AddTaskForm = ({ onAdd }: AddTaskFormProps) => {
       finishDate: data.finishDate,
     });
     form.reset();
+    form.setValue("finishDate", data.finishDate);
   };
 
   return (
