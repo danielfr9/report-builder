@@ -9,16 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
-  DialogFooter,
-  DialogClose,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import {
-  CircleAlertIcon,
-  HouseIcon,
-  ListIcon,
-  PanelsTopLeftIcon,
-} from "lucide-react";
+import { HouseIcon, ListIcon, PanelsTopLeftIcon } from "lucide-react";
 import { ReportDto } from "@/lib/schemas/report.schema";
 import { toast } from "sonner";
 import ReportsTable from "./reports-table";
@@ -42,28 +35,26 @@ interface ModalReportsListProps {
   onDeleteReports?: (reports: ReportDto[]) => void;
 }
 
+interface CurrentReport {
+  id: string;
+  type: (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
+}
+
 const ModalReportsList = ({
   onReportClick,
   onDeleteReports,
 }: ModalReportsListProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentReports, setCurrentReports] = useState<
-    {
-      id: string;
-      type: (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
-    }[]
-  >([]);
+  const [opened, setOpened] = useState(false);
+  const [currentReports, setCurrentReports] = useState<CurrentReport[]>([]);
 
   // Reports
   const reports = useLiveQuery(() => getAllReports());
-  const [selectedReport, setSelectedReport] = useState<ReportDto | null>(null);
 
   // Sprints
   const sprints = useLiveQuery(() => getAllSprints());
 
   const handleLoadReport = (report: ReportDto) => {
-    setSelectedReport(null);
-    setIsOpen(false);
+    setOpened(false);
     onReportClick?.(report);
     toast.success("Reporte cargado correctamente");
   };
@@ -98,6 +89,11 @@ const ModalReportsList = ({
   };
 
   useEffect(() => {
+    if (!opened) {
+      setCurrentReports([]);
+      return;
+    }
+
     const currentDailyReport = getCurrentDailyReport();
     const currentWeeklyReport = getCurrentWeeklyReport();
     if (currentDailyReport) {
@@ -122,56 +118,16 @@ const ModalReportsList = ({
         ];
       });
     }
-  }, []);
+  }, [opened]);
 
   return (
     <>
-      {selectedReport && (
-        <Dialog
-          open={!!selectedReport}
-          onOpenChange={() => setSelectedReport(null)}
-        >
-          <DialogContent>
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className="flex size-9 shrink-0 items-center justify-center rounded-full border"
-                aria-hidden="true"
-              >
-                <CircleAlertIcon className="opacity-80" size={16} />
-              </div>
-              <DialogHeader>
-                <DialogTitle className="sm:text-center">
-                  Cargar reporte
-                </DialogTitle>
-                <DialogDescription className="sm:text-center">
-                  Desea cargar el reporte {selectedReport.name}?
-                </DialogDescription>
-              </DialogHeader>
-            </div>
-
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="outline" className="flex-1">
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button
-                type="button"
-                className="flex-1"
-                onClick={() => handleLoadReport(selectedReport)}
-              >
-                Cargar reporte
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={opened} onOpenChange={setOpened}>
         <DialogTrigger asChild>
           <Button
             variant="outline"
             className="flex items-center gap-2"
-            onClick={() => setIsOpen(true)}
+            onClick={() => setOpened(true)}
           >
             <ListIcon className="w-4 h-4" />
             <span className="hidden md:block">Historial</span>
