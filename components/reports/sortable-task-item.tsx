@@ -325,18 +325,20 @@ const SortableTaskItem = ({
       }`}
     >
       <div className="flex flex-col md:flex-row items-start gap-3">
-        <div className="flex items-center">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="cursor-grab active:cursor-grabbing touch-none h-8 w-full md:w-8 p-0"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVerticalIcon className="w-4 h-4" />
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="flex items-center">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="cursor-grab active:cursor-grabbing touch-none h-8 w-full md:w-8 p-0"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVerticalIcon className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
         <div className="flex-1 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
             <div className="md:col-span-3">

@@ -173,17 +173,19 @@ const SortableObservationItem = ({
       }`}
     >
       <div className="flex flex-col md:flex-row items-start gap-3">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="cursor-grab active:cursor-grabbing touch-none h-8 w-full md:w-8 p-0"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVerticalIcon className="w-4 h-4" />
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="cursor-grab active:cursor-grabbing touch-none h-8 w-full md:w-8 p-0"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVerticalIcon className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
         <div className="flex-1">
           <Label className="text-xs text-muted-foreground">Descripción</Label>
           <p className="text-sm font-medium break-words line-clamp-2 overflow-hidden text-ellipsis">

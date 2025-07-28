@@ -21,6 +21,7 @@ import { es } from "date-fns/locale";
 import { format } from "date-fns";
 import {
   ArchiveIcon,
+  ArrowLeftIcon,
   CalendarIcon,
   CheckIcon,
   ChevronsUpDown,
@@ -137,7 +138,7 @@ export default function ReportHeaderForm({
                   className="text-xs max-md:ml-auto"
                   onClick={handleReloadCurrentReport}
                 >
-                  <PlusIcon className="mr-2 h-4 w-4 opacity-50" />
+                  <ArrowLeftIcon className="mr-2 h-4 w-4 opacity-50" />
                   Volver a reporte actual
                 </Button>
               </div>
