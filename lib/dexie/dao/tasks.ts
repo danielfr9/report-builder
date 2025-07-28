@@ -15,7 +15,13 @@ export const createTask = async (
 };
 
 export const createTasks = async (tasks: InsertTask[]) => {
-  const ids = await db.tasks.bulkAdd(tasks, {
+  // Generate unique IDs for each task
+  const tasksWithIds = tasks.map((task) => ({
+    ...task,
+    id: uuidv4(),
+  }));
+
+  const ids = await db.tasks.bulkAdd(tasksWithIds, {
     allKeys: true,
   });
   return ids;

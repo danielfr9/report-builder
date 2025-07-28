@@ -73,8 +73,10 @@ const importTasksIntoReportAction = async (
         };
       }
 
+      // Exclude the ID field since we want new tasks with new IDs
+      const { id, ...taskWithoutId } = taskDto;
       insertTasks.push({
-        ...taskDto,
+        ...taskWithoutId,
         reportId: parsedTasks.data.reportId,
         finishDate: new Date().toISOString(),
       });
