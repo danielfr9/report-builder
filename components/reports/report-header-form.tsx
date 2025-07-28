@@ -116,7 +116,7 @@ export default function ReportHeaderForm({
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            {header.reportType === REPORT_TYPE.WEEKLY && (
+            {!readOnly && header.reportType === REPORT_TYPE.WEEKLY && (
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -144,7 +144,7 @@ export default function ReportHeaderForm({
               </div>
             )}
 
-            {header.status === REPORT_STATUS.DRAFT && (
+            {!readOnly && header.status === REPORT_STATUS.DRAFT && (
               <div className="flex gap-2">
                 <AlertDialog>
                   <AlertDialogContent>
