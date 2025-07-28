@@ -655,72 +655,75 @@ export default function WeeklyReportScreen({
             </Card>
 
             {/* Additional Information */}
+            {/* Blocks */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl md:text-2xl">
-                  Información adicional
-                </CardTitle>
-                <CardDescription>
-                  Bloqueos, logros y mejoras, horas trabajadas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
                   <div className="flex items-center gap-2 justify-between">
-                    <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                    <span>Bloqueos / Dificultades</span>
                     <ClearTasksButton
                       title="¿Estás seguro de querer eliminar todos los bloqueos?"
                       disabled={reportData.blocks.length === 0 || readOnly}
                       onClearTasks={clearBlocks}
                     />
                   </div>
-                  <div className="space-y-4 mt-2">
-                    {/* Always visible add block form */}
-                    {!readOnly && (
-                      <AddBlockForm
-                        reportId={reportData.id}
-                        onAdd={(blockData) => {
-                          setReportData((prev) => ({
-                            ...prev,
-                            blocks: [...prev.blocks, blockData],
-                          }));
-                        }}
-                      />
-                    )}
+                </CardTitle>
+                <CardDescription>
+                  Obstáculos o dificultades encontradas durante la semana •
+                  Arrastra para reordenar
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Always visible add block form */}
+                {!readOnly && (
+                  <AddBlockForm
+                    reportId={reportData.id}
+                    onAdd={(blockData) => {
+                      setReportData((prev) => ({
+                        ...prev,
+                        blocks: [...prev.blocks, blockData],
+                      }));
+                    }}
+                  />
+                )}
 
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={handleBlocksDragEnd}
-                    >
-                      <SortableContext
-                        items={reportData.blocks.map((block) => block.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <div className="space-y-2">
-                          {reportData.blocks.map((block) => (
-                            <SortableBlockItem
-                              key={block.id}
-                              reportId={reportData.id}
-                              block={block}
-                              updateBlock={updateBlock}
-                              removeBlock={removeBlock}
-                              readOnly={readOnly}
-                            />
-                          ))}
-                        </div>
-                      </SortableContext>
-                    </DndContext>
-                    {reportData.blocks.length === 0 && (
-                      <div className="text-center py-4 text-muted-foreground text-sm">
-                        No hay bloqueos/dificultades aún.
-                      </div>
-                    )}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleBlocksDragEnd}
+                >
+                  <SortableContext
+                    items={reportData.blocks.map((block) => block.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2">
+                      {reportData.blocks.map((block) => (
+                        <SortableBlockItem
+                          key={block.id}
+                          reportId={reportData.id}
+                          block={block}
+                          updateBlock={updateBlock}
+                          removeBlock={removeBlock}
+                          readOnly={readOnly}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+                {reportData.blocks.length === 0 && (
+                  <div className="text-center py-4 text-muted-foreground text-sm">
+                    No hay bloqueos/dificultades aún.
                   </div>
-                </div>
-                <div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Achievements and Improvements */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl md:text-2xl">
                   <div className="flex items-center gap-2 justify-between">
-                    <Label htmlFor="observations">Logros y Mejoras</Label>
+                    <span>Logros y Mejoras</span>
                     <ClearTasksButton
                       title="¿Estás seguro de querer eliminar todas las observaciones?"
                       disabled={
@@ -729,52 +732,67 @@ export default function WeeklyReportScreen({
                       onClearTasks={clearObservations}
                     />
                   </div>
-                  <div className="space-y-4 mt-2">
-                    {/* Always visible add observation form */}
-                    {!readOnly && (
-                      <AddObservationForm
-                        reportId={reportData.id}
-                        onAdd={(observation) => {
-                          setReportData((prev) => ({
-                            ...prev,
-                            observations: [...prev.observations, observation],
-                          }));
-                        }}
-                      />
-                    )}
+                </CardTitle>
+                <CardDescription>
+                  Logros alcanzados y mejoras implementadas durante la semana •
+                  Arrastra para reordenar
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Always visible add observation form */}
+                {!readOnly && (
+                  <AddObservationForm
+                    reportId={reportData.id}
+                    onAdd={(observation) => {
+                      setReportData((prev) => ({
+                        ...prev,
+                        observations: [...prev.observations, observation],
+                      }));
+                    }}
+                  />
+                )}
 
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={handleObservationsDragEnd}
-                    >
-                      <SortableContext
-                        items={reportData.observations.map(
-                          (observation) => observation.id
-                        )}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <div className="space-y-2">
-                          {reportData.observations.map((observation) => (
-                            <SortableObservationItem
-                              key={observation.id}
-                              reportId={reportData.id}
-                              observation={observation}
-                              updateObservation={updateObservation}
-                              removeObservation={removeObservation}
-                              readOnly={readOnly}
-                            />
-                          ))}
-                        </div>
-                      </SortableContext>
-                    </DndContext>
-                    {reportData.observations.length === 0 && (
-                      <div className="text-center py-4 text-muted-foreground text-sm">
-                        No hay logros/mejoras aún.
-                      </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleObservationsDragEnd}
+                >
+                  <SortableContext
+                    items={reportData.observations.map(
+                      (observation) => observation.id
                     )}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2">
+                      {reportData.observations.map((observation) => (
+                        <SortableObservationItem
+                          key={observation.id}
+                          reportId={reportData.id}
+                          observation={observation}
+                          updateObservation={updateObservation}
+                          removeObservation={removeObservation}
+                          readOnly={readOnly}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+                {reportData.observations.length === 0 && (
+                  <div className="text-center py-4 text-muted-foreground text-sm">
+                    No hay logros/mejoras aún.
                   </div>
-                </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Additional Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl md:text-2xl">
+                  Información adicional
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="hours">Horas trabajadas esta semana</Label>
                   <Input

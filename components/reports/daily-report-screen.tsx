@@ -628,129 +628,144 @@ export default function DailyReportScreen({
             </CardContent>
           </Card>
 
-          {/* Additional Information */}
+          {/* Blocks */}
           <Card>
             <CardHeader>
               <CardTitle className="text-xl md:text-2xl">
-                Información Adicional
-              </CardTitle>
-              <CardDescription>
-                Bloqueos, observaciones y horas trabajadas
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
                 <div className="flex items-center gap-2 justify-between">
-                  <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                  <span>Bloqueos / Dificultades</span>
                   <ClearTasksButton
                     title="¿Estás seguro de querer eliminar todos los bloqueos?"
                     disabled={reportData.blocks.length === 0 || readOnly}
                     onClearTasks={clearBlocks}
                   />
                 </div>
-                <div className="space-y-4 mt-2">
-                  {/* Always visible add block form */}
-                  {!readOnly && (
-                    <AddBlockForm
-                      reportId={reportData.id}
-                      onAdd={(block) => {
-                        setReportData((prev) => ({
-                          ...prev,
-                          blocks: [...prev.blocks, block],
-                        }));
-                      }}
-                    />
-                  )}
+              </CardTitle>
+              <CardDescription>
+                Obstáculos o dificultades encontradas durante el día • Arrastra
+                para reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Always visible add block form */}
+              {!readOnly && (
+                <AddBlockForm
+                  reportId={reportData.id}
+                  onAdd={(block) => {
+                    setReportData((prev) => ({
+                      ...prev,
+                      blocks: [...prev.blocks, block],
+                    }));
+                  }}
+                />
+              )}
 
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleBlocksDragEnd}
-                  >
-                    <SortableContext
-                      items={reportData.blocks
-                        .filter(Boolean)
-                        .map((block) => block.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div className="space-y-2">
-                        {reportData.blocks.filter(Boolean).map((block) => (
-                          <SortableBlockItem
-                            key={block.id}
-                            reportId={reportData.id}
-                            block={block}
-                            updateBlock={updateBlock}
-                            removeBlock={removeBlock}
-                          />
-                        ))}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-                  {reportData.blocks.length === 0 && (
-                    <div className="text-center py-4 text-muted-foreground text-sm">
-                      No hay bloqueos/dificultades aún.
-                    </div>
-                  )}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleBlocksDragEnd}
+              >
+                <SortableContext
+                  items={reportData.blocks
+                    .filter(Boolean)
+                    .map((block) => block.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {reportData.blocks.filter(Boolean).map((block) => (
+                      <SortableBlockItem
+                        key={block.id}
+                        reportId={reportData.id}
+                        block={block}
+                        updateBlock={updateBlock}
+                        removeBlock={removeBlock}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+              {reportData.blocks.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No hay bloqueos/dificultades aún.
                 </div>
-              </div>
-              <div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Observations */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl md:text-2xl">
                 <div className="flex items-center gap-2 justify-between">
-                  <Label htmlFor="observations">
-                    Observaciones / Sugerencias
-                  </Label>
+                  <span>Observaciones / Sugerencias</span>
                   <ClearTasksButton
                     title="¿Estás seguro de querer eliminar todas las observaciones?"
                     disabled={reportData.observations.length === 0 || readOnly}
                     onClearTasks={clearObservations}
                   />
                 </div>
-                <div className="space-y-4 mt-2">
-                  {/* Always visible add observation form */}
-                  {!readOnly && (
-                    <AddObservationForm
-                      reportId={reportData.id}
-                      onAdd={(observation) => {
-                        setReportData((prev) => ({
-                          ...prev,
-                          observations: [...prev.observations, observation],
-                        }));
-                      }}
-                    />
-                  )}
+              </CardTitle>
+              <CardDescription>
+                Comentarios, reflexiones y sugerencias del día • Arrastra para
+                reordenar
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Always visible add observation form */}
+              {!readOnly && (
+                <AddObservationForm
+                  reportId={reportData.id}
+                  onAdd={(observation) => {
+                    setReportData((prev) => ({
+                      ...prev,
+                      observations: [...prev.observations, observation],
+                    }));
+                  }}
+                />
+              )}
 
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleObservationsDragEnd}
-                  >
-                    <SortableContext
-                      items={reportData.observations
-                        .filter(Boolean)
-                        .map((observation) => observation.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div className="space-y-2">
-                        {reportData.observations
-                          .filter(Boolean)
-                          .map((observation) => (
-                            <SortableObservationItem
-                              key={observation.id}
-                              reportId={reportData.id}
-                              observation={observation}
-                              updateObservation={updateObservation}
-                              removeObservation={removeObservation}
-                            />
-                          ))}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-                  {reportData.observations.length === 0 && (
-                    <div className="text-center py-4 text-muted-foreground text-sm">
-                      No hay observaciones/sugerencias aún.
-                    </div>
-                  )}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleObservationsDragEnd}
+              >
+                <SortableContext
+                  items={reportData.observations
+                    .filter(Boolean)
+                    .map((observation) => observation.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {reportData.observations
+                      .filter(Boolean)
+                      .map((observation) => (
+                        <SortableObservationItem
+                          key={observation.id}
+                          reportId={reportData.id}
+                          observation={observation}
+                          updateObservation={updateObservation}
+                          removeObservation={removeObservation}
+                        />
+                      ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+              {reportData.observations.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No hay observaciones/sugerencias aún.
                 </div>
-              </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Additional Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl md:text-2xl">
+                Información Adicional
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="hours">Horas trabajadas</Label>
                 <Input
