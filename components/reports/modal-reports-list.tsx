@@ -29,15 +29,11 @@ import {
   getCurrentWeeklyReport,
 } from "@/lib/localstorage/manager";
 import { REPORT_TYPE } from "@/lib/constants/report-type";
+import { CurrentReport } from "@/lib/interfaces/current-report.interface";
 
 interface ModalReportsListProps {
   onReportClick?: (report: ReportDto) => void;
   onDeleteReports?: (reports: ReportDto[]) => void;
-}
-
-interface CurrentReport {
-  id: string;
-  type: (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
 }
 
 const ModalReportsList = ({
@@ -47,10 +43,7 @@ const ModalReportsList = ({
   const [opened, setOpened] = useState(false);
   const [currentReports, setCurrentReports] = useState<CurrentReport[]>([]);
 
-  // Reports
   const reports = useLiveQuery(() => getAllReports());
-
-  // Sprints
   const sprints = useLiveQuery(() => getAllSprints());
 
   const handleLoadReport = (report: ReportDto) => {

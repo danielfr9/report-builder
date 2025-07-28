@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -12,7 +12,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   PaginationState,
-  Row,
   SortingState,
   useReactTable,
   VisibilityState,
@@ -28,11 +27,9 @@ import {
   CircleAlertIcon,
   CircleXIcon,
   Columns3Icon,
-  EllipsisIcon,
   EyeIcon,
   FilterIcon,
   ListFilterIcon,
-  PlusIcon,
   TrashIcon,
 } from "lucide-react";
 
@@ -55,15 +52,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -95,10 +84,9 @@ import {
 } from "@/components/ui/table";
 import { ReportDto } from "@/lib/schemas/report.schema";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
-import { toast } from "sonner";
 import { format } from "date-fns";
-import { REPORT_TYPE } from "@/lib/constants/report-type";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { CurrentReport } from "@/lib/interfaces/current-report.interface";
 
 // Custom filter function for multi-column searching
 const multiColumnFilterFn: FilterFn<ReportDto> = (
@@ -126,10 +114,7 @@ const getColumns = ({
   currentReports,
   onView = () => {},
 }: {
-  currentReports: {
-    id: string;
-    type: (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
-  }[];
+  currentReports: CurrentReport[];
   onView?: (report: ReportDto) => void;
 }): ColumnDef<ReportDto>[] => [
   {
@@ -268,10 +253,7 @@ export default function ReportsTable({
   onDelete,
   onView,
 }: {
-  currentReports: {
-    id: string;
-    type: (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
-  }[];
+  currentReports: CurrentReport[];
   reports: ReportDto[];
   onDelete: (report: ReportDto[]) => void;
   onView?: (report: ReportDto) => void;
