@@ -53,6 +53,7 @@ import { generateWeeklyReportPDFAction } from "@/lib/actions/generate-pdf.action
 import { archiveReportAction } from "@/lib/actions/reports.action";
 import ModalImportTasks from "./modal-import-tasks";
 import { importTasksIntoReportAction } from "@/lib/actions/tasks.action";
+import ClearTasksButton from "./clear-task-button";
 
 interface WeeklyReportScreenProps {
   initialData: WeeklyReport | null;
@@ -222,6 +223,13 @@ export default function WeeklyReportScreen({
     }));
   };
 
+  const clearTasks = (type: TaskDto["status"]) => {
+    setReportData((prev) => ({
+      ...prev,
+      tasks: prev.tasks.filter((task) => task.status !== type),
+    }));
+  };
+
   const updateBlock = (id: string, value: BlockDto) => {
     setReportData((prev) => ({
       ...prev,
@@ -233,6 +241,13 @@ export default function WeeklyReportScreen({
     setReportData((prev) => ({
       ...prev,
       blocks: prev.blocks.filter((block) => block.id !== id),
+    }));
+  };
+
+  const clearBlocks = () => {
+    setReportData((prev) => ({
+      ...prev,
+      blocks: [],
     }));
   };
 
@@ -251,6 +266,13 @@ export default function WeeklyReportScreen({
       observations: prev.observations.filter(
         (observation) => observation.id !== id
       ),
+    }));
+  };
+
+  const clearObservations = () => {
+    setReportData((prev) => ({
+      ...prev,
+      observations: [],
     }));
   };
 
@@ -448,7 +470,14 @@ export default function WeeklyReportScreen({
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl md:text-2xl">
-                  Tareas completadas
+                  <div className="flex items-center gap-2 justify-between">
+                    <span>Tareas completadas</span>
+                    <ClearTasksButton
+                      title="¿Estás seguro de querer eliminar todas las tareas completadas?"
+                      disabled={completedTasks.length === 0 || readOnly}
+                      onClearTasks={() => clearTasks(TASK_STATUS.COMPLETED)}
+                    />
+                  </div>
                 </CardTitle>
                 <CardDescription>
                   Tareas completadas durante la semana • Arrastra para reordenar
@@ -487,7 +516,14 @@ export default function WeeklyReportScreen({
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl md:text-2xl">
-                  Tareas en progreso
+                  <div className="flex items-center gap-2 justify-between">
+                    <span>Tareas en progreso</span>
+                    <ClearTasksButton
+                      title="¿Estás seguro de querer eliminar todas las tareas en progreso?"
+                      disabled={inProgressTasks.length === 0 || readOnly}
+                      onClearTasks={() => clearTasks(TASK_STATUS.IN_PROGRESS)}
+                    />
+                  </div>
                 </CardTitle>
                 <CardDescription>
                   Tareas que continúan la próxima semana • Arrastra para
@@ -528,7 +564,14 @@ export default function WeeklyReportScreen({
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl md:text-2xl">
-                  Tareas pendientes
+                  <div className="flex items-center gap-2 justify-between">
+                    <span>Tareas pendientes</span>
+                    <ClearTasksButton
+                      title="¿Estás seguro de querer eliminar todas las tareas pendientes?"
+                      disabled={pendingTasks.length === 0 || readOnly}
+                      onClearTasks={() => clearTasks(TASK_STATUS.PENDING)}
+                    />
+                  </div>
                 </CardTitle>
                 <CardDescription>
                   Tareas que no se han iniciado • Arrastra para reordenar
@@ -567,7 +610,14 @@ export default function WeeklyReportScreen({
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl md:text-2xl">
-                  Tareas bloqueadas
+                  <div className="flex items-center gap-2 justify-between">
+                    <span>Tareas bloqueadas</span>
+                    <ClearTasksButton
+                      title="¿Estás seguro de querer eliminar todas las tareas bloqueadas?"
+                      disabled={blockedTasks.length === 0 || readOnly}
+                      onClearTasks={() => clearTasks(TASK_STATUS.BLOCKED)}
+                    />
+                  </div>
                 </CardTitle>
                 <CardDescription>
                   Tareas que no puedes continuar debido a un bloqueo o
@@ -616,7 +666,14 @@ export default function WeeklyReportScreen({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                  <div className="flex items-center gap-2 justify-between">
+                    <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                    <ClearTasksButton
+                      title="¿Estás seguro de querer eliminar todos los bloqueos?"
+                      disabled={reportData.blocks.length === 0 || readOnly}
+                      onClearTasks={clearBlocks}
+                    />
+                  </div>
                   <div className="space-y-4 mt-2">
                     {/* Always visible add block form */}
                     {!readOnly && (
@@ -662,7 +719,16 @@ export default function WeeklyReportScreen({
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="observations">Logros y Mejoras</Label>
+                  <div className="flex items-center gap-2 justify-between">
+                    <Label htmlFor="observations">Logros y Mejoras</Label>
+                    <ClearTasksButton
+                      title="¿Estás seguro de querer eliminar todas las observaciones?"
+                      disabled={
+                        reportData.observations.length === 0 || readOnly
+                      }
+                      onClearTasks={clearObservations}
+                    />
+                  </div>
                   <div className="space-y-4 mt-2">
                     {/* Always visible add observation form */}
                     {!readOnly && (

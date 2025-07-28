@@ -21,7 +21,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import { Loader2Icon, DownloadIcon, PlusIcon, EyeIcon } from "lucide-react";
+import {
+  Loader2Icon,
+  DownloadIcon,
+  PlusIcon,
+  EyeIcon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react";
 import { DailyReportPreview } from "@/components/reports/daily-report-preview";
 import { toast } from "sonner";
 import { toSentenceCase } from "@/lib/utils";
@@ -58,6 +65,8 @@ import { REPORT_STATUS } from "@/lib/constants/report-status";
 import { generateDailyReportPDFAction } from "@/lib/actions/generate-pdf.action";
 import { archiveReportAction } from "@/lib/actions/reports.action";
 import { REPORT_TYPE } from "@/lib/constants/report-type";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import ClearTasksButton from "./clear-task-button";
 
 interface DailyReportScreenProps {
   initialData: DailyReport | null;
@@ -223,6 +232,13 @@ export default function DailyReportScreen({
     }));
   };
 
+  const clearTasks = (type: TaskDto["status"]) => {
+    setReportData((prev) => ({
+      ...prev,
+      tasks: prev.tasks.filter((task) => task.status !== type),
+    }));
+  };
+
   const updateBlock = (id: string, value: BlockDto) => {
     setReportData((prev) => ({
       ...prev,
@@ -234,6 +250,13 @@ export default function DailyReportScreen({
     setReportData((prev) => ({
       ...prev,
       tasks: prev.tasks.filter((task) => task.id !== id),
+    }));
+  };
+
+  const clearBlocks = () => {
+    setReportData((prev) => ({
+      ...prev,
+      blocks: [],
     }));
   };
 
@@ -252,6 +275,13 @@ export default function DailyReportScreen({
       observations: prev.observations.filter(
         (observation) => observation.id !== id
       ),
+    }));
+  };
+
+  const clearObservations = () => {
+    setReportData((prev) => ({
+      ...prev,
+      observations: [],
     }));
   };
 
@@ -414,7 +444,14 @@ export default function DailyReportScreen({
           <Card>
             <CardHeader>
               <CardTitle className="text-xl md:text-2xl">
-                Tareas completadas
+                <div className="flex items-center gap-2 justify-between">
+                  <span>Tareas completadas</span>
+                  <ClearTasksButton
+                    title="¿Estás seguro de querer eliminar todas las tareas completadas?"
+                    disabled={completedTasks.length === 0 || readOnly}
+                    onClearTasks={() => clearTasks(TASK_STATUS.COMPLETED)}
+                  />
+                </div>
               </CardTitle>
               <CardDescription>
                 Tareas completadas del día • Arrastra para reordenar
@@ -453,7 +490,14 @@ export default function DailyReportScreen({
           <Card>
             <CardHeader>
               <CardTitle className="text-xl md:text-2xl">
-                Tareas en progreso
+                <div className="flex items-center gap-2 justify-between">
+                  <span>Tareas en progreso</span>
+                  <ClearTasksButton
+                    title="¿Estás seguro de querer eliminar todas las tareas en progreso?"
+                    disabled={inProgressTasks.length === 0 || readOnly}
+                    onClearTasks={() => clearTasks(TASK_STATUS.IN_PROGRESS)}
+                  />
+                </div>
               </CardTitle>
               <CardDescription>
                 Tareas que estás trabajando actualmente del día • Arrastra para
@@ -494,7 +538,14 @@ export default function DailyReportScreen({
           <Card>
             <CardHeader>
               <CardTitle className="text-xl md:text-2xl">
-                Tareas pendientes por realizar
+                <div className="flex items-center gap-2 justify-between">
+                  <span>Tareas pendientes por realizar</span>
+                  <ClearTasksButton
+                    title="¿Estás seguro de querer eliminar todas las tareas pendientes?"
+                    disabled={pendingTasks.length === 0 || readOnly}
+                    onClearTasks={() => clearTasks(TASK_STATUS.PENDING)}
+                  />
+                </div>
               </CardTitle>
               <CardDescription>
                 Tareas que no has trabajado en el día • Arrastra para reordenar
@@ -533,7 +584,14 @@ export default function DailyReportScreen({
           <Card>
             <CardHeader>
               <CardTitle className="text-xl md:text-2xl">
-                Tareas bloqueadas
+                <div className="flex items-center gap-2 justify-between">
+                  <span>Tareas bloqueadas</span>
+                  <ClearTasksButton
+                    title="¿Estás seguro de querer eliminar todas las tareas bloqueadas?"
+                    disabled={blockedTasks.length === 0 || readOnly}
+                    onClearTasks={() => clearTasks(TASK_STATUS.BLOCKED)}
+                  />
+                </div>
               </CardTitle>
               <CardDescription>
                 Tareas que no puedes continuar debido a un bloqueo o dificultad
@@ -582,7 +640,14 @@ export default function DailyReportScreen({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                <div className="flex items-center gap-2 justify-between">
+                  <Label htmlFor="blocks">Bloqueos / Dificultades</Label>
+                  <ClearTasksButton
+                    title="¿Estás seguro de querer eliminar todos los bloqueos?"
+                    disabled={reportData.blocks.length === 0 || readOnly}
+                    onClearTasks={clearBlocks}
+                  />
+                </div>
                 <div className="space-y-4 mt-2">
                   {/* Always visible add block form */}
                   {!readOnly && (
@@ -629,9 +694,16 @@ export default function DailyReportScreen({
                 </div>
               </div>
               <div>
-                <Label htmlFor="observations">
-                  Observaciones / Sugerencias
-                </Label>
+                <div className="flex items-center gap-2 justify-between">
+                  <Label htmlFor="observations">
+                    Observaciones / Sugerencias
+                  </Label>
+                  <ClearTasksButton
+                    title="¿Estás seguro de querer eliminar todas las observaciones?"
+                    disabled={reportData.observations.length === 0 || readOnly}
+                    onClearTasks={clearObservations}
+                  />
+                </div>
                 <div className="space-y-4 mt-2">
                   {/* Always visible add observation form */}
                   {!readOnly && (
