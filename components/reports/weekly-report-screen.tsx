@@ -77,6 +77,13 @@ const defaultReport: WeeklyReport = {
   status: REPORT_STATUS.DRAFT,
 };
 
+const TAB_VALUES = {
+  BUILDER: "builder",
+  PREVIEW: "preview",
+} as const;
+
+type TabValue = (typeof TAB_VALUES)[keyof typeof TAB_VALUES];
+
 export default function WeeklyReportScreen({
   initialData,
   onDataChange,
@@ -90,7 +97,7 @@ export default function WeeklyReportScreen({
   );
 
   const [isGenerating, startGenerating] = useTransition();
-  const [activeTab, setActiveTab] = useState("builder");
+  const [activeTab, setActiveTab] = useState<TabValue>(TAB_VALUES.BUILDER);
   const isInitialLoad = useRef(true);
   const [openImportTasks, setOpenImportTasks] = useState(false);
 
@@ -395,19 +402,29 @@ export default function WeeklyReportScreen({
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as TabValue)}
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-2 mb-6 sticky top-0 z-40 ">
-            <TabsTrigger value="builder" className="flex items-center gap-2">
+            <TabsTrigger
+              value={TAB_VALUES.BUILDER}
+              className="flex items-center gap-2"
+            >
               <PlusIcon className="w-4 h-4" />
               Constructor
             </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2">
+            <TabsTrigger
+              value={TAB_VALUES.PREVIEW}
+              className="flex items-center gap-2"
+            >
               <EyeIcon className="w-4 h-4" />
               Vista Previa
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="builder" className="space-y-6">
+          <TabsContent value={TAB_VALUES.BUILDER} className="space-y-6">
             {/* Header Information */}
             <ReportHeaderForm
               readOnly={readOnly}
@@ -887,7 +904,7 @@ export default function WeeklyReportScreen({
             </Card>
           </TabsContent>
 
-          <TabsContent value="preview">
+          <TabsContent value={TAB_VALUES.PREVIEW}>
             <div className="space-y-4 max-w-4xl w-full mx-auto">
               <Button
                 onClick={generatePDF}
