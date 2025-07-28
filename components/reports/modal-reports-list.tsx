@@ -32,13 +32,13 @@ import { REPORT_TYPE } from "@/lib/constants/report-type";
 import { CurrentReport } from "@/lib/interfaces/current-report.interface";
 
 interface ModalReportsListProps {
-  onReportClick?: (report: ReportDto) => void;
-  onDeleteReports?: (reports: ReportDto[]) => void;
+  onViewReport?: (report: ReportDto) => void;
+  onReportsDeleted?: (reports: ReportDto[]) => void;
 }
 
 const ModalReportsList = ({
-  onReportClick,
-  onDeleteReports,
+  onViewReport,
+  onReportsDeleted,
 }: ModalReportsListProps) => {
   const [opened, setOpened] = useState(false);
   const [currentReports, setCurrentReports] = useState<CurrentReport[]>([]);
@@ -48,14 +48,14 @@ const ModalReportsList = ({
 
   const handleLoadReport = (report: ReportDto) => {
     setOpened(false);
-    onReportClick?.(report);
+    onViewReport?.(report);
     toast.success("Reporte cargado correctamente");
   };
 
   const handleDeleteReports = async (reportsDeleted: ReportDto[]) => {
     const response = await bulkDeleteReportsAction(reportsDeleted);
     if (response.success) {
-      onDeleteReports?.(reportsDeleted);
+      onReportsDeleted?.(reportsDeleted);
       toast.success(
         `${reportsDeleted.length} ${
           reportsDeleted.length > 1

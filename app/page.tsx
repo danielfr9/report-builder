@@ -16,7 +16,7 @@ import {
   CURRENT_WEEKLY_REPORT_KEY,
 } from "@/lib/constants/localstorage-keys";
 import { REPORT_STATUS } from "@/lib/constants/report-status";
-import { REPORT_TYPE } from "@/lib/constants/report-type";
+import { REPORT_TYPE, ReportType } from "@/lib/constants/report-type";
 import { getReportById } from "@/lib/dexie/dao/reports";
 import {
   formatDailyReport,
@@ -42,7 +42,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function ReportBuilder() {
-  const [reportType, setReportType] = useState<"daily" | "weekly">("daily");
+  const [reportType, setReportType] = useState<ReportType>(REPORT_TYPE.DAILY);
   const [dailyData, setDailyData] = useState<DailyReport | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeeklyReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -209,25 +209,25 @@ export default function ReportBuilder() {
 
   // When a report is selected on the reports list, set the current report to it
   const handleViewReport = (report: ReportDto) => {
-    if (report.type === "daily") {
+    if (report.type === REPORT_TYPE.DAILY) {
       setDailyData({
         ...report,
-        type: "daily",
+        type: REPORT_TYPE.DAILY,
       });
-      setReportType("daily");
+      setReportType(REPORT_TYPE.DAILY);
       scrollToTop();
     } else {
       setWeeklyData({
         ...report,
-        type: "weekly",
+        type: REPORT_TYPE.WEEKLY,
       });
-      setReportType("weekly");
+      setReportType(REPORT_TYPE.WEEKLY);
       scrollToTop();
     }
   };
 
   // When a report is deleted, update the current report to null (if applicable)
-  const onReportDeleted = (reports: ReportDto[]) => {
+  const handleReportsDeleted = (reports: ReportDto[]) => {
     // Check if the current report is in the reports deleted
     const ids = reports.map((r) => r.id);
 
@@ -245,7 +245,7 @@ export default function ReportBuilder() {
   };
 
   // When a report is archived, create a new report
-  const onArchiveReport = async (data: DailyReport | WeeklyReport) => {
+  const handleReportArchived = async (data: DailyReport | WeeklyReport) => {
     if (data.type === REPORT_TYPE.DAILY) {
       setDailyData(null);
       await createNewDailyReport();
@@ -256,8 +256,8 @@ export default function ReportBuilder() {
   };
 
   // When the user wants to reload the current report, load the data from the database
-  const onReloadCurrentReport = () => {
-    if (reportType === "daily") {
+  const handleReloadCurrentReport = () => {
+    if (reportType === REPORT_TYPE.DAILY) {
       loadDailyReport();
     } else {
       loadWeeklyReport();
@@ -304,22 +304,26 @@ export default function ReportBuilder() {
           </a>
         </Button>
       </div>
-      <div className={`${reportType === "daily" ? "block" : "hidden"}`}>
+      <div
+        className={`${reportType === REPORT_TYPE.DAILY ? "block" : "hidden"}`}
+      >
         <DailyReportScreen
           key={dailyData?.id ?? "new-daily"}
           initialData={dailyData}
           onDataChange={handleDailyDataChange}
-          onArchiveReport={onArchiveReport}
-          onReloadCurrentReport={onReloadCurrentReport}
+          onArchiveReport={handleReportArchived}
+          onReloadCurrentReport={handleReloadCurrentReport}
         />
       </div>
-      <div className={`${reportType === "weekly" ? "block" : "hidden"}`}>
+      <div
+        className={`${reportType === REPORT_TYPE.WEEKLY ? "block" : "hidden"}`}
+      >
         <WeeklyReportScreen
           key={weeklyData?.id ?? "new-weekly"}
           initialData={weeklyData}
           onDataChange={handleWeeklyDataChange}
-          onArchiveReport={onArchiveReport}
-          onReloadCurrentReport={onReloadCurrentReport}
+          onArchiveReport={handleReportArchived}
+          onReloadCurrentReport={handleReloadCurrentReport}
         />
       </div>
       <div className="my-3 bg-background border border-foreground/10 rounded-full p-4 shadow-lg w-fit px-10 mx-auto">
@@ -340,17 +344,17 @@ export default function ReportBuilder() {
       <div className="fixed bottom-4 left-0 right-0 bg-background border border-foreground/10 rounded-full p-4 shadow-lg w-fit px-10 mx-auto">
         <div className="flex justify-center gap-4">
           <Button
-            variant={reportType === "daily" ? "default" : "outline"}
+            variant={reportType === REPORT_TYPE.DAILY ? "default" : "outline"}
             className="shadow-sm border border-foreground/15 transition-all duration-300"
-            onClick={() => setReportType("daily")}
+            onClick={() => setReportType(REPORT_TYPE.DAILY)}
           >
             <ClockIcon className="w-4 h-4 md:mr-2" />
             <span className="hidden md:block">Reporte Diario</span>
           </Button>
           <Button
-            variant={reportType === "weekly" ? "default" : "outline"}
+            variant={reportType === REPORT_TYPE.WEEKLY ? "default" : "outline"}
             className="shadow-sm border border-foreground/15 transition-all duration-300"
-            onClick={() => setReportType("weekly")}
+            onClick={() => setReportType(REPORT_TYPE.WEEKLY)}
           >
             <CalendarIcon className="w-4 h-4 md:mr-2" />
             <span className="hidden md:block">Reporte Semanal</span>
@@ -358,8 +362,8 @@ export default function ReportBuilder() {
           <Separator orientation="vertical" className="h-10" />
           <ThemeToggle />
           <ModalReportsList
-            onReportClick={handleViewReport}
-            onDeleteReports={onReportDeleted}
+            onViewReport={handleViewReport}
+            onReportsDeleted={handleReportsDeleted}
           />
         </div>
       </div>
