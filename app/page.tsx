@@ -41,6 +41,11 @@ import { CalendarIcon, ClockIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+const REPORT_TYPE_TO_LABEL = {
+  [REPORT_TYPE.DAILY]: "Reporte Diario",
+  [REPORT_TYPE.WEEKLY]: "Reporte Semanal",
+};
+
 export default function ReportBuilder() {
   const [reportType, setReportType] = useState<ReportType>(REPORT_TYPE.DAILY);
   const [dailyData, setDailyData] = useState<DailyReport | null>(null);
@@ -95,8 +100,8 @@ export default function ReportBuilder() {
     }
   }, 500);
 
+  // Create a new daily report and set it as the current report
   const createNewDailyReport = async () => {
-    // Create a new report and set it as the current report
     const newReport: CreateReport = {
       type: REPORT_TYPE.DAILY,
       owner: "",
@@ -110,25 +115,30 @@ export default function ReportBuilder() {
       observations: [],
       blocks: [],
     };
-    const response = await createReportAction(newReport);
-    if (response.success) {
-      setDailyData(response.data as DailyReport);
 
-      const formattedReport = formatDailyReport(
-        response.data as DraftDailyReport
-      );
+    try {
+      const response = await createReportAction(newReport);
+      if (response.success) {
+        setDailyData(response.data as DailyReport);
 
-      localStorage.setItem(
-        CURRENT_DAILY_REPORT_KEY,
-        JSON.stringify(formattedReport)
-      );
-    } else {
-      toast.error(response.error);
+        const formattedReport = formatDailyReport(
+          response.data as DraftDailyReport
+        );
+
+        localStorage.setItem(
+          CURRENT_DAILY_REPORT_KEY,
+          JSON.stringify(formattedReport)
+        );
+      } else {
+        toast.error(response.error);
+      }
+    } catch (error) {
+      toast.error("Error al crear el reporte diario");
     }
   };
 
+  // Create a new weekly report and set it as the current report
   const createNewWeeklyReport = async () => {
-    // Create a new report and set it as the current report
     const newReport: CreateReport = {
       type: REPORT_TYPE.WEEKLY,
       owner: "",
@@ -142,58 +152,97 @@ export default function ReportBuilder() {
       observations: [],
       blocks: [],
     };
-    const response = await createReportAction(newReport);
-    if (response.success) {
-      setWeeklyData(response.data as WeeklyReport);
 
-      const formattedReport = formatWeeklyReport(
-        response.data as DraftWeeklyReport
-      );
-      localStorage.setItem(
-        CURRENT_WEEKLY_REPORT_KEY,
-        JSON.stringify(formattedReport)
-      );
-    } else {
-      toast.error(response.error);
+    try {
+      const response = await createReportAction(newReport);
+      if (response.success) {
+        setWeeklyData(response.data as WeeklyReport);
+
+        const formattedReport = formatWeeklyReport(
+          response.data as DraftWeeklyReport
+        );
+        localStorage.setItem(
+          CURRENT_WEEKLY_REPORT_KEY,
+          JSON.stringify(formattedReport)
+        );
+      } else {
+        toast.error(response.error);
+      }
+    } catch (error) {
+      toast.error("Error al crear el reporte semanal");
     }
   };
 
-  // Load the current daily report
-  const loadDailyReport = async () => {
+  // Get the current daily report from the database
+  const loadDailyReport = async (): Promise<Error | null> => {
     const currentDailyReport = getCurrentDailyReport();
 
-    if (currentDailyReport) {
+    if (!currentDailyReport) {
+      try {
+        await createNewDailyReport();
+      } catch (error) {
+        return new Error("Error al crear el reporte diario");
+      }
+      return null;
+    }
+
+    try {
       const item = await getReportById(currentDailyReport.id);
 
-      if (!item) {
-        removeCurrentDailyReport();
-        await createNewDailyReport();
-        return;
+      if (item) {
+        setDailyData(currentDailyReport);
+        return null;
       }
 
-      setDailyData(currentDailyReport);
-      return;
+      removeCurrentDailyReport();
+      toast.error("El reporte diario no existe, se creará uno nuevo");
+
+      try {
+        await createNewDailyReport();
+      } catch (error) {
+        return new Error("Error al crear el reporte diario");
+      }
+    } catch (error) {
+      return new Error("Error al obtener el reporte diario");
     }
 
-    await createNewDailyReport();
+    return null;
   };
 
-  // Load the current weekly report
-  const loadWeeklyReport = async () => {
+  // Get the current weekly report from the database
+  const loadWeeklyReport = async (): Promise<Error | null> => {
     const currentWeeklyReport = getCurrentWeeklyReport();
-    if (currentWeeklyReport) {
-      const item = await getReportById(currentWeeklyReport.id);
-      if (!item) {
-        removeCurrentWeeklyReport();
-        await createNewWeeklyReport();
-        return;
-      }
 
-      setWeeklyData(currentWeeklyReport);
-      return;
+    if (!currentWeeklyReport) {
+      try {
+        await createNewWeeklyReport();
+      } catch (error) {
+        return new Error("Error al crear el reporte semanal");
+      }
+      return null;
     }
 
-    await createNewWeeklyReport();
+    try {
+      const item = await getReportById(currentWeeklyReport.id);
+
+      if (item) {
+        setWeeklyData(currentWeeklyReport);
+        return null;
+      }
+
+      removeCurrentWeeklyReport();
+      toast.error("El reporte semanal no existe, se creará uno nuevo");
+
+      try {
+        await createNewWeeklyReport();
+      } catch (error) {
+        return new Error("Error al crear el reporte semanal");
+      }
+    } catch (error) {
+      return new Error("Error al obtener el reporte semanal");
+    }
+
+    return null;
   };
 
   // Load the current draft reports
@@ -201,8 +250,19 @@ export default function ReportBuilder() {
     setIsLoading(true);
 
     // Get the current draft reports
-    await loadDailyReport();
-    await loadWeeklyReport();
+    try {
+      const dailyReport = await loadDailyReport();
+      const weeklyReport = await loadWeeklyReport();
+
+      if (dailyReport instanceof Error) {
+        toast.error(dailyReport.message);
+      }
+      if (weeklyReport instanceof Error) {
+        toast.error(weeklyReport.message);
+      }
+    } catch (error) {
+      toast.error("Error al obtener los reportes:");
+    }
 
     setIsLoading(false);
   };
@@ -349,7 +409,9 @@ export default function ReportBuilder() {
             onClick={() => setReportType(REPORT_TYPE.DAILY)}
           >
             <ClockIcon className="w-4 h-4 md:mr-2" />
-            <span className="hidden md:block">Reporte Diario</span>
+            <span className="hidden md:block">
+              {REPORT_TYPE_TO_LABEL[REPORT_TYPE.DAILY]}
+            </span>
           </Button>
           <Button
             variant={reportType === REPORT_TYPE.WEEKLY ? "default" : "outline"}
@@ -357,7 +419,9 @@ export default function ReportBuilder() {
             onClick={() => setReportType(REPORT_TYPE.WEEKLY)}
           >
             <CalendarIcon className="w-4 h-4 md:mr-2" />
-            <span className="hidden md:block">Reporte Semanal</span>
+            <span className="hidden md:block">
+              {REPORT_TYPE_TO_LABEL[REPORT_TYPE.WEEKLY]}
+            </span>
           </Button>
           <Separator orientation="vertical" className="h-10" />
           <ThemeToggle />
