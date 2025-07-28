@@ -115,37 +115,33 @@ export default function ReportHeaderForm({
               Datos básicos del reporte
             </CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {!readOnly && header.reportType === REPORT_TYPE.WEEKLY && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs max-md:ml-auto"
-                  onClick={onImportTasks}
-                >
-                  <PlusIcon className="mr-2 h-4 w-4 opacity-50" />
-                  Importar tareas
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={onImportTasks}
+              >
+                <PlusIcon className="mr-2 h-4 w-4 opacity-50" />
+                Importar tareas
+              </Button>
             )}
 
             {header.status === REPORT_STATUS.ARCHIVED && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs max-md:ml-auto"
-                  onClick={handleReloadCurrentReport}
-                >
-                  <ArrowLeftIcon className="mr-2 h-4 w-4 opacity-50" />
-                  Volver a reporte actual
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={handleReloadCurrentReport}
+              >
+                <ArrowLeftIcon className="mr-2 h-4 w-4 opacity-50" />
+                Volver a reporte actual
+              </Button>
             )}
 
             {!readOnly && header.status === REPORT_STATUS.DRAFT && (
-              <div className="flex gap-2">
+              <>
                 <AlertDialog>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -166,11 +162,7 @@ export default function ReportHeaderForm({
                     </AlertDialogFooter>
                   </AlertDialogContent>
                   <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs max-md:ml-auto"
-                    >
+                    <Button variant="outline" size="sm" className="text-xs">
                       <Trash2Icon className="mr-2 h-4 w-4 opacity-50" />
                       Limpiar Datos
                     </Button>
@@ -195,17 +187,13 @@ export default function ReportHeaderForm({
                     </AlertDialogFooter>
                   </AlertDialogContent>
                   <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs max-md:ml-auto"
-                    >
+                    <Button variant="outline" size="sm" className="text-xs">
                       <ArchiveIcon className="mr-2 h-4 w-4 opacity-50" />
                       Archivar reporte
                     </Button>
                   </AlertDialogTrigger>
                 </AlertDialog>
-              </div>
+              </>
             )}
           </div>
         </div>
