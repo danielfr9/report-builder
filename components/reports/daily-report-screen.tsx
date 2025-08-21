@@ -256,7 +256,7 @@ export default function DailyReportScreen({
     startGenerating(async () => {
       const toastId = toast.loading("Generando PDF...");
       try {
-        const currentDate = new Date();
+        const currentDate = reportData.header.date ?? new Date();
         const name =
           reportData.header.name !== ""
             ? toSentenceCase(reportData.header.name.trim())
