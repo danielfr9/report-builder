@@ -415,7 +415,7 @@ export default function ReportBuilder() {
           onDataChange={handleWeeklyDataChange}
         />
       </div>
-      <div className="my-3 bg-background border border-foreground/10 rounded-full p-4 shadow-lg w-fit px-10 mx-auto">
+      <div className="my-3 bg-background border border-foreground/10 rounded-full p-4 shadow-md w-fit px-10 mx-auto">
         <span className="text-sm text-muted-foreground">
           Made with ❤️ by{" "}
           <a
@@ -425,6 +425,22 @@ export default function ReportBuilder() {
             className="text-primary"
           >
             danielfr9
+          </a>
+        </span>
+      </div>
+      <div className="my-3 p-2 w-fit mx-auto">
+        <span className="text-sm text-muted-foreground">
+          <a
+            href="https://ko-fi.com/Y8Y61LS3U4"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              height="36"
+              className="h-9 border-none"
+              src="https://storage.ko-fi.com/cdn/kofi3.png?v=6"
+              alt="Buy Me a Coffee at ko-fi.com"
+            />
           </a>
         </span>
       </div>
